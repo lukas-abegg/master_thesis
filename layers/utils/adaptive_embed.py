@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class AdaptiveEmbedding(nn.Module):
-    def __init__(self, n_token, d_embed, d_proj, cutoffs, div_val=1, sample_softmax=False):
+    def __init__(self, n_token, d_embed, d_proj, cutoffs, div_val=1):
         super(AdaptiveEmbedding, self).__init__()
 
         self.n_token = n_token
@@ -22,7 +22,7 @@ class AdaptiveEmbedding(nn.Module):
         self.emb_projs = nn.ParameterList()
         if div_val == 1:
             self.emb_layers.append(
-                nn.Embedding(n_token, d_embed, sparse=sample_softmax > 0)
+                nn.Embedding(n_token, d_embed)
             )
             if d_proj != d_embed:
                 self.emb_projs.append(nn.Parameter(torch.Tensor(d_proj, d_embed)))

@@ -327,7 +327,10 @@ class Transformer(nn.Module):
         self.d_head = d_head
 
         # TODO: Check if we can replace that with embedding layer from BERT
-        self.word_embed = AdaptiveEmbedding(n_token, d_embed, d_model, cutoffs, div_val=div_val)
+        if not self.adapt_inp:
+            self.word_embed = nn.Embedding(n_token, d_embed)
+        else:
+            self.word_embed = AdaptiveEmbedding(n_token, d_embed, d_model, cutoffs, div_val=div_val)
 
         self.drop = nn.Dropout(dropout)
 
@@ -348,20 +351,23 @@ class Transformer(nn.Module):
                     dropatt=dropatt)
             )
 
-        # When using adaptive softmax and embedding, the embedding dimension is divided by div_val from bin $i$ to bin $i+1$.
-        # This saves both GPU memory and the parameter budget
-        self.crit = ProjectedAdaptiveLogSoftmax(n_token, d_embed, d_model, cutoffs, div_val=div_val)
+        if not self.adapt_inp:
+            self.out_emb = nn.Linear(d_embed, n_token)
+        else:
+            # When using adaptive softmax and embedding, the embedding dimension is divided by div_val from bin $i$ to bin $i+1$.
+            # This saves both GPU memory and the parameter budget
+            self.crit = ProjectedAdaptiveLogSoftmax(n_token, d_embed, d_model, cutoffs=cutoffs, div_val=div_val)
 
-        if tie_weight:
-            for i in range(len(self.crit.out_layers)):
-                self.crit.out_layers[i].weight = self.word_embed.emb_layers[i].weight
+            if tie_weight:
+                for i in range(len(self.crit.out_layers)):
+                    self.crit.out_layers[i].weight = self.word_embed.emb_layers[i].weight
 
-        if tie_projs:
-            for i, tie_proj in enumerate(tie_projs):
-                if tie_proj and div_val == 1 and d_model != d_embed:
-                    self.crit.out_projs[i] = self.word_embed.emb_projs[0]
-                elif tie_proj and div_val != 1:
-                    self.crit.out_projs[i] = self.word_embed.emb_projs[i]
+            if tie_projs:
+                for i, tie_proj in enumerate(tie_projs):
+                    if tie_proj and div_val == 1 and d_model != d_embed:
+                        self.crit.out_projs[i] = self.word_embed.emb_projs[0]
+                    elif tie_proj and div_val != 1:
+                        self.crit.out_projs[i] = self.word_embed.emb_projs[i]
 
         self.same_length = same_length
         self.clamp_len = clamp_len

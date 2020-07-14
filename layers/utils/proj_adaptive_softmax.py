@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from layers.utils.adaptive_embed import AdaptiveEmbedding
+
 CUDA_MAJOR = int(torch.version.cuda.split('.')[0])
 CUDA_MINOR = int(torch.version.cuda.split('.')[1])
 
@@ -53,7 +55,8 @@ class ProjectedAdaptiveLogSoftmax(nn.Module):
 
         self.keep_order = keep_order
 
-    def _compute_logit(self, hidden, weight, bias, proj):
+    @staticmethod
+    def _compute_logit(hidden, weight, bias, proj):
         if proj is None:
             logit = F.linear(hidden, weight, bias=bias)
         else:
