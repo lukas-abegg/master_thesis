@@ -1,0 +1,28 @@
+{
+  "bert_base": {
+    "newsela_path": "../data/newsela",
+    "newsela_data_train_src": "train.src",
+    "newsela_data_train_dst": "train.dst",
+    "newsela_data_valid_src": "valid.src",
+    "newsela_data_valid_dst": "valid.dst",
+    "newsela_data_test_src": "test.src",
+    "newsela_data_test_dst": "test.dst",
+    "apply_regex_rules": false,
+    "remove_brackets_with_inside": false,
+    "normalize_text": false,
+    "do_lower_case": false
+  },
+  "bio_bert": {
+    "newsela_path": "../data/newsela",
+    "newsela_data_train_src": "train.src",
+    "newsela_data_train_dst": "train.dst",
+    "newsela_data_valid_src": "valid.src",
+    "newsela_data_valid_dst": "valid.dst",
+    "newsela_data_test_src": "test.src",
+    "newsela_data_test_dst": "test.dst",
+    "apply_regex_rules": false,
+    "remove_brackets_with_inside": false,
+    "normalize_text": false,
+    "do_lower_case": false
+  }
+}

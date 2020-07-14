@@ -1,0 +1,20 @@
+{
+  "bert_base": {
+    "wiki_simple_path": "../data/wiki_simple",
+    "wiki_f_health": "expert_fully_aligned_medical_subset.txt",
+    "wiki_f_wiki": "automatically_aligned_good_matching_fwiki.txt",
+    "apply_regex_rules": true,
+    "remove_brackets_with_inside": true,
+    "normalize_text": true,
+    "do_lower_case": true
+  },
+  "bio_bert": {
+    "wiki_simple_path": "../data/wiki_simple",
+    "wiki_f_health": "expert_fully_aligned_medical_subset.txt",
+    "wiki_f_wiki": "automatically_aligned_good_matching_fwiki.txt",
+    "apply_regex_rules": true,
+    "remove_brackets_with_inside": true,
+    "normalize_text": true,
+    "do_lower_case": true
+  }
+}
