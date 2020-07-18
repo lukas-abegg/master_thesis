@@ -123,13 +123,11 @@ def write_preprocessed_data_to_file(train, validation, test, newsela_path, filen
 
 
 def write_to_file(data, newsela_path, filename_base):
-    delimiter = '\t'
-    delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-
     datafile = os.path.join(newsela_path, "preprocessed_data", filename_base + ".txt")
 
     print("Writing file: {} with {} lines.".format(datafile, len(data)))
-    data.to_csv(datafile, sep=delimiter, encoding='utf-8', index=False)
+    data.to_csv(datafile + ".src", encoding='utf-8', columns=["input"], index=False, header=False)
+    data.to_csv(datafile + ".dst", encoding='utf-8', columns=["output"], index=False, header=False)
 
 
 def write_dataset_config_to_file(data, input_lang, output_lang, newsela_path, filename_base, dataset_name,

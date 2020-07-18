@@ -2,15 +2,15 @@
   "bert_base": {
     "data_path": "../data/newsela/own_preprocessing/preprocessed_data/",
     "dataset": "newsela_bert_base.txt",
-    "dataset_train": "../data/newsela/own_preprocessing/preprocessed_data/splits/train_newsela_bert_base.txt",
-    "dataset_validation": "../data/newsela/own_preprocessing/preprocessed_data/splits/validation_newsela_bert_base.txt",
-    "dataset_test": "../data/newsela/own_preprocessing/preprocessed_data/splits/test_newsela_bert_base.txt"
+    "dataset_train": "../data/newsela/own_preprocessing/preprocessed_data/splits/bert_base/train",
+    "dataset_validation": "../data/newsela/own_preprocessing/preprocessed_data/splits/bert_base/valid",
+    "dataset_test": "../data/newsela/own_preprocessing/preprocessed_data/splits/bert_base/test"
   },
   "bio_bert": {
     "data_path": "../data/newsela/own_preprocessing/preprocessed_data/",
     "dataset": "newsela_bio_bert.txt",
-    "dataset_train": "../data/newsela/own_preprocessing/preprocessed_data/splits/train_newsela_bio_bert.txt",
-    "dataset_validation": "../data/newsela/own_preprocessing/preprocessed_data/splits/validation_newsela_bio_bert.txt",
-    "dataset_test": "../data/newsela/own_preprocessing/preprocessed_data/splits/test_newsela_bio_bert.txt"
+    "dataset_train": "../data/newsela/own_preprocessing/preprocessed_data/splits/bio_bert/train",
+    "dataset_validation": "../data/newsela/own_preprocessing/preprocessed_data/splits/bio_bert/valid",
+    "dataset_test": "../data/newsela/own_preprocessing/preprocessed_data/splits/bio_bert/test"
   }
 }

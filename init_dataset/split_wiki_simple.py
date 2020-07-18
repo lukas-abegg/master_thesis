@@ -41,11 +41,9 @@ def split_train_valid_test_set(dataset_health, dataset_wiki, indices, test_split
 
 
 def write_to_file(data, datafile):
-    delimiter = '\t'
-    delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-
     print("Writing file: {} with {} lines.".format(datafile, len(data)))
-    data.to_csv(datafile, sep=delimiter, encoding='utf-8', index=False)
+    data.to_csv(datafile + ".src", encoding='utf-8', columns=["input"], index=False, header=False)
+    data.to_csv(datafile + ".dst", encoding='utf-8', columns=["output"], index=False, header=False)
 
 
 def write_to_files(train, validation, test, datapath_train, datapath_validation, datapath_test):

@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from layers.utils.adaptive_embed import AdaptiveEmbedding
-
 CUDA_MAJOR = int(torch.version.cuda.split('.')[0])
 CUDA_MINOR = int(torch.version.cuda.split('.')[1])
 

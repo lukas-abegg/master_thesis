@@ -4,8 +4,8 @@ import json
 import pandas as pd
 
 from preprocessings.bert_tokenizing import BertPreprocessor
-from preprocessings.models.datasplit import DataSplit
-from preprocessings.models.vocab import Vocab
+from training.utils.datasplit import DataSplit
+from training.utils.vocab import Vocab
 
 
 def load_training_config(bert_model):

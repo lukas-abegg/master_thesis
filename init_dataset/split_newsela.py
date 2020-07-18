@@ -44,15 +44,12 @@ def split_data(df_newsela):
 
 
 def write_to_file(data, datafile):
-    delimiter = '\t'
-    delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-
     print("Writing file: {} with {} lines.".format(datafile, len(data)))
-    data.to_csv(datafile, sep=delimiter, encoding='utf-8', index=False)
+    data.to_csv(datafile+".src", encoding='utf-8', columns=["input"], index=False, header=False)
+    data.to_csv(datafile+".dst", encoding='utf-8', columns=["output"], index=False, header=False)
 
 
 def write_to_files(train, validation, test, datapath_train, datapath_validation, datapath_test):
-    columns = ["input", "output"]
 
     write_to_file(train, datapath_train)
     write_to_file(validation, datapath_validation)
@@ -60,8 +57,8 @@ def write_to_files(train, validation, test, datapath_train, datapath_validation,
 
 
 if __name__ == "__main__":
-    bert_model = "bio_bert"
-    #bert_model = "bert_base"
+    #bert_model = "bio_bert"
+    bert_model = "bert_base"
     training_config = load_training_config(bert_model)
 
     data = read_file_dataset(os.path.join(training_config["data_path"], training_config["dataset"]))

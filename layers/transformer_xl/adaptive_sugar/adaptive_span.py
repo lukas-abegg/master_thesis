@@ -73,9 +73,9 @@ class AdaptiveSpan(nn.Module):
         self._loss_coeff = adapt_span_loss
         self._nb_heads = nb_heads
         self._mask = AdaptiveMask(max_size=self._max_span,
-                                 ramp_size=adapt_span_ramp,
-                                 init_val=adapt_span_init,
-                                 shape=(nb_heads, 1, 1))
+                                  ramp_size=adapt_span_ramp,
+                                  init_val=adapt_span_init,
+                                  shape=(nb_heads, 1, 1))
 
     def forward(self, attn, normalize=True):
         """mask attention with the right span"""

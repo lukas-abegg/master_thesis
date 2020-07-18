@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from layers.transformer_xl import GRUGate
-from layers.utils.adaptive_embed import AdaptiveEmbedding
-from layers.utils.adaptive_span import AdaptiveSpan
-from layers.utils.persistent_memory import PersistentMemory
-from layers.utils.proj_adaptive_softmax import ProjectedAdaptiveLogSoftmax
+from layers.utils.gru import GRUGate
+from layers.transformer_xl.utils.adaptive_embed import AdaptiveEmbedding
+from layers.transformer_xl.adaptive_sugar.adaptive_span import AdaptiveSpan
+from layers.transformer_xl.adaptive_sugar.persistent_memory import PersistentMemory
+from layers.transformer_xl.utils.proj_adaptive_softmax import ProjectedAdaptiveLogSoftmax
 
 
 def _skew(X, pad_value):
@@ -48,13 +48,8 @@ class SeqAttention(nn.Module):
         self.attn_span = attn_span
         self.adapt_span_enabled = adapt_span_params['adapt_span_enabled']
         if self.adapt_span_enabled:
-            adapt_span_loss = adapt_span_params['adapt_span_loss']
-            adapt_span_ramp = adapt_span_params['adapt_span_ramp']
-            adapt_span_init = adapt_span_params['adapt_span_init']
-            adapt_span_cache = adapt_span_params['adapt_span_cache']
             self.adaptive_span = AdaptiveSpan(attn_span=attn_span, nb_heads=nb_heads,
-                                              adapt_span_loss=adapt_span_loss, adapt_span_ramp=adapt_span_ramp,
-                                              adapt_span_init=adapt_span_init, adapt_span_cache=adapt_span_cache, **kargs)
+                                              **adapt_span_params, **kargs)
 
         self.persistent_memory = None
         if pers_mem_params['pers_mem_size'] > 0:
@@ -116,7 +111,9 @@ class MultiHeadSeqAttention(nn.Module):
         assert hidden_size % nb_heads == 0
         self.nb_heads = nb_heads
         self.head_dim = hidden_size // nb_heads
-        self.attn = SeqAttention(self.head_dim, nb_heads, attn_span, dropout, adapt_span_params, pers_mem_params, **kargs)
+        self.attn = SeqAttention(nb_heads=nb_heads, attn_span=attn_span, dropout=dropout,
+                                 adapt_span_params=adapt_span_params, pers_mem_params=pers_mem_params,
+                                 hidden_size=self.head_dim, **kargs)
         self.proj_query = nn.Linear(hidden_size, hidden_size, bias=False)
         self.proj_out = nn.Linear(hidden_size, hidden_size, bias=False)
         self.proj_val = nn.Linear(hidden_size, hidden_size, bias=False)
@@ -167,19 +164,20 @@ class FeedForwardLayer(nn.Module):
 
 
 class TransformerSeqLayer(nn.Module):
-    def __init__(self, hidden_size, nb_heads, attn_span, dropout, adapt_span_params, pers_mem_params, flags, **kargs):
+    def __init__(self, hidden_size, nb_heads, attn_span, d_inner, dropout, adapt_span_params, use_gate, use_stable_version, pers_mem_params, **kargs):
         nn.Module.__init__(self)
-        self.attn = MultiHeadSeqAttention(hidden_size, nb_heads, attn_span, dropout, adapt_span_params, pers_mem_params, **kargs)
+        self.attn = MultiHeadSeqAttention(hidden_size=hidden_size, nb_heads=nb_heads, attn_span=attn_span, dropout=dropout,
+                                          adapt_span_params=adapt_span_params, pers_mem_params=pers_mem_params, **kargs)
         self.norm1 = nn.LayerNorm(hidden_size)
         if pers_mem_params['pers_mem_size'] > 0:
             # replacing FF with persistent memory
             self.ff = None
         else:
-            self.ff = FeedForwardLayer(hidden_size=hidden_size, **kargs)
+            self.ff = FeedForwardLayer(hidden_size=hidden_size, inner_hidden_size=d_inner, **kargs)
             self.norm2 = nn.LayerNorm(hidden_size)
 
-        self.use_gate = flags['use_gate']
-        self.use_stable_version = True  # use_stable_version
+        self.use_gate = use_gate
+        self.use_stable_version = use_stable_version  # use_stable_version
 
         if self.use_gate:
             self.gate_mha = GRUGate(hidden_size)
@@ -236,6 +234,18 @@ class TransformerSeqLayer(nn.Module):
         return self.forward_orig(h, h_cache, key_pe, cache_size)
 
 
+def compute_dummy_loss(in_emb, out_emb):
+    # hack to fix adaptive ou/in with distributed code
+    dummy_loss =  0 * (
+        sum(x.weight[0, 0] for x in in_emb.emb_layers) +
+        sum(x[0, 0] for x in in_emb.emb_projs) +
+        sum(x[0, 0] for x in out_emb.out_projs) +
+        sum(x.weight[0, 0] for x in out_emb.out_layers) +
+        sum(x.bias[0] for x in out_emb.out_layers)
+    )
+    return dummy_loss
+
+
 def build_adaptive_io(vocab_size, hidden_size, adapt_io_cutoffs,
                       adapt_io_divval, adapt_io_tied, **kargs):
     in_emb = AdaptiveEmbedding(
@@ -254,8 +264,8 @@ def build_adaptive_io(vocab_size, hidden_size, adapt_io_cutoffs,
 
 
 class Transformer(nn.Module):
-    def __init__(self, vocab_size, hidden_size, nb_heads, nb_layers,
-                 attn_span, flags, dropout, emb_dropout, adapt_io_params, pers_mem_params, **kargs):
+    def __init__(self, vocab_size, hidden_size, d_inner, nb_heads, nb_layers,
+                 attn_span, emb_dropout, dropout, use_gate, use_stable_version, adapt_io_params, pers_mem_params, adapt_span_params, **kargs):
         nn.Module.__init__(self)
 
         # token embeddings
@@ -278,8 +288,9 @@ class Transformer(nn.Module):
         self.layers = nn.ModuleList()
         self.layers.extend(
             TransformerSeqLayer(
-                hidden_size=hidden_size, flags=flags, nb_heads=nb_heads, dropout=dropout,
-                pers_mem_params=pers_mem_params, attn_span=attn_span, adapt_span_params=adapt_io_params, **kargs)
+                hidden_size=hidden_size, nb_heads=nb_heads, d_inner=d_inner,
+                attn_span=attn_span, use_gate=use_gate, use_stable_version=use_stable_version, pers_mem_params=pers_mem_params,
+                dropout=dropout, adapt_span_params=adapt_span_params, **kargs)
             for _ in range(nb_layers))
 
     def initial_cache(self, batch_size, device):
@@ -318,6 +329,14 @@ class Transformer(nn.Module):
             h_cache_next.append(h_cache_next_l)
             h = layer(h, h_cache[l], self.key_pe, self.cache_size)  # B x M x H
 
-        self.cache_size += block_size
+        if self.emb_dropout is not None:
+            h = self.emb_dropout(h)
+        if self.adapt_io:
+            # loss is computed here
+            out = self.out_emb(h, target)
+            dummy_loss = compute_dummy_loss(self.in_emb, self.out_emb)
+        else:
+            out = F.log_softmax(self.out_emb(h), dim=-1)
+            dummy_loss = None
 
-        return h, h_cache_next
+        return out, h_cache_next, dummy_loss

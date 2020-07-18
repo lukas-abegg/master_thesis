@@ -4,7 +4,7 @@ import torch
 from torch.backends import cudnn
 
 from layers.bert_embedding_layer import BertEmbedding
-from layers.transformer_xl import Transformer
+from layers.transformer import Transformer
 from loading_models.bert_loader import BertModelLoader
 from preprocessings.load_wiki_simple import load_dataset
 from training.direct_training import train
@@ -24,11 +24,11 @@ def get_model(config, bert_model):
     span_length = config["transformer_span_length"]
     transformer_with_gru = config["transformer_with_gru"]
 
-    trg_vocab = {}
+    vocab_size = 2000
 
     # Load Networks
     embedding_layer = BertEmbedding(bert_model)
-    model = Transformer(trg_vocab, d_model, n_layers, attn_heads, embedding_layer, dropout)
+    model = Transformer(vocab_size, d_model, n_layers, attn_heads, embedding_layer, dropout)
 
     return model
 
@@ -62,10 +62,11 @@ if __name__ == "__main__":
     bert_model_loader = BertModelLoader(bert_model_name, "")
 
     # Load Transformer Model
-    model = get_model(config, bert_model_loader.model)
+    #model = get_model(config, bert_model_loader.model)
 
     # Load Dataset
-    training_loader, validation_loader, _ = load_dataset(bert_model_name, bert_model_loader)
+    loaders, vocab = load_dataset(bert_model_name, bert_model_loader)
+    training_loader, validation_loader, test_loader = loaders[0], loaders[1], loaders[2]
 
     # Start Tracking
     tracking_active = config["tracking_active"]
@@ -75,7 +76,7 @@ if __name__ == "__main__":
         experiment = load_tracking(config)
 
     try:
-        train(model, training_loader, validation_loader, config, device, experiment=experiment)
+        train(None, training_loader, validation_loader, config, device, experiment=experiment)
     except:
         print("Unexpected error:", sys.exc_info()[0])
         raise
