@@ -1,64 +1,66 @@
 import os
-import json
 
-import pandas as pd
-
-from preprocessings.bert_tokenizing import BertPreprocessor
-from training.utils.datasplit import DataSplit
-from training.utils.vocab import Vocab
+from torchtext.data import Field
+from torchtext.datasets import TranslationDataset
+from transformers import BertTokenizer
 
 
-def load_training_config(bert_model):
-    with open(os.path.join("configs", "load_wiki_simple.json"), "r") as config_file:
-        config = json.load(config_file)
-    return config[bert_model]
+def get_fields(max_seq_length, tokenizer: BertTokenizer):
+    # Model parameter
+    MAX_SEQ_LEN = max_seq_length
+    PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+    UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+    EOS_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.eos_token)
+
+    src = Field(use_vocab=False,
+                tokenize=tokenizer.encode,
+                lower=False,
+                include_lengths=False,
+                batch_first=True,
+                fix_length=MAX_SEQ_LEN,
+                pad_token=PAD_INDEX,
+                unk_token=UNK_INDEX,
+                eos_token=EOS_INDEX)
+
+    trg = Field(use_vocab=False,
+                tokenize=tokenizer.encode,
+                lower=False,
+                include_lengths=False,
+                batch_first=True,
+                fix_length=MAX_SEQ_LEN,
+                pad_token=PAD_INDEX,
+                unk_token=UNK_INDEX,
+                eos_token=EOS_INDEX)
+
+    return src, trg
 
 
-def read_file_dataset(data_path):
-    print("Reading lines for {}...".format(data_path))
-    # Read the file and split into lines
-    data = pd.read_csv(data_path, delimiter="\t", header=0, encoding="utf-8")
-    return data.drop_duplicates()[:5]
+class WikiSimple(TranslationDataset):
+    name = 'WikiSimple'
+    dirname = ''
 
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='test', validation='test', test='test', **kwargs):
+        """Create dataset objects for splits of the Wiki Simple dataset.
 
-def build_trg_vocab(tokenizer, train_set, validation_set, test_set, config):
-    split_words = bool(config["split_words"])
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
 
-    vocab = Vocab(tokenizer, split_words)
-
-    for sentence in train_set.output:
-        vocab.add_sentence(sentence)
-
-    for sentence in validation_set.output:
-        vocab.add_sentence(sentence)
-
-    for sentence in test_set.output:
-        vocab.add_sentence(sentence)
-
-    return vocab
-
-
-def load_dataset(bert_model_type, loaded_bert_model):
-    training_config = load_training_config(bert_model_type)
-
-    train_set_path = str(training_config["dataset_train"])
-    train_set = read_file_dataset(train_set_path)
-
-    validation_set_path = str(training_config["dataset_validation"])
-    validation_set = read_file_dataset(validation_set_path)
-
-    test_set_path = str(training_config["dataset_test"])
-    test_set = read_file_dataset(test_set_path)
-
-    tokenizer = BertPreprocessor(loaded_bert_model.tokenizer)
-    max_seq_length = int(training_config["max_seq_length"])
-
-    trg_vocab = build_trg_vocab(tokenizer, train_set, validation_set, test_set, training_config)
-
-    splits = DataSplit(train_set, validation_set, test_set, tokenizer=tokenizer, max_seq_length=max_seq_length)
-
-    batch_size = int(training_config["batch_size"])
-    num_workers = int(training_config["num_workers"])
-    shuffle = bool(training_config["shuffle"])
-
-    return splits.get_split(batch_size=batch_size, num_workers=num_workers, shuffle=shuffle), trg_vocab
+        return super(WikiSimple, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)

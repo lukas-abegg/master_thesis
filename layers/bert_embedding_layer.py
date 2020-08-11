@@ -1,8 +1,8 @@
 import torch
 import sys
 
-from loading_models.bert_loader import BertModelLoader
-from preprocessings.bert_tokenizing import BertPreprocessor
+from layers.utils.bert_loader import BertModelLoader
+from zzz_playground.zzz_code.preprocessings.bert_tokenizing import BertPreprocessor
 
 
 class BertEmbedding(torch.nn.Module):

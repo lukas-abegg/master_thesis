@@ -18,8 +18,7 @@ class GRUGate(nn.Module):
         # TODO: DEBUG Make sure intitialize bias of linear_w_z to -3
         self.linear_w_r = nn.Linear(d_model, d_model, bias=False)
         self.linear_u_r = nn.Linear(d_model, d_model, bias=False)
-        self.linear_w_z = nn.Linear(d_model,
-                                    d_model)  ### Giving bias to this layer (will count as b_g so can just initialize negative)
+        self.linear_w_z = nn.Linear(d_model, d_model)  ### Giving bias to this layer (will count as b_g so can just initialize negative)
         self.linear_u_z = nn.Linear(d_model, d_model, bias=False)
         self.linear_w_g = nn.Linear(d_model, d_model, bias=False)
         self.linear_u_g = nn.Linear(d_model, d_model, bias=False)

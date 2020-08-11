@@ -163,5 +163,5 @@ Thumbs.db
 ###################################
 .idea/
 data/
-models/
+zzz_bert_models/
 weights/

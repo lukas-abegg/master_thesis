@@ -1,10 +1,10 @@
 {
   "bert_base": {
     "model_path": "bert_base_cased_12",
-    "do_lower_case": true
+    "do_lower_case": false
   },
   "bio_bert": {
     "model_path": "biobert_v1.1_pubmed",
-    "do_lower_case": true
+    "do_lower_case": false
   }
 }

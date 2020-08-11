@@ -1,5 +1,7 @@
 {
   "bert_model": "bio_bert",
+  "model": "baseline",
+  "dataset": "newsela",
   "tracking_active": false,
   "transformer_n_layers": 6,
   "transformer_d_model": 512,
@@ -10,6 +12,7 @@
   "transformer_with_gru": false,
   "max_epochs": 100,
   "lr": 0.0001,
+  "batch_size": 128,
   "batch_log_interval": 40,
   "scheduler_step_size": 1.0,
   "scheduler_gamma": 0.95,
