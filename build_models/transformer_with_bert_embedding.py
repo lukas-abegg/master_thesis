@@ -1,5 +1,5 @@
 from layers.bert_embedding_layer import BertEmbedding
-from layers.transformer_with_gru import Transformer
+from layers.advanced_beam_nn.transformer_with_gru import Transformer
 
 
 def build_model(hyperparameter_config, dataset_config, bert_model):

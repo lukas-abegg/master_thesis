@@ -12,7 +12,7 @@ from layers.utils.gru import GRUGate
 
 
 class Embedding(nn.Module):
-    """Implement input and output embedding with tied weights."""
+    """ Implement input and output embedding """
 
     def __init__(self, vocab_size, ninp, embedding_layer=None):
         super(Embedding, self).__init__()
@@ -27,7 +27,8 @@ class Embedding(nn.Module):
 
         self.decoder = nn.Linear(ninp, vocab_size, bias=False)
 
-        self.decoder.weight = self.encoder.weight
+        """ only for language models """
+        # self.decoder.weight = self.encoder.weight
 
     def forward(self, x, inverse=False):
         if inverse:
@@ -71,19 +72,18 @@ class FeedForward(nn.Module):
 
 class TransformerEncoder(nn.Module):
 
-    def __init__(self, vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len, use_gate):
+    def __init__(self, vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len):
         super(TransformerEncoder, self).__init__()
 
         self.embedding = Embedding(vocab_size, ninp, embedding_layer)
         self.pos_enc = PositionalEncoding(ninp, dropout, max_len)
 
         self.encoder_layers = nn.TransformerEncoder(
-            encoder_layer=TransformerEncoderLayer(ninp=ninp, nhead=nheads, dim_feedforward=nhidden, dropout=dropout,
-                                                  use_gate=use_gate),
+            encoder_layer=TransformerEncoderLayer(ninp=ninp, nhead=nheads, dim_feedforward=nhidden, dropout=dropout),
             num_layers=depth
         )
 
-    def forward(self, sources):
+    def forward(self, sources, src_msk):
         """
         args:
            sources: input_sequence, (batch_size, seq_len, embed_size)
@@ -91,7 +91,7 @@ class TransformerEncoder(nn.Module):
         src_pe = self.pos_enc(self.embedding(sources))
         src_pe = src_pe.transpose(0, 1)
 
-        enc_output = self.encoder(src_pe)
+        enc_output = self.encoder_layers(src_pe, src_msk)
 
         return enc_output
 
@@ -110,18 +110,16 @@ class TransformerEncoderLayer(nn.Module):
         dim_feedforward: the dimension of the feedforward network model (default=2048).
         dropout: the dropout value (default=0.1).
     """
-    def __init__(self, ninp, nhead, dim_feedforward=2048, dropout=0.1, use_gate=False):
+
+    def __init__(self, ninp, nhead, dim_feedforward=2048, dropout=0.1):
         super(TransformerEncoderLayer, self).__init__()
 
         self.self_attn = nn.MultiheadAttention(ninp, nhead, dropout=dropout)
 
         self.ff = FeedForward(ninp, d_ff=dim_feedforward, dropout=dropout)
 
-        self.use_gate = use_gate
-
-        if self.use_gate:
-            self.gate_mha = GRUGate(ninp)
-            self.gate_mlp = GRUGate(ninp)
+        self.gate_mha = GRUGate(ninp)
+        self.gate_mlp = GRUGate(ninp)
 
         self.norm1 = nn.LayerNorm(ninp)
         self.norm2 = nn.LayerNorm(ninp)
@@ -135,7 +133,6 @@ class TransformerEncoderLayer(nn.Module):
         super(TransformerEncoderLayer, self).__setstate__(state)
 
     def forward(self, src, src_mask=None, src_key_padding_mask=None):
-        # type: (Tensor, Optional[Tensor], Optional[Tensor]) -> Tensor
         """Pass the input through the encoder layer.
 
         Args:
@@ -145,45 +142,38 @@ class TransformerEncoderLayer(nn.Module):
         Shape:
             see the docs in Transformer class.
         """
-        if not self.use_gate:
-            src2 = self.self_attn(src, src, src, attn_mask=src_mask,
-                                  key_padding_mask=src_key_padding_mask)[0]
-            src = src + self.dropout1(src2)
-            src = self.norm1(src)
 
-            src2 = self.ff(src)
-            src = src + self.dropout2(src2)
-            src = self.norm2(src)
-        else:
-            src2 = self.norm1(src)
-            src2 = self.self_attn(src2, src2, src2, attn_mask=src_mask,
-                                  key_padding_mask=src_key_padding_mask)[0]
-            src = self.gate_mha(src, F.relu(self.dropout1(src2)))
+        src2 = self.norm1(src)
+        src2 = self.self_attn(src2, src2, src2, attn_mask=src_mask,
+                              key_padding_mask=src_key_padding_mask)[0]
+        src = self.gate_mha(src, F.relu(self.dropout1(src2)))
 
-            src2 = self.norm2(src)
-            src2 = self.ff(src2)
-            src = self.gate_mlp(src, F.relu(self.dropout2(src2)))
+        src2 = self.norm2(src)
+        src2 = self.ff(src2)
+        src = self.gate_mlp(src, F.relu(self.dropout2(src2)))
 
         return src
 
 
 class TransformerDecoder(nn.Module):
 
-    def __init__(self, vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len, use_gate):
+    def __init__(self, vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len):
         super(TransformerDecoder, self).__init__()
 
         self.embedding = Embedding(vocab_size, ninp, embedding_layer)
         self.pos_enc = PositionalEncoding(ninp, dropout, max_len)
 
         self.decoder_layers = nn.ModuleList(
-            [TransformerDecoderLayer(ninp=ninp, nhead=nheads, dim_feedforward=nhidden, dropout=dropout,
-                                     use_gate=use_gate) for _ in range(depth)]
+            [TransformerDecoderLayer(ninp=ninp, nhead=nheads, dim_feedforward=nhidden, dropout=dropout)
+             for _ in range(depth)]
         )
 
     def forward(self, targets, memory, memory_mask=None, trg_mask=None, state=None):
 
         trg_pe = self.pos_enc(self.embedding(targets))
         trg_pe = trg_pe.transpose(0, 1)
+
+        dec = None
 
         for layer_index, decoder_layer in enumerate(self.decoder_layers):
             if state is None:
@@ -251,20 +241,17 @@ class TransformerDecoderLayer(nn.Module):
         dropout: the dropout value (default=0.1).
     """
 
-    def __init__(self, ninp, nhead, dim_feedforward=2048, dropout=0.1, use_gate=False):
+    def __init__(self, ninp, nhead, dim_feedforward=2048, dropout=0.1):
         super(TransformerDecoderLayer, self).__init__()
 
-        self.self_attn = MultiheadAttention(ninp, nhead, dropout=dropout,  mode='self-attention')
+        self.self_attn = MultiheadAttention(ninp, nhead, dropout=dropout, mode='self-attention')
         self.multihead_attn = MultiheadAttention(ninp, nhead, dropout=dropout, mode='memory-attention')
 
         self.ff = FeedForward(ninp, d_ff=dim_feedforward, dropout=dropout)
 
-        self.use_gate = use_gate
-
-        if self.use_gate:
-            self.gate_mha = GRUGate(ninp)
-            self.gate_mha2 = GRUGate(ninp)
-            self.gate_mlp = GRUGate(ninp)
+        self.gate_mha = GRUGate(ninp)
+        self.gate_mha2 = GRUGate(ninp)
+        self.gate_mlp = GRUGate(ninp)
 
         self.norm1 = nn.LayerNorm(ninp)
         self.norm2 = nn.LayerNorm(ninp)
@@ -273,8 +260,6 @@ class TransformerDecoderLayer(nn.Module):
         self.dropout1 = nn.Dropout(dropout)
         self.dropout2 = nn.Dropout(dropout)
         self.dropout3 = nn.Dropout(dropout)
-
-        self.memory_attention_weights = None
 
     def __setstate__(self, state):
         if 'activation' not in state:
@@ -293,38 +278,25 @@ class TransformerDecoderLayer(nn.Module):
         Shape:
             see the docs in Transformer class.
         """
-        if not self.use_gate:
-            trg2 = self.self_attn(trg, trg, trg, trg_mask, layer_cache)
-            trg = trg + self.dropout1(trg2)
-            trg = self.norm1(trg)
 
-            trg2 = self.multihead_attn(trg, memory, memory, memory_mask, layer_cache)
+        trg2 = self.norm1(trg)
+        trg2 = self.self_attn(trg2, trg2, trg2, trg_mask, layer_cache)
+        trg = self.gate_mha(trg, F.relu(self.dropout1(trg2)))
 
-            trg = trg + self.dropout2(trg2)
-            trg = self.norm2(trg)
+        trg2 = self.norm2(trg)
+        trg2, attn_output_weights = self.multihead_attn(trg2, memory, memory, memory_mask, layer_cache)
 
-            trg2 = self.ff(trg)
-            trg = trg + self.dropout3(trg2)
-            trg = self.norm3(trg)
-        else:
-            trg2 = self.norm1(trg)
-            trg2 = self.self_attn(trg2, trg2, trg2, trg_mask, layer_cache)
-            trg = self.gate_mha(trg, F.relu(self.dropout1(trg2)))
+        trg = self.gate_mha2(trg, F.relu(self.dropout2(trg2)))
 
-            trg2 = self.norm2(trg)
-            trg2, attn_output_weights = self.multihead_attn(trg2, memory, memory, memory_mask, layer_cache)
-
-            trg = self.gate_mha2(trg, F.relu(self.dropout2(trg2)))
-
-            trg2 = self.norm3(trg)
-            trg2 = self.ff(trg2)
-            trg = self.gate_mlp(trg, F.relu(self.dropout3(trg2)))
+        trg2 = self.norm3(trg)
+        trg2 = self.ff(trg2)
+        trg = self.gate_mlp(trg, F.relu(self.dropout3(trg2)))
 
         return trg
 
 
 class MultiheadAttention(nn.Module):
-    def __init__(self,  ninp, nhead, dropout, mode='self-attention'):
+    def __init__(self, ninp, nhead, dropout, mode='self-attention'):
         super(MultiheadAttention, self).__init__()
 
         assert ninp % nhead == 0
@@ -383,14 +355,18 @@ class MultiheadAttention(nn.Module):
         batch_size, key_len, d_model = key_projected.size()
         batch_size, value_len, d_model = value_projected.size()
 
-        query_heads = query_projected.view(batch_size, query_len, self.heads_count, d_head).transpose(1, 2)  # (batch_size, heads_count, query_len, d_head)
+        query_heads = query_projected.view(batch_size, query_len, self.heads_count, d_head).transpose(1,
+                                                                                                      2)  # (batch_size, heads_count, query_len, d_head)
         # print('query_heads', query_heads.shape)
         # print(batch_size, key_len, self.heads_count, d_head)
         # print(key_projected.shape)
-        key_heads = key_projected.view(batch_size, key_len, self.heads_count, d_head).transpose(1, 2)  # (batch_size, heads_count, key_len, d_head)
-        value_heads = value_projected.view(batch_size, value_len, self.heads_count, d_head).transpose(1, 2)  # (batch_size, heads_count, value_len, d_head)
+        key_heads = key_projected.view(batch_size, key_len, self.heads_count, d_head).transpose(1,
+                                                                                                2)  # (batch_size, heads_count, key_len, d_head)
+        value_heads = value_projected.view(batch_size, value_len, self.heads_count, d_head).transpose(1,
+                                                                                                      2)  # (batch_size, heads_count, value_len, d_head)
 
-        attention_weights = self.scaled_dot_product(query_heads, key_heads)  # (batch_size, heads_count, query_len, key_len)
+        attention_weights = self.scaled_dot_product(query_heads,
+                                                    key_heads)  # (batch_size, heads_count, query_len, key_len)
 
         if mask is not None:
             # print('mode', self.mode)
@@ -433,7 +409,6 @@ class Transformer(nn.Module):
         nheads: number of attention heads.
         max_len: maximum sentence length used to pre-compute positional encoder.
         depth: number of encoder and decoder sub-layers.
-        device: CPU or GPU as device
     """
 
     def __init__(
@@ -443,18 +418,15 @@ class Transformer(nn.Module):
             nhidden,
             nheads,
             depth,
-            use_gate,
             dropout=0.1,
             embedding_layer=None,
             max_len=512
     ):
         super(Transformer, self).__init__()
 
-        self.encoder = TransformerEncoder(vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len,
-                                          use_gate)
+        self.encoder = TransformerEncoder(vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len)
 
-        self.decoder = TransformerDecoder(vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len,
-                                          use_gate)
+        self.decoder = TransformerDecoder(vocab_size, ninp, nheads, nhidden, depth, dropout, embedding_layer, max_len)
 
         self._reset_parameters()
 

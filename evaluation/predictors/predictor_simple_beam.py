@@ -12,6 +12,7 @@ class Predictor:
 
         checkpoint = torch.load(checkpoint_filepath, map_location=device)
         self.model.load_state_dict(checkpoint)
+        self.model.eval()
 
         self.tokenizer = tokenizer
         self.hypothesises = None

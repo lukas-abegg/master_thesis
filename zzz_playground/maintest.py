@@ -16,7 +16,7 @@ import math
 import time
 
 from zzz_playground.zzz_code.optim import CosineWithRestarts
-from layers.transformer_with_gru import Transformer
+from layers.advanced_beam_nn.transformer_with_gru import Transformer
 
 SEED = 1234
 

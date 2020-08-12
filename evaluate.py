@@ -7,8 +7,8 @@ from os.path import dirname, abspath
 import torch
 
 from evaluation.evaluator import Evaluator
-from evaluation.predictors.predictor_transformer import Predictor
-from evaluation.predictors.predictor_transformer_gru import Predictor as Predictor_with_GRU
+from evaluation.predictors.predictor_simple_beam import Predictor
+from evaluation.predictors.predictor_advanced_beam import Predictor as Predictor_with_advanced_beam
 from layers.utils.bert_loader import BertModelLoader
 
 from configs.load_config import load_evaluation_config, load_dataset_config, load_hyperparameter_config
@@ -17,9 +17,9 @@ from build_models.choose_model import build_model
 from utils.tracking import load_tracking, stop_tracking
 
 
-def load_predictor(model, evaluation_config, dataset_config, tokenizer, device):
-    if model == "transformer_with_gru":
-        predictor = Predictor_with_GRU(
+def load_predictor(beam_approach, evaluation_config, dataset_config, tokenizer, device):
+    if beam_approach == "advanced_beam":
+        predictor = Predictor_with_advanced_beam(
             model=model,
             checkpoint_filepath=os.path.join(BASE_DIR, evaluation_config['checkpoint']),
             tokenizer=tokenizer,
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     # Load Predictor
     try:
-        predictor = load_predictor(hyperparameter_config['model'], evaluation_config, dataset_config, tokenizer, device)
+        predictor = load_predictor(hyperparameter_config['beam_approach'], evaluation_config, dataset_config, tokenizer, device)
     except Exception:
         logger.error("Unexpected error by loading predictor:", traceback.format_exc())
         stop_tracking(experiment)
