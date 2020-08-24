@@ -1,22 +1,8 @@
 {
   "bert_base": {
-    "dataset_train": "data/wiki_simple/preprocessed_data/splits/train_wiki_f_bert_base.txt",
-    "dataset_validation": "data/wiki_simple/preprocessed_data/splits/validation_wiki_f_bert_base.txt",
-    "dataset_test": "data/wiki_simple/preprocessed_data/splits/test_wiki_f_bert_base.txt",
-    "max_seq_length": 512,
-    "batch_size": 5,
-    "num_workers": 6,
-    "shuffle": true,
-    "split_words": false
+    "max_seq_length": 512
   },
   "bio_bert": {
-    "dataset_train": "data/wiki_simple/preprocessed_data/splits/train_wiki_f_bio_bert.txt",
-    "dataset_validation": "data/wiki_simple/preprocessed_data/splits/validation_wiki_f_bio_bert.txt",
-    "dataset_test": "data/wiki_simple/preprocessed_data/splits/test_wiki_f_bio_bert.txt",
-    "max_seq_length": 512,
-    "batch_size": 5,
-    "num_workers": 6,
-    "shuffle": true,
-    "split_words": false
+    "max_seq_length": 512
   }
 }

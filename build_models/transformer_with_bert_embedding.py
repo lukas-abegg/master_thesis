@@ -15,6 +15,6 @@ def build_model(hyperparameter_config, dataset_config, bert_model):
 
     # Load Networks
     embedding_layer = BertEmbedding(bert_model)
-    model = Transformer(vocab_size, ninp, nhidden, nheads, n_layers, use_gate, dropout, embedding_layer, max_len)
+    model = Transformer(vocab_size, ninp, nhidden, nheads, n_layers, dropout, embedding_layer, max_len)
 
     return model

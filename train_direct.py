@@ -12,6 +12,7 @@ from metrics.accuracy import AccuracyMetric
 
 from build_models.choose_model import build_model
 from configs.load_config import load_hyperparameter_config, load_dataset_config
+from training.optimizer import NoamOptimizer
 from training.training_utils import load_data, init_logger
 from utils.tracking import load_tracking, stop_tracking
 
@@ -63,9 +64,19 @@ if __name__ == "__main__":
                                            pad_index=tokenizer.pad_token_id)
 
     accuracy_function = AccuracyMetric()
-    optimizer = AdamW(model.parameters(), lr=hyperparameter_config['optimizer_lr'])
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=hyperparameter_config['scheduler_step_size'],
-                                           gamma=hyperparameter_config['scheduler_gamma'])
+    optimizer = None
+    if hyperparameter_config['optimizer'] == 'Noam':
+        optimizer = NoamOptimizer(model.parameters(), d_model=hyperparameter_config['transformer_ninp'],
+                                  warmup_steps=hyperparameter_config['warmup_steps'],
+                                  betas=(hyperparameter_config['beta_1'], hyperparameter_config['beta_2']),
+                                  eps=hyperparameter_config['epsilon'])
+    elif hyperparameter_config['optimizer'] == 'Adam':
+        optimizer = AdamW(model.parameters(), lr=hyperparameter_config['optimizer_lr'])
+
+    exp_lr_scheduler = None()
+    if hyperparameter_config['scheduler_active']:
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=hyperparameter_config['scheduler_step_size'],
+                                               gamma=hyperparameter_config['scheduler_gamma'])
 
     # Train Model
     try:

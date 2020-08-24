@@ -13,6 +13,5 @@ def build_model(hyperparameter_config, dataset_config, bert_model):
     max_len = dataset_config['max_seq_length']
 
     # Load Networks
-    model = Transformer(vocab_size, ninp, nhidden, nheads, n_layers, use_gate, dropout, None, max_len)
-
+    model = Transformer(vocab_size, ninp, nhidden, nheads, n_layers, dropout, None, max_len)
     return model
