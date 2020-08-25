@@ -28,7 +28,7 @@ class TransformerModel(nn.Module):
         self.init_weights()
 
     @staticmethod
-    def _generate_square_subsequent_mask(sz):
+    def generate_square_subsequent_mask(sz):
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
         return mask
@@ -49,7 +49,7 @@ class TransformerModel(nn.Module):
 
         memory = self.transformer_encoder(src)
 
-        output = self.transformer_decoder(targets, memory, self.trg_mask)
+        output = self.transformer_decoder(targets, memory, tgt_mask=self.trg_mask)
 
         output = self.decoder(output)
 
@@ -209,7 +209,7 @@ class Embedding(nn.Module):
         self.ninp = ninp
 
         if embedding_layer is None:
-            self.encoder = nn.Embedding(vocab_size, ninp)
+            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=0)
         else:
             self.encoder = embedding_layer
 
@@ -234,10 +234,9 @@ class PositionalEncoding(nn.Module):
                              -(math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)
+        pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + Variable(self.pe[:, :x.size(1)],
-                         requires_grad=False)
+        x = x + self.pe[:x.size(0), :]
         return self.dropout(x)

@@ -2,6 +2,8 @@ import sys
 import traceback
 from os.path import dirname, abspath
 
+import comet_ml
+
 import torch
 from torch.optim import AdamW, lr_scheduler
 
@@ -48,7 +50,7 @@ if __name__ == "__main__":
 
     # Load Transformer
     logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, bert_model_loader.tokenizer)
 
     # Load Dataset
     logger.info('Loading dataset...')
@@ -56,7 +58,7 @@ if __name__ == "__main__":
                                                              tokenizer, device)
 
     # Load Loss, Accuracy, Optimizer
-    if hyperparameter_config['loss'] == "tokencrossentropy":
+    if hyperparameter_config['loss'] == "tk":
         loss_function = TokenCrossEntropyLoss(pad_index=tokenizer.pad_token_id)
     else:
         loss_function = LabelSmoothingLoss(label_smoothing=hyperparameter_config['label_smoothing'],
@@ -70,10 +72,10 @@ if __name__ == "__main__":
                                   warmup_steps=hyperparameter_config['warmup_steps'],
                                   betas=(hyperparameter_config['beta_1'], hyperparameter_config['beta_2']),
                                   eps=hyperparameter_config['epsilon'])
-    elif hyperparameter_config['optimizer'] == 'Adam':
+    else:
         optimizer = AdamW(model.parameters(), lr=hyperparameter_config['optimizer_lr'])
 
-    exp_lr_scheduler = None()
+    exp_lr_scheduler = None
     if hyperparameter_config['scheduler_active']:
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=hyperparameter_config['scheduler_step_size'],
                                                gamma=hyperparameter_config['scheduler_gamma'])
@@ -81,6 +83,7 @@ if __name__ == "__main__":
     # Train Model
     try:
         trainer = EpochTrainer(
+            device=device,
             base_dir=BASE_DIR,
             model=model,
             train_iterator=train_iterator,

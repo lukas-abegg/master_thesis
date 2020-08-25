@@ -19,7 +19,7 @@ class Embedding(nn.Module):
         self.ninp = ninp
 
         if embedding_layer is None:
-            self.encoder = nn.Embedding(vocab_size, ninp)
+            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=0)
         else:
             self.encoder = embedding_layer
 
@@ -81,7 +81,7 @@ class TransformerEncoder(nn.Module):
             num_layers=depth
         )
 
-    def forward(self, sources, src_msk):
+    def forward(self, sources, src_msk=None):
         """
         args:
            sources: input_sequence, (batch_size, seq_len, embed_size)
@@ -432,7 +432,7 @@ class Transformer(nn.Module):
         memory = self.encoder(sources)
 
         # Decoder Part
-        return self.decoder(targets, memory, self.trg_mask)
+        return self.decoder(targets, memory, trg_mask=self.trg_mask)
 
     @staticmethod
     def generate_square_subsequent_mask(sz):

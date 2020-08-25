@@ -2,7 +2,9 @@
   "bert_model": "bio_bert",
   "model": "baseline",
   "dataset": "newsela",
-  "tracking_active": false,
+  "tracking_active": true,
+
+  "comet_project": "ts-newsela-baseline",
 
   "save_config": "checkpoints/example_config.json",
   "save_checkpoint": "checkpoints/example_model.pth",
@@ -12,11 +14,11 @@
 
   "epochs": 100,
   "batch_size": 32,
-  "loss": "tokencrossentropy",
+  "loss": "lbl",
   "label_smoothing": 0.1,
 
-  "optimizer": "Naom",
-  "optimizer_lr": 0.002,
+  "optimizer": "Noam",
+  "optimizer_lr": 0.2,
   "warmup_steps": 4000,
   "beta_1": 0.9,
   "beta_2": 0.98,

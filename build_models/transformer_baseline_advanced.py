@@ -1,4 +1,4 @@
-from layers.baseline_transformer import TransformerModel as Transformer
+from layers.advanced_beam_nn.baseline_transformer import Transformer
 
 
 def build_model(hyperparameter_config, dataset_config, bert_tokenizer):
@@ -13,5 +13,5 @@ def build_model(hyperparameter_config, dataset_config, bert_tokenizer):
     max_len = dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"]
 
     # Load Networks
-    model = Transformer(vocab_size, ninp, nheads, nhidden, n_layers, dropout, None, max_len)
+    model = Transformer(vocab_size, ninp, nhidden, nheads, n_layers, dropout, None, max_len)
     return model
