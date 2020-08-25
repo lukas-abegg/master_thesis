@@ -165,3 +165,4 @@ Thumbs.db
 data/
 zzz_bert_models/
 weights/
+checkpoints/
