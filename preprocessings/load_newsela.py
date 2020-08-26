@@ -44,7 +44,7 @@ class Newsela(TranslationDataset):
 
     @classmethod
     def splits(cls, exts, fields, root='data/test',
-               train='test', validation='test', test='test', **kwargs):
+               train='train', validation='val', test='test', **kwargs):
         """Create dataset objects for splits of the Newsela dataset.
 
         Arguments:

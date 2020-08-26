@@ -22,7 +22,9 @@ from utils.tracking import load_tracking, stop_tracking
 if __name__ == "__main__":
     # CUDA for PyTorch
     use_cuda = torch.cuda.is_available()
+    print("Found ", torch.cuda.device_count(), " GPU devices")
     device = torch.device("cuda:0" if use_cuda else "cpu")
+    print("Use device ", device, " for task")
 
     torch.backends.cudnn.benchmark = True
 
@@ -36,7 +38,6 @@ if __name__ == "__main__":
     # Start Tracking
     tracking_active = hyperparameter_config['tracking_active']
     experiment = None
-
     if tracking_active:
         experiment = load_tracking(hyperparameter_config)
 
@@ -96,7 +97,6 @@ if __name__ == "__main__":
             logger=logger,
             run_name=run_name,
             save_config=hyperparameter_config['save_config'],
-            save_checkpoint=hyperparameter_config['save_checkpoint'],
             config=hyperparameter_config,
             experiment=experiment
         )
