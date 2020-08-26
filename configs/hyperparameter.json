@@ -1,13 +1,13 @@
 {
-  "bert_model": "bio_bert",
+  "bert_model": "bert_base",
   "model": "baseline",
   "dataset": "newsela",
-  "tracking_active": false,
+  "tracking_active": true,
 
   "comet_project": "ts-newsela-baseline",
 
-  "save_config": "checkpoints/example_config.json",
-  "save_log": "logs/example.log",
+  "save_config": "checkpoints/baseline_newsela_26082020.json",
+  "save_log": "logs/baseline_newsela_26082020.log",
   "print_every": 1,
   "save_every": 1,
 
