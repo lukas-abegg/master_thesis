@@ -53,9 +53,9 @@ if __name__ == "__main__":
     # CUDA for PyTorch
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda:0" if use_cuda else "cpu")
-    #
+
     torch.backends.cudnn.benchmark = True
-    #
+
     # Load Config
     BASE_DIR = dirname(abspath(__file__))
     prediction_config = load_prediction_config(BASE_DIR)
@@ -64,9 +64,12 @@ if __name__ == "__main__":
     dataset_name = prediction_config["dataset"]
     dataset_config = load_dataset_config(BASE_DIR, dataset_name)
 
+    # Save base dir
+    base_dir_save = os.path.join(BASE_DIR, hyperparameter_config['save_base_dir'])
+
     # Load Bert
     print('Loading bert...')
-    bert_model_loader = BertModelLoader(bert_model_name, "")
+    bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_save)
     tokenizer = bert_model_loader.tokenizer
 
     # Load Transformer

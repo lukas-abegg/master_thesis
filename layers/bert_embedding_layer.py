@@ -126,10 +126,11 @@ def print_params(model):
 
 
 if __name__ == "__main__":
+
     # Model computations
     bert_model = "bio_bert"
     # Load Bert
-    loaded_bert_model = BertModelLoader(bert_model, "..")
+    loaded_bert_model = BertModelLoader(bert_model, "..", "..")
     # Load Networks
     model = BertEmbedding(loaded_bert_model.model)
     print_params(model)

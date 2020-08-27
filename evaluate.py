@@ -64,9 +64,12 @@ if __name__ == "__main__":
     # Load Logger
     logger, run_name = init_logger(evaluation_config)
 
+    # Save base dir
+    base_dir_save = os.path.join(BASE_DIR, hyperparameter_config['save_base_dir'])
+
     # Load Bert
     logger.info('Loading bert...')
-    bert_model_loader = BertModelLoader(bert_model_name, "")
+    bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_save)
     tokenizer = bert_model_loader.tokenizer
 
     # Load Transformer

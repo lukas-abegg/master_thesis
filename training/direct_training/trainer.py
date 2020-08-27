@@ -39,6 +39,8 @@ class EpochTrainer:
         self.checkpoint_dir = join(self.base_dir, 'checkpoints', run_name)
         self.experiment = experiment
 
+        logger.info("Save checkpoints in {}".format(self.checkpoint_dir))
+
         if not exists(self.checkpoint_dir):
             makedirs(self.checkpoint_dir)
 

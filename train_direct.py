@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 from os.path import dirname, abspath
@@ -12,7 +13,7 @@ from training.direct_training.trainer import EpochTrainer
 from training.losses import TokenCrossEntropyLoss, LabelSmoothingLoss
 from metrics.accuracy import AccuracyMetric
 
-from build_models.choose_model import build_model
+from build_models.choose_model import build_model, load_model
 from configs.load_config import load_hyperparameter_config, load_dataset_config
 from training.optimizer import NoamOptimizer
 from training.training_utils import load_data, init_logger
@@ -44,14 +45,20 @@ if __name__ == "__main__":
     # Load Logger
     logger, run_name = init_logger(hyperparameter_config)
 
+    # Save base dir
+    base_dir_save = os.path.join(BASE_DIR, hyperparameter_config['save_base_dir'])
+
     # Load Bert
     logger.info('Loading bert...')
-    bert_model_loader = BertModelLoader(bert_model_name, "")
+    bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_save)
     tokenizer = bert_model_loader.tokenizer
 
     # Load Transformer
     logger.info('Loading transformer...')
     model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, bert_model_loader.tokenizer)
+    load_weights = hyperparameter_config['load_weights']
+    if load_weights:
+        model = load_model(model, base_dir_save, hyperparameter_config)
 
     # Load Dataset
     logger.info('Loading dataset...')
@@ -85,7 +92,7 @@ if __name__ == "__main__":
     try:
         trainer = EpochTrainer(
             device=device,
-            base_dir=BASE_DIR,
+            base_dir=base_dir_save,
             model=model,
             train_iterator=train_iterator,
             val_iterator=valid_iterator,

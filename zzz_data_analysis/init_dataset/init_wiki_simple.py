@@ -163,7 +163,7 @@ if __name__ == "__main__":
         raise ValueError('Input arguments are missing')
 
     config = load_config(bert_model)
-    tokenizer = BertPreprocessor(BertModelLoader(bert_model, "../../").tokenizer)
+    tokenizer = BertPreprocessor(BertModelLoader(bert_model, "../../", "../../").tokenizer)
 
     wiki_simple_path = config["wiki_simple_path"]
 
