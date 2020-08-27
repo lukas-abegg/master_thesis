@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from transformers import BertTokenizer
@@ -36,7 +37,10 @@ def init_logger(hyperparameter_config):
 """ Datasets """
 
 
-def load_data(dataset_name, dataset_config, hyperparameter_config, tokenizer: BertTokenizer, device):
+def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tokenizer: BertTokenizer, device):
+    PATH = os.path.join(base_dir, dataset_config[hyperparameter_config["bert_model"]]["path"])
+    print("Load {} dataset from {}".format(dataset_name, PATH))
+
     if dataset_name == 'newsela':
         SRC, TRG = newsela_fields(dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"], tokenizer)
 
@@ -45,7 +49,7 @@ def load_data(dataset_name, dataset_config, hyperparameter_config, tokenizer: Be
                                                    train='train',
                                                    validation='valid',
                                                    test='test',
-                                                   path=dataset_config[hyperparameter_config["bert_model"]]["path"])
+                                                   path=PATH)
     else:  # WikiSimple
         SRC, TRG = wikisimple_fields(dataset_config['max_seq_length'], tokenizer)
 
@@ -54,7 +58,7 @@ def load_data(dataset_name, dataset_config, hyperparameter_config, tokenizer: Be
                                                       train='train',
                                                       validation='valid',
                                                       test='test',
-                                                      path=dataset_config[hyperparameter_config["bert_model"]]["path"])
+                                                      path=PATH)
 
     BATCH_SIZE = hyperparameter_config['batch_size']
 

@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     # Load Dataset
     logger.info('Loading dataset...')
-    train_iterator, valid_iterator, lengths_sets = load_data(dataset_name, dataset_config, hyperparameter_config,
+    train_iterator, valid_iterator, lengths_sets = load_data(base_dir_save, dataset_name, dataset_config, hyperparameter_config,
                                                              tokenizer, device)
 
     # Load Loss, Accuracy, Optimizer
