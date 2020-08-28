@@ -15,7 +15,7 @@
   "model_path": "checkpoints/ninp=512-n_layers=6-nheads=8-nhidden=2048-dropout=0.1-epochs=20-batch_size=32-optimizer=AdamW-loss=lbl-2020_08_26_18_16_04/epoch=003-val_loss=8.53-val_metrics=5.07e+03-0.12.pth",
 
   "epochs": 100,
-  "batch_size": 16,
+  "batch_size": 8,
   "loss": "lbl",
   "label_smoothing": 0.1,
 

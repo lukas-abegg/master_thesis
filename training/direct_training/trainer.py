@@ -26,6 +26,7 @@ class EpochTrainer:
         self.device = device
         self.model = model
         self.model.to(self.device)
+
         print('\ncurrent memory allocated after model.to(self.device): {}'.format(torch.cuda.memory_allocated() / 1024 ** 2))
         print('max memory allocated model.to(self.device): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
         print('cached memory model.to(self.device): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
@@ -98,10 +99,10 @@ class EpochTrainer:
             self.step = self.step + 1
 
             sources = batch.src
-            print("Shape sources: ", sources.shape())
+            print("Shape sources: ", sources.shape)
             sources = sources.to(self.device)
             targets = batch.trg
-            print("Shape targets: ", targets.shape())
+            print("Shape targets: ", targets.shape)
             targets = targets.to(self.device)
 
             if self.experiment is not None:
