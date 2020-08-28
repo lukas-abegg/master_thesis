@@ -95,10 +95,8 @@ class EpochTrainer:
             self.step = self.step + 1
 
             sources = batch.src
-            print("Shape sources: ", sources.shape)
             sources = sources.to(self.device)
             targets = batch.trg
-            print("Shape targets: ", targets.shape)
             targets = targets.to(self.device)
 
             if self.experiment is not None:
@@ -106,13 +104,22 @@ class EpochTrainer:
 
             outputs = self.model(sources, targets)
 
-            print("Batch trained")
             print('\ncurrent memory allocated after (sources, targets): {}'.format(
                 torch.cuda.memory_allocated() / 1024 ** 2))
             print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
             print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
             print('total_memory of device: {}'.format(
                 torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
+
+            torch.cuda.empty_cache()
+            print('\ncurrent memory allocated after (sources, targets): {}'.format(
+                torch.cuda.memory_allocated() / 1024 ** 2))
+            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+            print('total_memory of device: {}'.format(
+                torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
+
+            print("Batch trained")
 
             batch_loss, batch_count = self.loss_function(outputs, targets)
 
