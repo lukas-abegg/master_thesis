@@ -4,11 +4,11 @@
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-baseline-noam",
+  "comet_project": "ts-newsela-baseline",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_noam_28082020",
-  "save_config": "checkpoints/baseline_newsela_noam_28082020.json",
-  "save_log": "logs/baseline_newsela_noam_28082020.log",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_27082020",
+  "save_config": "checkpoints/baseline_newsela_27082020.json",
+  "save_log": "logs/baseline_newsela_27082020.log",
   "print_every": 1,
   "save_every": 1,
   "load_weights": false,
@@ -19,8 +19,8 @@
   "loss": "tk",
   "label_smoothing": 0.1,
 
-  "optimizer": "Noam",
-  "optimizer_lr": 2e-3,
+  "optimizer": "AdamW",
+  "optimizer_lr": 2e-2,
   "warmup_steps": 4000,
   "beta_1": 0.9,
   "beta_2": 0.98,
