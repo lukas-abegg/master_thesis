@@ -18,7 +18,7 @@ class TokenCrossEntropyLoss(nn.Module):
         targets_flat = targets.view(batch_size * seq_len)
 
         batch_loss = self.base_loss_function(outputs_flat, targets_flat)
-        print("cross entropy loss")
+
         count = (targets != self.pad_index).sum().item()
 
         return batch_loss, count
@@ -53,17 +53,12 @@ class LabelSmoothingLoss(nn.Module):
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        print('\ncurrent memory allocated after (sources, targets): {}'.format(
-            torch.cuda.memory_allocated() / 1024 ** 2))
-        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
-
         outputs_log_softmax = self.log_softmax(outputs)
         outputs_flat = outputs_log_softmax.view(batch_size * seq_len, vocabulary_size)
         targets_flat = targets.view(batch_size * seq_len)
 
         smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
-        smoothed_targets = smoothed_targets.to(device)
+        smoothed_targets = smoothed_targets
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
         smoothed_targets.scatter_(1, targets_flat.unsqueeze(1), self.confidence)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
@@ -71,7 +66,7 @@ class LabelSmoothingLoss(nn.Module):
         # masked_targets: (batch_size * seq_len, vocabulary_size)
 
         loss = self.criterion(outputs_flat, smoothed_targets)
-        print("smoothed_targets loss")
+
         count = (targets != self.pad_index).sum().item()
 
         return loss, count
