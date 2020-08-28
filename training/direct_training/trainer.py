@@ -105,7 +105,7 @@ class EpochTrainer:
 
             print("Batch trained")
 
-            batch_loss, batch_count = self.loss_function(outputs, targets)
+            batch_loss, batch_count = self.loss_function(outputs, targets, self.device)
 
             print("loss function")
 

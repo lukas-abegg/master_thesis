@@ -10,7 +10,7 @@ class TokenCrossEntropyLoss(nn.Module):
         self.pad_index = pad_index
         self.base_loss_function = nn.CrossEntropyLoss(reduction='sum', ignore_index=pad_index)
 
-    def forward(self, outputs, targets):
+    def forward(self, outputs, targets, device):
         batch_size, seq_len, vocabulary_size = outputs.size()
 
         outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
@@ -49,12 +49,17 @@ class LabelSmoothingLoss(nn.Module):
 
         self.confidence = 1.0 - label_smoothing
 
-    def forward(self, outputs, targets):
+    def forward(self, outputs, targets, device):
         """
         outputs (FloatTensor): (batch_size, seq_len, vocabulary_size)
         targets (LongTensor): (batch_size, seq_len)
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
+
+        print('\ncurrent memory allocated after (sources, targets): {}'.format(
+            torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
         print("log_softmax")
         outputs_log_softmax = self.log_softmax(outputs)
@@ -69,6 +74,7 @@ class LabelSmoothingLoss(nn.Module):
         print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
         smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
+        smoothed_targets = smoothed_targets.to(device)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
         print("smoothed_targets")
         smoothed_targets.scatter_(1, targets_flat.unsqueeze(1), self.confidence)
