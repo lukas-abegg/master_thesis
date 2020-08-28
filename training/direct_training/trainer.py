@@ -145,6 +145,7 @@ class EpochTrainer:
 
             """ Start Training for Epoch"""
             self.model.train()
+            torch.cuda.empty_cache()
 
             epoch_start_time = datetime.now()
 
@@ -157,7 +158,9 @@ class EpochTrainer:
             """ Start Validation for Epoch"""
             self.model.eval()
 
-            val_epoch_loss, val_epoch_metrics = self.run_epoch(self.val_iterator, mode='val')
+            with torch.no_grad():
+                val_epoch_loss, val_epoch_metrics = self.run_epoch(self.val_iterator, mode='val')
+            torch.cuda.empty_cache()
 
             """ Log Metrics for Epoch"""
             if self.epoch % self.print_every == 0 and self.logger:
