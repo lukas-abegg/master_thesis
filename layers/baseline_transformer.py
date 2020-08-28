@@ -50,15 +50,29 @@ class TransformerModel(nn.Module):
 
     def forward(self, src, targets):
         src_key_padding_mask = self.generate_key_padding_mask(src)
+        print('\ncurrent memory allocated after (sources, targets): {}'.format(
+            torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
         src_key_padding_mask = src_key_padding_mask.to(src.device)
-        print("src_key_padding_mask shape:", src_key_padding_mask.shape)
+        print('\ncurrent memory allocated after (sources, targets): {}'.format(
+            torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+
         trg_key_padding_mask = self.generate_key_padding_mask(targets)
         trg_key_padding_mask = trg_key_padding_mask.to(targets.device)
-        print("trg_key_padding_mask shape:", trg_key_padding_mask.shape)
 
         trg_mask = self.generate_square_subsequent_mask(targets)
-        trg_mask = trg_mask.to(targets.device)
-        print("trg_mask shape:", trg_mask.shape)
+        print('\ncurrent memory allocated after (sources, targets): {}'.format(
+            torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+        trg_mask.to(targets.device)
+        print('\ncurrent memory allocated after (sources, targets): {}'.format(
+            torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
         memory = self.encoder(src, src_key_padding_mask=src_key_padding_mask)
 

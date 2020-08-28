@@ -16,7 +16,7 @@
 
   "epochs": 100,
   "batch_size": 8,
-  "loss": "tk",
+  "loss": "lbl",
   "label_smoothing": 0.1,
 
   "optimizer": "AdamW",
