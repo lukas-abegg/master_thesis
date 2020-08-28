@@ -25,13 +25,16 @@ class EpochTrainer:
         self.config = config
         self.device = device
         self.model = model
-        self.model.to(device)
+        self.model.to(self.device)
+        print('current memory allocated after model.to(self.device): {}'.format(torch.cuda.memory_allocated() / 1024 ** 2))
+        print('max memory allocated model.to(self.device): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+        print('cached memory model.to(self.device): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+
         self.train_iterator = train_iterator
         self.val_iterator = val_iterator
         self.lengths_sets = lengths_sets
 
         self.loss_function = loss_function
-        print(torch.cuda.memory_allocated())
         self.metric_function = metric_function
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -100,6 +103,9 @@ class EpochTrainer:
                 self.experiment.set_step(self.step)
 
             sources, targets = sources.to(self.device), targets.to(self.device)
+            print('current memory allocated after (sources, targets): {}'.format(torch.cuda.memory_allocated() / 1024 ** 2))
+            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
             outputs = self.model(sources, targets)
 
