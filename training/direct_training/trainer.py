@@ -47,7 +47,7 @@ class EpochTrainer:
         if save_config is None:
             config_filepath = join(self.checkpoint_dir, 'configs.json')
         else:
-            config_filepath = save_config
+            config_filepath = join(self.base_dir, save_config)
         with open(config_filepath, 'w') as config_file:
             json.dump(self.config, config_file)
 

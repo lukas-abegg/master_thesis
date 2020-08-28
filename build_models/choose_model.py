@@ -6,6 +6,7 @@ from build_models.transformer_baseline import build_model as build_baseline
 from build_models.transformer_with_bert_embedding import build_model as build_transformer_with_bert_embedding
 from build_models.transformer_baseline_advanced import build_model as build_baseline_advanced
 from build_models.transformer_with_bert_embedding_advanced import build_model as build_transformer_with_bert_embedding_advanced
+from build_models.bert_encoding_transformer import build_model as build_bert_encoding_transformer
 
 
 def build_model(hyperparameter_config, dataset_config, bert_model, bert_tokenizer):
@@ -13,7 +14,9 @@ def build_model(hyperparameter_config, dataset_config, bert_model, bert_tokenize
 
     if model_name == "baseline":
         return build_baseline(hyperparameter_config, dataset_config, bert_tokenizer)
-    if model_name == "baseline_advanced":
+    elif model_name == "bert_encoding":
+        return build_bert_encoding_transformer(hyperparameter_config, dataset_config, bert_model, bert_tokenizer)
+    elif model_name == "baseline_advanced":
         return build_baseline_advanced(hyperparameter_config, dataset_config, bert_tokenizer)
     elif model_name == "transformer_with_bert_embedding":
         return build_transformer_with_bert_embedding(hyperparameter_config, dataset_config, bert_model, bert_tokenizer)
