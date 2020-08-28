@@ -27,8 +27,6 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if use_cuda else "cpu")
     print("Use device ", device, " for task")
 
-    torch.backends.cudnn.benchmark = True
-
     # Load Config
     BASE_DIR = dirname(abspath(__file__))
     hyperparameter_config = load_hyperparameter_config(BASE_DIR)
@@ -63,7 +61,7 @@ if __name__ == "__main__":
     # Load Dataset
     logger.info('Loading dataset...')
     train_iterator, valid_iterator, lengths_sets = load_data(base_dir_save, dataset_name, dataset_config, hyperparameter_config,
-                                                             tokenizer)
+                                                             tokenizer, device)
 
     # Load Loss, Accuracy, Optimizer
     if hyperparameter_config['loss'] == "tk":

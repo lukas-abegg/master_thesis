@@ -97,7 +97,7 @@ class EpochTrainer:
             if self.experiment is not None:
                 self.experiment.set_step(self.step)
 
-            sources, targets = sources.to(self.device), targets.to(self.device)
+            sources, targets = sources, targets
 
             outputs = self.model(sources, targets)
 
