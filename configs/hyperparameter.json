@@ -20,7 +20,7 @@
   "label_smoothing": 0.1,
 
   "optimizer": "AdamW",
-  "optimizer_lr": 2e-2,
+  "optimizer_lr": 2e-1,
   "warmup_steps": 4000,
   "beta_1": 0.9,
   "beta_2": 0.98,
