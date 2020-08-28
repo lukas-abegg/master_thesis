@@ -56,20 +56,25 @@ class LabelSmoothingLoss(nn.Module):
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
+        print("log_softmax")
         outputs_log_softmax = self.log_softmax(outputs)
+        print("outputs_log_softmax")
         outputs_flat = outputs_log_softmax.view(batch_size * seq_len, vocabulary_size)
+        print("targets_flat")
         targets_flat = targets.view(batch_size * seq_len)
 
         smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-
+        print("smoothed_targets")
         smoothed_targets.scatter_(1, targets_flat.unsqueeze(1), self.confidence)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-
+        print("smoothed_targets scatter_")
         smoothed_targets.masked_fill_((targets_flat == self.pad_index).unsqueeze(1), 0)
         # masked_targets: (batch_size * seq_len, vocabulary_size)
+        print("smoothed_targets masked_fill_")
 
         loss = self.criterion(outputs_flat, smoothed_targets)
+        print("smoothed_targets loss")
         count = (targets != self.pad_index).sum().item()
 
         return loss, count
