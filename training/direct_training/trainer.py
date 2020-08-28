@@ -26,9 +26,10 @@ class EpochTrainer:
         self.device = device
         self.model = model
         self.model.to(self.device)
-        print('\ncurrent memory allocated after model.to(self.device): {}'.format(torch.cuda.memory_allocated() / 1024 ** 2))
-        print('max memory allocated model.to(self.device): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-        print('cached memory model.to(self.device): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+        print('\ncurrent memory allocated after model.to(self.device): {}'.format(torch.cuda.memory_allocated() / 1024))
+        print('max memory allocated model.to(self.device): {}'.format(torch.cuda.max_memory_allocated() / 1024))
+        print('cached memory model.to(self.device): {}'.format(torch.cuda.memory_cached() / 1024))
+        print('total_memory of device: {}'.format(torch.cuda.get_device_properties(self.device).total_memory / 1024))
 
         self.train_iterator = train_iterator
         self.val_iterator = val_iterator
@@ -97,14 +98,17 @@ class EpochTrainer:
             self.step = self.step + 1
 
             sources = batch.src
+            sources = sources.to(self.device)
             targets = batch.trg
+            targets = targets.to(self.device)
 
             if self.experiment is not None:
                 self.experiment.set_step(self.step)
 
-            print('\ncurrent memory allocated after (sources, targets): {}'.format(torch.cuda.memory_allocated() / 1024 ** 2))
-            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
+            print('\ncurrent memory allocated after (sources, targets): {}'.format(torch.cuda.memory_allocated() / 1024))
+            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024))
+            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024))
+            print('total_memory of device: {}'.format(torch.cuda.get_device_properties(self.device).total_memory / 1024))
 
             outputs = self.model(sources, targets)
 

@@ -37,7 +37,7 @@ def init_logger(hyperparameter_config):
 """ Datasets """
 
 
-def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tokenizer: BertTokenizer, device):
+def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tokenizer: BertTokenizer):
     PATH = os.path.join(base_dir, dataset_config[hyperparameter_config["bert_model"]]["path"])
     print("Load {} dataset from {}".format(dataset_name, PATH))
 
@@ -63,7 +63,6 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
     BATCH_SIZE = hyperparameter_config['batch_size']
 
     train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data),
-                                                           batch_size=BATCH_SIZE,
-                                                           device=device)
+                                                           batch_size=BATCH_SIZE)
 
     return train_iterator, valid_iterator, [len(train_iterator), len(valid_iterator)]
