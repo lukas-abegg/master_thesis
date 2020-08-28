@@ -115,13 +115,20 @@ class EpochTrainer:
 
             outputs = self.model(sources, targets)
 
+            print("Batch trained")
+
             batch_loss, batch_count = self.loss_function(outputs, targets)
 
+            print("loss function")
+
             if mode == 'train':
+                print("optimizer.zero_grad")
                 self.optimizer.zero_grad()
+                print("batch_loss.backward")
                 batch_loss.backward()
                 if self.clip_grads:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
+                print("optimizer.step")
                 self.optimizer.step()
 
             batch_loss_item = batch_loss.item()
