@@ -4,22 +4,22 @@
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-baseline",
+  "comet_project": "ts-newsela-baseline-noam",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_27082020",
-  "save_config": "checkpoints/baseline_newsela_27082020.json",
-  "save_log": "logs/baseline_newsela_27082020.log",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_noam_28082020",
+  "save_config": "checkpoints/baseline_newsela_noam_28082020.json",
+  "save_log": "logs/baseline_newsela_noam_28082020.log",
   "print_every": 1,
   "save_every": 1,
   "load_weights": false,
-  "model_path": "checkpoints/ninp=512-n_layers=6-nheads=8-nhidden=2048-dropout=0.1-epochs=20-batch_size=32-optimizer=AdamW-loss=lbl-2020_08_26_18_16_04/epoch=003-val_loss=8.53-val_metrics=5.07e+03-0.12.pth",
+  "model_path": ".",
 
   "epochs": 100,
   "batch_size": 8,
   "loss": "tk",
   "label_smoothing": 0.1,
 
-  "optimizer": "AdamW",
+  "optimizer": "Noam",
   "optimizer_lr": 2e-3,
   "warmup_steps": 4000,
   "beta_1": 0.9,
