@@ -10,19 +10,16 @@ class TokenCrossEntropyLoss(nn.Module):
         self.pad_index = pad_index
         self.base_loss_function = nn.CrossEntropyLoss(reduction='sum', ignore_index=pad_index)
 
-    def forward(self, outputs, targets, device):
+    def forward(self, outputs, targets):
         batch_size, seq_len, vocabulary_size = outputs.size()
 
         outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
-        print("outputs_flat", outputs_flat.shape)
+
         targets_flat = targets.view(batch_size * seq_len)
-        print("targets_flat", targets_flat.shape)
 
         batch_loss = self.base_loss_function(outputs_flat, targets_flat)
-        print("batch_loss", batch_loss)
-
+        print("cross entropy loss")
         count = (targets != self.pad_index).sum().item()
-        print("count", count)
 
         return batch_loss, count
 
@@ -49,7 +46,7 @@ class LabelSmoothingLoss(nn.Module):
 
         self.confidence = 1.0 - label_smoothing
 
-    def forward(self, outputs, targets, device):
+    def forward(self, outputs, targets):
         """
         outputs (FloatTensor): (batch_size, seq_len, vocabulary_size)
         targets (LongTensor): (batch_size, seq_len)
@@ -61,33 +58,17 @@ class LabelSmoothingLoss(nn.Module):
         print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
         print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
-        print("log_softmax")
         outputs_log_softmax = self.log_softmax(outputs)
-        print("outputs_log_softmax")
         outputs_flat = outputs_log_softmax.view(batch_size * seq_len, vocabulary_size)
-        print("targets_flat")
         targets_flat = targets.view(batch_size * seq_len)
-
-        print('\ncurrent memory allocated after (sources, targets): {}'.format(
-            torch.cuda.memory_allocated() / 1024 ** 2))
-        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
         smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
         smoothed_targets = smoothed_targets.to(device)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-        print("smoothed_targets")
         smoothed_targets.scatter_(1, targets_flat.unsqueeze(1), self.confidence)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-        print("smoothed_targets scatter_")
         smoothed_targets.masked_fill_((targets_flat == self.pad_index).unsqueeze(1), 0)
         # masked_targets: (batch_size * seq_len, vocabulary_size)
-        print("smoothed_targets masked_fill_")
-
-        print('\ncurrent memory allocated after (sources, targets): {}'.format(
-            torch.cuda.memory_allocated() / 1024 ** 2))
-        print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-        print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
         loss = self.criterion(outputs_flat, smoothed_targets)
         print("smoothed_targets loss")

@@ -105,9 +105,14 @@ class EpochTrainer:
 
             print("Batch trained")
 
-            batch_loss, batch_count = self.loss_function(outputs, targets, self.device)
+            batch_loss, batch_count = self.loss_function(outputs, targets)
 
             print("loss function")
+
+            print('\ncurrent memory allocated after (sources, targets): {}'.format(
+                torch.cuda.memory_allocated() / 1024 ** 2))
+            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
+            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
 
             if mode == 'train':
                 print("optimizer.zero_grad")
