@@ -67,8 +67,6 @@ class LabelSmoothingLoss(nn.Module):
             torch.cuda.memory_allocated() / 1024 ** 2))
         print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
         print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
-        print('total_memory of device: {}'.format(
-            torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
 
         smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
@@ -84,8 +82,6 @@ class LabelSmoothingLoss(nn.Module):
             torch.cuda.memory_allocated() / 1024 ** 2))
         print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
         print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
-        print('total_memory of device: {}'.format(
-            torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
 
         loss = self.criterion(outputs_flat, smoothed_targets)
         print("smoothed_targets loss")
