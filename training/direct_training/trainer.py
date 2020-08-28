@@ -24,12 +24,18 @@ class EpochTrainer:
 
         self.config = config
         self.device = device
-        self.model = model.to(self.device)
+        self.model = model
+        self.model.to(self.device)
+        print(torch.cuda.memory_summary())
+        print(torch.cuda.memory_allocated())
         self.train_iterator = train_iterator
         self.val_iterator = val_iterator
         self.lengths_sets = lengths_sets
 
-        self.loss_function = loss_function.to(self.device)
+        self.loss_function = loss_function
+        self.loss_function.to(self.device)
+        print(torch.cuda.memory_summary())
+        print(torch.cuda.memory_allocated())
         self.metric_function = metric_function
         self.optimizer = optimizer
         self.scheduler = scheduler
