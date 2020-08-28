@@ -49,10 +49,16 @@ class TransformerModel(nn.Module):
                 nn.init.xavier_uniform_(p)
 
     def forward(self, src, targets):
-        src_key_padding_mask = self.generate_key_padding_mask(src).to(src.device)
-        trg_key_padding_mask = self.generate_key_padding_mask(targets).to(targets.device)
+        src_key_padding_mask = self.generate_key_padding_mask(src)
+        src_key_padding_mask = src_key_padding_mask.to(src.device)
+        print("src_key_padding_mask shape:", src_key_padding_mask.shape)
+        trg_key_padding_mask = self.generate_key_padding_mask(targets)
+        trg_key_padding_mask = trg_key_padding_mask.to(targets.device)
+        print("trg_key_padding_mask shape:", trg_key_padding_mask.shape)
 
-        trg_mask = self.generate_square_subsequent_mask(targets).to(targets.device)
+        trg_mask = self.generate_square_subsequent_mask(targets)
+        trg_mask = trg_mask.to(targets.device)
+        print("trg_mask shape:", trg_mask.shape)
 
         memory = self.encoder(src, src_key_padding_mask=src_key_padding_mask)
 
