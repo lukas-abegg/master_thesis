@@ -32,7 +32,6 @@ class EpochTrainer:
         self.lengths_sets = lengths_sets
 
         self.loss_function = loss_function
-        self.loss_function.to(device)
         self.metric_function = metric_function
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -103,21 +102,6 @@ class EpochTrainer:
                 self.experiment.set_step(self.step)
 
             outputs = self.model(sources, targets)
-
-            print('\ncurrent memory allocated after (sources, targets): {}'.format(
-                torch.cuda.memory_allocated() / 1024 ** 2))
-            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
-            print('total_memory of device: {}'.format(
-                torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
-
-            torch.cuda.empty_cache()
-            print('\ncurrent memory allocated after (sources, targets): {}'.format(
-                torch.cuda.memory_allocated() / 1024 ** 2))
-            print('max memory allocated (sources, targets): {}'.format(torch.cuda.max_memory_allocated() / 1024 ** 2))
-            print('cached memory (sources, targets): {}'.format(torch.cuda.memory_cached() / 1024 ** 2))
-            print('total_memory of device: {}'.format(
-                torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 2))
 
             print("Batch trained")
 
