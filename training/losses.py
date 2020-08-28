@@ -14,11 +14,15 @@ class TokenCrossEntropyLoss(nn.Module):
         batch_size, seq_len, vocabulary_size = outputs.size()
 
         outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
+        print("outputs_flat", outputs_flat.shape)
         targets_flat = targets.view(batch_size * seq_len)
+        print("targets_flat", targets_flat.shape)
 
         batch_loss = self.base_loss_function(outputs_flat, targets_flat)
+        print("batch_loss", batch_loss)
 
         count = (targets != self.pad_index).sum().item()
+        print("count", count)
 
         return batch_loss, count
 
