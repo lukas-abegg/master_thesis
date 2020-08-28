@@ -31,7 +31,8 @@ class EpochTrainer:
         self.val_iterator = val_iterator
         self.lengths_sets = lengths_sets
 
-        self.loss_function = loss_function.to(device)
+        self.loss_function = loss_function
+        self.loss_function.to(device)
         self.metric_function = metric_function
         self.optimizer = optimizer
         self.scheduler = scheduler
