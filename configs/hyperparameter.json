@@ -4,7 +4,7 @@
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-bert_encoding",
+  "comet_project": "ts-newsela-bert-encoding",
 
   "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/bert_encoding_newsela_29082020",
   "save_config": "checkpoints/bert_encoding_newsela_29082020.json",
