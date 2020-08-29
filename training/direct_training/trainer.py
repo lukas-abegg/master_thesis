@@ -145,7 +145,6 @@ class EpochTrainer:
 
             """ Start Training for Epoch"""
             self.model.train()
-            torch.cuda.empty_cache()
 
             epoch_start_time = datetime.now()
 
@@ -160,7 +159,6 @@ class EpochTrainer:
 
             with torch.no_grad():
                 val_epoch_loss, val_epoch_metrics = self.run_epoch(self.val_iterator, mode='val')
-            torch.cuda.empty_cache()
 
             """ Log Metrics for Epoch"""
             if self.epoch % self.print_every == 0 and self.logger:
@@ -236,7 +234,7 @@ class EpochTrainer:
             self.logger.info("Current best model is {}".format(self.best_checkpoint_filepath))
 
             if self.experiment is not None:
-                self.experiment.log_metric("current_best_model", self.best_checkpoint_filepath)
+                self.experiment.log_other("current_best_model", self.best_checkpoint_filepath)
 
     def _elapsed_time(self):
         now = datetime.now()
