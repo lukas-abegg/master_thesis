@@ -4,7 +4,7 @@
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-bert_weights_embedding",
+  "comet_project": "ts-newsela-bert-weights-embedding",
 
   "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/bert_weights_embeddings_newsela_03092020",
   "save_config": "checkpoints/bert_weights_embeddings_newsela_03092020.json",
