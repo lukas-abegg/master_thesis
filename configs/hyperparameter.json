@@ -1,14 +1,14 @@
 {
   "bert_model": "bert_base",
-  "model": "baseline",
+  "model": "bert_weights_embeddings",
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-baseline-large",
+  "comet_project": "ts-newsela-bert_weights_embedding",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_03092020",
-  "save_config": "checkpoints/baseline_newsela_03092020.json",
-  "save_log": "logs/baseline_newsela_03092020.log",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/bert_weights_embeddings_newsela_03092020",
+  "save_config": "checkpoints/bert_weights_embeddings_newsela_03092020.json",
+  "save_log": "logs/bert_weights_embeddings_newsela_03092020.log",
   "print_every": 1,
   "save_every": 1,
   "load_weights": false,
