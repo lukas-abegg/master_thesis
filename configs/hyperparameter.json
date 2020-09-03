@@ -1,14 +1,14 @@
 {
   "bert_model": "bert_base",
-  "model": "bert_encoding",
+  "model": "baseline",
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "ts-newsela-bert-encoding",
+  "comet_project": "ts-newsela-baseline-large",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/bert_encoding_newsela_29082020",
-  "save_config": "checkpoints/bert_encoding_newsela_29082020.json",
-  "save_log": "logs/bert_encoding_newsela_29082020.log",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_03092020",
+  "save_config": "checkpoints/baseline_newsela_03092020.json",
+  "save_log": "logs/baseline_newsela_03092020.log",
   "print_every": 1,
   "save_every": 1,
   "load_weights": false,
