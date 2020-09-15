@@ -18,6 +18,8 @@ class Predictor(nn.Module):
 
         self.model = model
         self.device = device
+        self.model.to(self.device)
+
         self.tokenizer = tokenizer
 
         # Model parameter

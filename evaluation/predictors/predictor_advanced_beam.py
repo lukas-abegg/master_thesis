@@ -13,6 +13,8 @@ class Predictor:
         self.max_length = max_length
         self.beam_size = beam_size
         self.device = device
+        self.model.to(self.device)
+
         self.num_candidates = num_candidates
 
         checkpoint = torch.load(checkpoint_filepath, map_location=device)
