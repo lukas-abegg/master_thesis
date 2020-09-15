@@ -155,9 +155,8 @@ class Predictor(nn.Module):
                     # TODO: Try different terminate conditions.
                     scores.to(self.device)
                     seq_lens.to(self.device)
-                    self.num_candidates.to(self.device)
-                    self.alpha.to(self.device)
-                    _, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(self.num_candidates)
+                    _, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(1)
+                    #_, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(self.num_candidates)
                     break
 
         candidates = [gen_seq[ans_idx][:seq_lens[ans_idx]].tolist() for ans_idx in ans_idx_seq]
