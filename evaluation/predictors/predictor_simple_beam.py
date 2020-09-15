@@ -48,9 +48,9 @@ class Predictor(nn.Module):
         trg_key_padding_mask = trg_key_padding_mask.to(self.device)
         trg_mask = trg_mask.to(self.device)
 
-        dec_output = self.model.decoder(trg_seq, enc_output, tgt_mask=trg_mask,
-                                        tgt_key_padding_mask=trg_key_padding_mask,
-                                        memory_key_padding_mask=src_key_padding_mask)
+        dec_output = self.model.decoder(trg_seq, enc_output, tgt_mask=trg_mask)
+                                        # tgt_key_padding_mask=trg_key_padding_mask,
+                                        # memory_key_padding_mask=src_key_padding_mask)
         dec_output = dec_output.to(self.device)
 
         if hasattr(self.model, 'x_logit_scale'):
