@@ -48,8 +48,8 @@ class Evaluator:
 
                 self.logger.info(line)
                 if self.experiment is not None:
-                    self.experiment.log_metric("bleu_score", round+":"+sentence_bleu_score)
-                    self.experiment.log_metric("meteor_score", round+":"+meteor_score)
+                    self.experiment.log_metric("bleu_score", sentence_bleu_score)
+                    self.experiment.log_metric("meteor_score", meteor_score)
                     self.experiment.log_others("input_output:", round+":"+origin+"_"+hypothesis)
 
     def _tokenize(self, x):
