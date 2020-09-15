@@ -1,16 +1,15 @@
 {
-  "model_dir": "/glusterfs/dfs-gfs-dist/abeggluk/checkpoints/ninp=768-n_layers=6-nheads=8-nhidden=3072-dropout=0.1-epochs=5-batch_size=6-optimizer=AdamW-loss=tk-2020_09_07_15_22_01",
-  "model_file": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
-  "save_log": "logs/evaluation_base.log",
-  "save_metrics": "logs/evaluation_base_metrics",
+  "model_dir": "baseline_newsela_27082020/checkpoints/ninp=512-n_layers=6-nheads=8-nhidden=2048-dropout=0.1-epochs=100-batch_size=6-optimizer=AdamW-loss=tk-2020_08_28_23_03_35",
+  "model_file": "epoch=100-val_loss=6.95-val_metrics=1.04e+03-0.0609.pth",
+  "save_log": "logs/evaluation_baseline_newsela_27082020.log",
+  "save_metrics": "logs/evaluation_metrics_baseline_newsela_27082020.log",
   "mode": "server",
   "base_dir_load": "/glusterfs/dfs-gfs-dist/abeggluk/",
-  "load_config_file": "checkpoints/bert_weights_embeddings_newsela_03092020.json",
+  "load_config_file": "baseline_newsela_27082020/checkpoints/baseline_newsela_27082020.json",
   "beam_approach": "simple",
   "beam_size": 4,
   "num_candidates": 1,
   "num_evals": 1,
-
   "tracking_active": true,
-  "comet_project": "ts-newsela-bert-weights-embedding"
+  "comet_project": "ts-newsela-baseline_evaluation"
 }

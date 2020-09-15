@@ -28,6 +28,7 @@ def load_dataset_config(base_dir, dataset):
 
 def load_evaluation_config(base_dir):
     with open(os.path.join(base_dir, "configs", "evaluation.json"), "r") as config_file:
+        print("Load evaluation config from: {}".format(config_file))
         config = json.load(config_file)
     return config
 
