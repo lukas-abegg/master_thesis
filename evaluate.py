@@ -85,7 +85,9 @@ def execute_evaluations(evaluator, evaluation_config, logger, experiment=None):
 if __name__ == "__main__":
     # CUDA for PyTorch
     use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda:0" if use_cuda else "cpu")
+    print("Found ", torch.cuda.device_count(), " GPU devices")
+    device = torch.device("cuda" if use_cuda else "cpu")
+    print("Use device ", device, " for task")
 
     torch.backends.cudnn.benchmark = True
 
