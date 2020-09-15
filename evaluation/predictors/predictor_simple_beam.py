@@ -150,12 +150,14 @@ class Predictor(nn.Module):
                 eos_locs = gen_seq == self.trg_eos_idx
                 # -- replace the eos with its position for the length penalty use
                 seq_lens, _ = self.len_map.masked_fill(~eos_locs, self.max_seq_len).min(1)
+
+                scores = scores.to(self.device)
+                seq_lens = seq_lens.to(self.device)
+
                 # -- check if all beams contain eos
                 if (eos_locs.sum(1) > 0).sum(0).item() == self.beam_size:
                     # TODO: Try different terminate conditions.
-                    scores.to(self.device)
-                    seq_lens.to(self.device)
-                    _, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(1)
+                    _, ans_idx_seq = scores.div(seq_lens.float() ** 0.7).topk(1)
                     #_, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(self.num_candidates)
                     break
 
