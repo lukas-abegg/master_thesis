@@ -4,6 +4,12 @@ import json
 """ Configs """
 
 
+def load_hyperparameter_config_val(base_dir, file):
+    with open(os.path.join(base_dir, file), "r") as config_file:
+        config = json.load(config_file)
+    return config
+
+
 def load_hyperparameter_config(base_dir):
     with open(os.path.join(base_dir, "configs", "hyperparameter.json"), "r") as config_file:
         config = json.load(config_file)

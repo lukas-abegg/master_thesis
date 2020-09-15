@@ -4,7 +4,7 @@ import torch
 class Beam:
 
     def __init__(self, beam_size=8, min_length=0, n_top=1, ranker=None,
-                 start_token_id=2, end_token_id=3):
+                 start_token_id=101, end_token_id=102):
         self.beam_size = beam_size
         self.min_length = min_length
         self.ranker = ranker
@@ -13,17 +13,15 @@ class Beam:
         self.top_sentence_ended = False
 
         self.prev_ks = []
-        self.next_ys = [torch.LongTensor(beam_size).fill_(start_token_id)] # remove padding
+        self.next_ys = [torch.LongTensor(beam_size).fill_(start_token_id)]  # remove padding
 
         self.current_scores = torch.FloatTensor(beam_size).zero_()
         self.all_scores = []
 
         # The attentions (matrix) for each time.
-        self.all_attentions = []
+        #self.all_attentions = []
 
         self.finished = []
-
-
 
         # Time and k pair for finished.
         self.finished = []
@@ -31,12 +29,13 @@ class Beam:
 
         self.ranker = ranker
 
-    def advance(self, next_log_probs, current_attention):
+    #def advance(self, next_log_probs, current_attention):
+    def advance(self, next_log_probs):
         # next_probs : beam_size X vocab_size
         # current_attention: (target_seq_len=1, beam_size, source_seq_len)
 
         vocabulary_size = next_log_probs.size(1)
-        # current_beam_size = next_log_probs.size(0)
+        current_beam_size = next_log_probs.size(0)
 
         current_length = len(self.next_ys)
         if current_length < self.min_length:
@@ -49,7 +48,7 @@ class Beam:
             last_y = self.next_ys[-1]
             for beam_index in range(last_y.size(0)):
                 if last_y[beam_index] == self.end_token_id:
-                    beam_scores[beam_index] = -1e10 # -1e20 raises error when executing
+                    beam_scores[beam_index] = -1e10  # -1e20 raises error when executing
         else:
             beam_scores = next_log_probs[0]
         flat_beam_scores = beam_scores.view(-1)
@@ -64,9 +63,8 @@ class Beam:
         self.prev_ks.append(prev_k)
         self.next_ys.append(next_y)
         # for RNN, dim=1 and for transformer, dim=0.
-        prev_attention = current_attention.index_select(dim=0, index=prev_k)  # (target_seq_len=1, beam_size, source_seq_len)
-        self.all_attentions.append(prev_attention)
-
+        #prev_attention = current_attention.index_select(dim=0, index=prev_k)  # (target_seq_len=1, beam_size, source_seq_len)
+        #self.all_attentions.append(prev_attention)
 
         for beam_index, last_token_id in enumerate(next_y):
             if last_token_id == self.end_token_id:
@@ -77,25 +75,27 @@ class Beam:
             self.top_sentence_ended = True
 
     def get_current_state(self):
-        "Get the outputs for the current timestep."
+        """Get the outputs for the current timestep."""
         return self.next_ys[-1]
 
     def get_current_origin(self):
-        "Get the backpointers for the current timestep."
+        """Get the backpointers for the current timestep."""
         return self.prev_ks[-1]
 
     def done(self):
         return self.top_sentence_ended and len(self.finished) >= self.n_top
 
     def get_hypothesis(self, timestep, k):
-        hypothesis, attentions = [], []
+        #hypothesis, attentions = [], []
+        hypothesis = []
         for j in range(len(self.prev_ks[:timestep]) - 1, -1, -1):
             hypothesis.append(self.next_ys[j + 1][k])
-            # for RNN, [:, k, :], and for trnasformer, [k, :, :]
-            attentions.append(self.all_attentions[j][k, :, :])
+            # for RNN, [:, k, :], and for transformer, [k, :, :]
+            #attentions.append(self.all_attentions[j][k, :, :])
             k = self.prev_ks[j][k]
-        attentions_tensor = torch.stack(attentions[::-1]).squeeze(1)  # (timestep, source_seq_len)
-        return hypothesis[::-1], attentions_tensor
+        #attentions_tensor = torch.stack(attentions[::-1]).squeeze(1)  # (timestep, source_seq_len)
+        #return hypothesis[::-1], attentions_tensor
+        return hypothesis[::-1]
 
     def sort_finished(self, minimum=None):
         if minimum is not None:

@@ -19,7 +19,6 @@ class TransformerModel(nn.Module):
     @staticmethod
     def generate_key_padding_mask(seq):
         # x: (batch_size, seq_len)
-        batch_size, seq_len = seq.size()
         pad_mask = seq == 0  # (batch_size, seq_len)
         attn_mask = pad_mask.int().masked_fill(pad_mask == 0, 1).masked_fill(pad_mask == 1, 0)
         return pad_mask, attn_mask

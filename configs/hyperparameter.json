@@ -12,7 +12,7 @@
   "print_every": 1,
   "save_every": 1,
   "load_weights": false,
-  "model_path": ".",
+  "model_path": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
 
   "epochs": 100,
   "batch_size": 6,

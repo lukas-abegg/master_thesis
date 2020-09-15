@@ -1,0 +1,10 @@
+{
+  "model_dir": "checkpoints/ninp=768-n_layers=6-nheads=8-nhidden=3072-dropout=0.1-epochs=5-batch_size=6-optimizer=AdamW-loss=tk-2020_09_07_15_22_01",
+  "model_file": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
+  "base_dir_load": ".",
+  "load_config_file": "checkpoints/bert_weights_embeddings_newsela_03092020.json",
+  "origins_path": "data/test/newsela/valid.src",
+  "beam_approach": "greedy",
+  "beam_size": 4,
+  "num_candidates": 2
+}

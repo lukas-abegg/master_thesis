@@ -1,4 +1,4 @@
-""" This module will handle the text generation with beam search. """
+""" This module will handle the text generation with greedy search. """
 
 import torch
 import torch.nn as nn
@@ -9,13 +9,8 @@ from transformers import BertTokenizer
 class Predictor(nn.Module):
     """ Load a trained model and translate in beam search fashion. """
 
-    def __init__(self, model, checkpoint_filepath, tokenizer: BertTokenizer, device, max_length=512, beam_size=4, num_candidates=2):
+    def __init__(self, model, checkpoint_filepath, tokenizer: BertTokenizer, device, max_length=512):
         super(Predictor, self).__init__()
-
-        self.alpha = 0.7
-        self.beam_size = beam_size
-        self.num_candidates = num_candidates
-
         self.model = model
         self.device = device
         self.tokenizer = tokenizer
@@ -32,13 +27,6 @@ class Predictor(nn.Module):
         self.model.eval()
 
         self.register_buffer('init_seq', torch.LongTensor([[self.trg_bos_idx]]))
-        self.register_buffer(
-            'blank_seqs',
-            torch.full((self.beam_size, self.max_seq_len), self.trg_pad_idx, dtype=torch.long))
-        self.blank_seqs[:, 0] = self.trg_bos_idx
-        self.register_buffer(
-            'len_map',
-            torch.arange(1, self.max_seq_len + 1, dtype=torch.long).unsqueeze(0))
 
     def _model_decode(self, trg_seq, enc_output, src_key_padding_mask):
         trg_seq, trg_key_padding_mask, trg_mask = self._prepare_output(trg_seq)
@@ -63,40 +51,18 @@ class Predictor(nn.Module):
         enc_output = enc_output.to(self.device)
         dec_output = self._model_decode(self.init_seq, enc_output, src_key_padding_mask)
 
-        best_k_probs, best_k_idx = dec_output[:, -1, :].topk(self.beam_size)
+        best_k_prob, best_k_idx = dec_output[:, -1, :].topk(1)
+        gen_seq = torch.cat([self.init_seq[0], best_k_idx[0]], dim=0).unsqueeze(0)
+        return gen_seq, enc_output
 
-        scores = torch.log(best_k_probs).view(self.beam_size)
-        gen_seq = self.blank_seqs.clone().detach()
-        gen_seq[:, 1] = best_k_idx[0]
-        enc_output = enc_output.repeat(1, self.beam_size, 1)
-        src_key_padding_mask = src_key_padding_mask.repeat(self.beam_size, 1)
+    @staticmethod
+    def _get_the_best_score_and_idx(gen_seq, dec_output):
+        _, best_idx = dec_output[:, -1, :].topk(1)
 
-        return enc_output, gen_seq, scores
-
-    def _get_the_best_score_and_idx(self, gen_seq, dec_output, scores, step):
-        assert len(scores.size()) == 1
-
-        beam_size = self.beam_size
-
-        # Get k candidates for each beam, k^2 candidates in total.
-        best_k2_probs, best_k2_idx = dec_output[:, -1, :].topk(beam_size)
-
-        # Include the previous scores.
-        scores = torch.log(best_k2_probs).view(beam_size, -1) + scores.view(beam_size, 1)
-
-        # Get the best k candidates from k^2 candidates.
-        scores, best_k_idx_in_k2 = scores.view(-1).topk(beam_size)
-
-        # Get the corresponding positions of the best k candidiates.
-        best_k_r_idxs, best_k_c_idxs = best_k_idx_in_k2 // beam_size, best_k_idx_in_k2 % beam_size
-        best_k_idx = best_k2_idx[best_k_r_idxs, best_k_c_idxs]
-
-        # Copy the corresponding previous tokens.
-        gen_seq[:, :step] = gen_seq[best_k_r_idxs, :step]
         # Set the best tokens in this beam search step
-        gen_seq[:, step] = best_k_idx
+        gen_seq = torch.cat([gen_seq, best_idx], dim=1)
 
-        return gen_seq, scores
+        return gen_seq
 
     @staticmethod
     def generate_key_padding_mask(seq):
@@ -107,7 +73,6 @@ class Predictor(nn.Module):
     def _prepare_input(self, src_seq, tokenize):
         if tokenize:
             src_seq = self.tokenizer.encode(src_seq, add_special_tokens=True, max_length=self.max_seq_len)
-        # src_seq = F.pad(torch.as_tensor(src_seq), pad=(0, self.max_length - len(src_seq)), mode='constant', value=self.tokenizer.pad_token_id)
         src_seq = torch.as_tensor(src_seq)
         src_mask = self.generate_key_padding_mask(src_seq)
 
@@ -117,8 +82,6 @@ class Predictor(nn.Module):
         return src_seq, src_mask
 
     def _prepare_output(self, out_seq):
-        # out_seq = F.pad(torch.as_tensor(out_seq), pad=(0, self.max_length - out_seq.size(1)), mode='constant',
-        # value=self.tokenizer.pad_token_id)
         out_seq = torch.as_tensor(out_seq)
         out_key_padding_mask = self.generate_key_padding_mask(out_seq)
         out_mask = self.model.generate_square_subsequent_mask(out_seq)
@@ -136,28 +99,19 @@ class Predictor(nn.Module):
             source_tensor = source_tensor.to(self.device)
             source_key_padding_mask = source_key_padding_mask.to(self.device)
 
-            enc_output, gen_seq, scores = self._get_init_state(source_tensor, source_key_padding_mask)
+            gen_seq, enc_output = self._get_init_state(source_tensor, source_key_padding_mask)
 
-            ans_idx = 0  # default
             for step in range(2, self.max_seq_len):  # decode up to max length
+                gen_seq = gen_seq.to(self.device)
                 dec_output = self._model_decode(gen_seq[:, :step], enc_output, source_key_padding_mask)
-                gen_seq, scores = self._get_the_best_score_and_idx(gen_seq, dec_output, scores, step)
+                gen_seq = self._get_the_best_score_and_idx(gen_seq[:, :step], dec_output)
 
-                # Check if all path finished
-                # -- locate the eos in the generated sequences
-                eos_locs = gen_seq == self.trg_eos_idx
-                # -- replace the eos with its position for the length penalty use
-                seq_lens, _ = self.len_map.masked_fill(~eos_locs, self.max_seq_len).min(1)
-                # -- check if all beams contain eos
-                if (eos_locs.sum(1) > 0).sum(0).item() == self.beam_size:
-                    # TODO: Try different terminate conditions.
-                    _, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(self.num_candidates)
+                if (gen_seq[0, step] == self.trg_eos_idx).item():
                     break
 
-        candidates = [gen_seq[ans_idx][:seq_lens[ans_idx]].tolist() for ans_idx in ans_idx_seq]
-        hs = [self.decode_predicted_string(h) for h in candidates]
+        hs = self.decode_predicted_string(gen_seq[0].tolist())
 
         if only_one:
-            return hs[0]
-        else:
             return hs
+        else:
+            return [hs]

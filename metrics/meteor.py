@@ -4,15 +4,15 @@ from nltk.translate.meteor_score import meteor_score
 class MeteorMetric:
 
     @staticmethod
-    def evaluate_results(predictions, targets):
+    def evaluate_results(hypothesis, references):
         """
         We assume the input and output as linear softmax. The prediction will be done here
 
-        :param predictions: sentences as array of dim (NxP) where N = Batch Size and P = Predicted Sentence length
-        :param targets: sentences as arrays of dim (NxT) where N = Batch Size and T = Target Sentence length
+        :param hypothesis: 1x sentence as array of dim (Px1) where P = Predicted Sentence length
+        :param references: sentences as arrays of dim (NxT) where N = Batch Size and T = Target Sentence length
         :return:
         """
 
-        score = meteor_score(hypothesis=predictions, references=targets)
+        score = meteor_score(hypothesis=hypothesis, references=references)
 
         return score

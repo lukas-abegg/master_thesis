@@ -25,7 +25,7 @@ import numpy as np
 
 class SARISentenceMetric:
 
-    def evaluate_results(self, sources, predictions, targets):
+    def evaluate_results(self, origins, hypotheses, references):
         """
         We design a new metric SARI that principally compares system output against references
         and against the input sentence. It explicitly measures the goodness of words that are added, deleted
@@ -43,15 +43,15 @@ class SARISentenceMetric:
             pages = {401--415}
         }
 
-        :param sources: sentences as array of dim (NxP) where N = Batch Size and P = Origin Sentence length
-        :param predictions: sentences as array of dim (NxP) where N = Batch Size and P = Predicted Sentence length
-        :param targets: sentences as arrays of dim (NxT) where N = Batch Size and T = Target Sentence length
+        :param origins: sentences as array of dim (NxP) where N = Batch Size and P = Origin Sentence length
+        :param hypotheses: sentences as array of dim (NxP) where N = Batch Size and P = Predicted Sentence length
+        :param references: sentences as arrays of dim (NxT) where N = Batch Size and T = Target Sentence length
         :return:
         """
 
         sari_scores = []
-        for i in range(len(sources)):
-            sari_scores.append(self.sari_sent(sources[i], predictions[i], [targets[i]]))
+        for i in range(len(origins)):
+            sari_scores.append(self.sari_sent(origins[i], hypotheses[i], [references[i]]))
 
         mean_score = np.mean(np.asarray(sari_scores))
 
@@ -136,8 +136,8 @@ class SARISentenceMetric:
     def sari_sent(self, source_sent, candidate_sent, reference_sents):
         numref = len(reference_sents)
 
-        s1grams = source_sent.lower().split(" ")
-        c1grams = candidate_sent.lower().split(" ")
+        s1grams = list(map(str.lower, source_sent))
+        c1grams = list(map(str.lower, candidate_sent))
         s2grams = []
         c2grams = []
         s3grams = []
@@ -150,7 +150,7 @@ class SARISentenceMetric:
         r3gramslist = []
         r4gramslist = []
         for rsent in reference_sents:
-            r1grams = rsent.lower().split(" ")
+            r1grams = list(map(str.lower, rsent))
             r2grams = []
             r3grams = []
             r4grams = []

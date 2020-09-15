@@ -6,37 +6,78 @@ from os.path import dirname, abspath
 
 import torch
 
-from evaluation.evaluator import Evaluator
+from evaluation.evaluators.evaluator import Evaluator
 from evaluation.predictors.predictor_simple_beam import Predictor
 from evaluation.predictors.predictor_advanced_beam import Predictor as Predictor_with_advanced_beam
+from evaluation.predictors.predictor_greedy import Predictor as Predictor_greedy
 from layers.utils.bert_loader import BertModelLoader
 
-from configs.load_config import load_evaluation_config, load_dataset_config, load_hyperparameter_config
+from configs.load_config import load_evaluation_config, load_dataset_config, \
+    load_hyperparameter_config_val
 from evaluation.evaluation_utils import init_logger, load_data
 from build_models.choose_model import build_model
 from utils.tracking import load_tracking, stop_tracking
 
 
-def load_predictor(beam_approach, evaluation_config, dataset_config, tokenizer, device):
-    if beam_approach == "advanced_beam":
+def load_predictor(base_dir_load, model, beam_approach, evaluation_config, dataset_config, hyperparameter_config, tokenizer, device):
+    checkpoint_filepath = os.path.join(base_dir_load, evaluation_config["model_dir"], evaluation_config["model_file"])
+    max_length = dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"]
+    beam_size = evaluation_config["beam_size"]
+    num_candidates = evaluation_config['num_candidates']
+
+    if beam_approach == "advanced":
         predictor = Predictor_with_advanced_beam(
             model=model,
-            checkpoint_filepath=os.path.join(BASE_DIR, evaluation_config['checkpoint']),
+            checkpoint_filepath=checkpoint_filepath,
             tokenizer=tokenizer,
             device=device,
-            max_length=dataset_config['max_length'],
-            beam_size=evaluation_config['beam_size']
+            max_length=max_length,
+            beam_size=beam_size,
+            num_candidates=num_candidates
         )
-    else:
+    elif beam_approach == "simple":
         predictor = Predictor(
             model=model,
-            checkpoint_filepath=os.path.join(BASE_DIR, evaluation_config['checkpoint']),
+            checkpoint_filepath=checkpoint_filepath,
             tokenizer=tokenizer,
             device=device,
-            max_length=dataset_config['max_length'],
-            beam_size=evaluation_config['beam_size']
+            max_length=max_length,
+            beam_size=beam_size,
+            num_candidates=num_candidates
+        )
+    else:
+        predictor = Predictor_greedy(
+            model=model,
+            checkpoint_filepath=checkpoint_filepath,
+            tokenizer=tokenizer,
+            device=device,
+            max_length=max_length
         )
     return predictor
+
+
+def execute_evaluations(evaluator, evaluation_config, logger, experiment=None):
+    num_evals = evaluation_config['num_evals']
+
+    bleu_scores = []
+    sari_scores = []
+
+    for i in range(num_evals):
+        logger.info(f'Evaluation Round: {i}\n')
+        bleu_score, sari_score = evaluator.evaluate_dataset(i)
+
+        bleu_scores.append(bleu_score)
+        sari_scores.append(sari_score)
+
+    best_bleu_scores, _ = torch.as_tensor(bleu_scores).topk(1)
+    best_sari_scores, _ = torch.as_tensor(sari_scores).topk(1)
+
+    logger.info(f"Best Bleu Score: {best_bleu_scores.item()}")
+    logger.info(f"Best Sari Score: {best_sari_scores.item()}")
+
+    if experiment is not None:
+        experiment.log_metric("best_bleu", best_bleu_scores.item())
+        experiment.log_metric("best_sari", best_sari_scores.item())
 
 
 if __name__ == "__main__":
@@ -49,9 +90,16 @@ if __name__ == "__main__":
     # Load Config
     BASE_DIR = dirname(abspath(__file__))
     evaluation_config = load_evaluation_config(BASE_DIR)
-    hyperparameter_config = load_hyperparameter_config(BASE_DIR)
-    bert_model_name = evaluation_config["bert_model"]
-    dataset_name = evaluation_config["dataset"]
+
+    # Base dir for Loading
+    if evaluation_config["mode"] == "local":
+        base_dir_load = os.path.join(BASE_DIR, evaluation_config['base_dir_load'])
+    else:
+        base_dir_load = os.path.join(evaluation_config['base_dir_load'])
+
+    hyperparameter_config = load_hyperparameter_config_val(base_dir_load, evaluation_config["load_config_file"])
+    bert_model_name = hyperparameter_config["bert_model"]
+    dataset_name = hyperparameter_config["dataset"]
     dataset_config = load_dataset_config(BASE_DIR, dataset_name)
 
     # Start Tracking
@@ -62,39 +110,36 @@ if __name__ == "__main__":
         experiment = load_tracking(evaluation_config)
 
     # Load Logger
-    logger, run_name = init_logger(evaluation_config)
-
-    # Save base dir
-    base_dir_save = os.path.join(BASE_DIR, hyperparameter_config['save_base_dir'])
+    logger, run_name = init_logger(evaluation_config, hyperparameter_config)
 
     # Load Bert
     logger.info('Loading bert...')
-    bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_save)
+    bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_load)
     tokenizer = bert_model_loader.tokenizer
 
     # Load Transformer
     logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, tokenizer)
 
     # Load Dataset
     logger.info('Loading dataset...')
-    test_iterator, length_set = load_data(dataset_name, dataset_config, evaluation_config,
-                                          tokenizer, device)
+    test_iterator, length_set = load_data(base_dir_load, dataset_name, dataset_config, hyperparameter_config, tokenizer)
 
     # Load Predictor
     try:
-        predictor = load_predictor(hyperparameter_config['beam_approach'], evaluation_config, dataset_config, tokenizer, device)
+        predictor = load_predictor(base_dir_load, model, evaluation_config['beam_approach'], evaluation_config, dataset_config,
+                                   hyperparameter_config, tokenizer, device)
     except Exception:
         logger.error("Unexpected error by loading predictor:", traceback.format_exc())
         stop_tracking(experiment)
         raise
 
     timestamp = datetime.now()
-    eval_filepath = 'logs/eval-{config}-time={timestamp}.csv'.format(
-        config=evaluation_config,
+    eval_filepath = '{config}-time={timestamp}.csv'.format(
+        config=evaluation_config['save_metrics'],
         timestamp=timestamp.strftime("%Y_%m_%d_%H_%M_%S"))
 
-    eval_filepath = os.path.join(BASE_DIR, eval_filepath),
+    eval_filepath = os.path.join(BASE_DIR, eval_filepath)
 
     # Load Evaluator
     try:
@@ -104,6 +149,7 @@ if __name__ == "__main__":
             test_iterator=test_iterator,
             logger=logger,
             config=evaluation_config,
+            device=device,
             experiment=experiment
         )
     except Exception as e:
@@ -115,9 +161,9 @@ if __name__ == "__main__":
     try:
         if experiment is not None:
             with experiment.validate():
-                bleu_score, sari_score, meteor_score = evaluator.evaluate_dataset()
+                execute_evaluations(evaluator, evaluation_config, logger, experiment)
         else:
-            bleu_score, sari_score, meteor_score = evaluator.evaluate_dataset()
+            execute_evaluations(evaluator, evaluation_config, logger)
 
     except Exception as e:
         logger.error("Unexpected error by running evaluation:", traceback.format_exc())
