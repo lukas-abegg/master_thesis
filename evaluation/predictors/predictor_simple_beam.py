@@ -153,6 +153,8 @@ class Predictor(nn.Module):
                 # -- check if all beams contain eos
                 if (eos_locs.sum(1) > 0).sum(0).item() == self.beam_size:
                     # TODO: Try different terminate conditions.
+                    scores.to(self.device)
+                    seq_lens.to(self.device)
                     _, ans_idx_seq = scores.div(seq_lens.float() ** self.alpha).topk(self.num_candidates)
                     break
 
