@@ -63,7 +63,7 @@ def execute_evaluations(evaluator, evaluation_config, logger, experiment=None):
     sari_scores = []
 
     for i in range(num_evals):
-        logger.info(f"Evaluation Round: {i}")
+        print("Evaluation Round: {}".format(i))
         bleu_score, sari_score = evaluator.evaluate_dataset(i)
 
         bleu_scores.append(bleu_score)
@@ -72,8 +72,8 @@ def execute_evaluations(evaluator, evaluation_config, logger, experiment=None):
     best_bleu_scores, _ = torch.as_tensor(bleu_scores).topk(1)
     best_sari_scores, _ = torch.as_tensor(sari_scores).topk(1)
 
-    logger.info(f"Best Bleu Score: {best_bleu_scores.item()}")
-    logger.info(f"Best Sari Score: {best_sari_scores.item()}")
+    print("Best Bleu Score: {}".format(best_bleu_scores.item()))
+    print("Best Sari Score: {}".format(best_sari_scores.item()))
 
     if experiment is not None:
         experiment.log_metric("best_bleu", best_bleu_scores.item())
