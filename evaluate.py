@@ -63,7 +63,7 @@ def execute_evaluations(evaluator, evaluation_config, logger, experiment=None):
     sari_scores = []
 
     for i in range(num_evals):
-        logger.info(f'Evaluation Round: {i}\n')
+        logger.info(f"Evaluation Round: {i}")
         bleu_score, sari_score = evaluator.evaluate_dataset(i)
 
         bleu_scores.append(bleu_score)
