@@ -50,7 +50,7 @@ class Evaluator:
                 if self.experiment is not None:
                     self.experiment.log_metric("bleu_score", sentence_bleu_score)
                     self.experiment.log_metric("meteor_score", meteor_score)
-                    self.experiment.log_others("input_output:", str(round+":"+origin+"_"+hypothesis))
+                    self.experiment.log_others("input_output:", str(round)+":"+origin+"_"+hypothesis)
 
     def _tokenize(self, x):
         tokenized = self.predictor.tokenizer.tokenize(x)
