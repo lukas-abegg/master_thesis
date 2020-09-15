@@ -6,7 +6,7 @@
   "mode": "server",
   "base_dir_load": "/glusterfs/dfs-gfs-dist/abeggluk/",
   "load_config_file": "baseline_newsela_27082020/checkpoints/baseline_newsela_27082020.json",
-  "beam_approach": "simple",
+  "beam_approach": "greedy",
   "beam_size": 4,
   "num_candidates": 1,
   "num_evals": 1,
