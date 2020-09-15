@@ -4,6 +4,8 @@ import traceback
 from datetime import datetime
 from os.path import dirname, abspath
 
+import comet_ml
+
 import torch
 
 from evaluation.evaluators.evaluator import Evaluator
