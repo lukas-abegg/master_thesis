@@ -29,6 +29,9 @@ class Predictor(nn.Module):
         self.trg_bos_idx = tokenizer.cls_token_id
         self.trg_eos_idx = tokenizer.sep_token_id
 
+        # Softmax
+        self.softmax = nn.Softmax(dim=-1)
+
         checkpoint = torch.load(checkpoint_filepath, map_location=device)
         self.model.load_state_dict(checkpoint)
         self.model.eval()
@@ -54,9 +57,9 @@ class Predictor(nn.Module):
         dec_output = dec_output.to(self.device)
 
         if hasattr(self.model, 'x_logit_scale'):
-            dec_output = F.softmax(self.model.trg_word_prj(dec_output) * self.model.x_logit_scale, dim=-1)
+            dec_output = self.softmax(self.model.trg_word_prj(dec_output) * self.model.x_logit_scale)
         else:
-            dec_output = F.softmax(self.model.trg_word_prj(dec_output), dim=-1)
+            dec_output = self.softmax(self.model.trg_word_prj(dec_output))
 
         return dec_output
 

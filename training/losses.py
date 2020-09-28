@@ -8,12 +8,18 @@ class TokenCrossEntropyLoss(nn.Module):
         super(TokenCrossEntropyLoss, self).__init__()
 
         self.pad_index = pad_index
+        self.softmax = nn.Softmax(dim=-1)
         self.base_loss_function = nn.CrossEntropyLoss(reduction='sum', ignore_index=pad_index)
 
     def forward(self, outputs, targets):
+        """
+        outputs (FloatTensor): (batch_size, seq_len, vocabulary_size)
+        targets (LongTensor): (batch_size, seq_len)
+        """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
+        outputs_softmax = self.softmax(outputs)
+        outputs_flat = outputs_softmax.view(batch_size * seq_len, vocabulary_size)
 
         targets_flat = targets.view(batch_size * seq_len)
 
@@ -30,6 +36,7 @@ class LabelSmoothingLoss(nn.Module):
     KL-divergence between q_{smoothed ground truth prob.}(w)
     and p_{prob. computed by model}(w) is minimized.
     """
+
     def __init__(self, label_smoothing, vocabulary_size, pad_index=0):
         assert 0.0 < label_smoothing <= 1.0
 

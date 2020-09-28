@@ -7,7 +7,7 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer, TransformerDec
 class TransformerModel(nn.Module):
 
     def __init__(self, vocab_size, ninp, nhead, nhid, nlayers, dropout=0.1, embedding_layer=None, max_len=512,
-                 trg_emb_prj_weight_sharing=True, emb_src_trg_weight_sharing=True):
+                 trg_emb_prj_weight_sharing=False, emb_src_trg_weight_sharing=False):
         super(TransformerModel, self).__init__()
         self.ninp = ninp
 
@@ -48,8 +48,8 @@ class TransformerModel(nn.Module):
                 nn.init.xavier_uniform_(p)
 
     def forward(self, src, targets):
-        src_key_padding_mask = self.generate_key_padding_mask(src).to(src.device)
-        trg_key_padding_mask = self.generate_key_padding_mask(targets).to(targets.device)
+        src_key_padding_mask = None  # self.generate_key_padding_mask(src).to(src.device)
+        trg_key_padding_mask = None  # self.generate_key_padding_mask(targets).to(targets.device)
 
         trg_mask = self.generate_square_subsequent_mask(targets).to(targets.device)
 
@@ -82,6 +82,7 @@ class Encoder(nn.Module):
     def forward(self, src_seq, src_key_padding_mask=None):
         src = self.src_word_emb(src_seq) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
+
         enc_output = self.dropout(src)
         enc_output = self.layer_norm(enc_output)
 
@@ -114,6 +115,7 @@ class Decoder(nn.Module):
                 memory_key_padding_mask=None):
         tgt = self.trg_word_emb(tgt) * math.sqrt(self.ninp)
         tgt = self.pos_encoder(tgt)
+
         dec_output = self.dropout(tgt)
         dec_output = self.layer_norm(dec_output)
 
