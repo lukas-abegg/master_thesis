@@ -57,6 +57,8 @@ class Predictor(nn.Module):
         dec_output = self._model_decode(self.init_seq, enc_output, src_key_padding_mask)
 
         best_k_prob, best_k_idx = dec_output[:, -1, :].topk(1)
+        best_k_idx = best_k_idx.to(self.device)
+
         gen_seq = torch.cat([self.init_seq[0], best_k_idx[0]], dim=0).unsqueeze(0)
         return gen_seq, enc_output
 
