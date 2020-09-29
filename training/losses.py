@@ -8,8 +8,7 @@ class TokenCrossEntropyLoss(nn.Module):
         super(TokenCrossEntropyLoss, self).__init__()
 
         self.pad_index = pad_index
-        self.softmax = nn.Softmax(dim=-1)
-        self.base_loss_function = nn.CrossEntropyLoss(reduction='sum', ignore_index=pad_index)
+        self.criterion = nn.CrossEntropyLoss(ignore_index=pad_index)
 
     def forward(self, outputs, targets):
         """
@@ -18,8 +17,7 @@ class TokenCrossEntropyLoss(nn.Module):
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        outputs_softmax = self.softmax(outputs)
-        outputs_flat = outputs_softmax.view(batch_size * seq_len, vocabulary_size)
+        outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
 
         targets_flat = targets.view(batch_size * seq_len)
 

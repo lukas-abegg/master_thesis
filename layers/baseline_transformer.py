@@ -74,19 +74,14 @@ class Encoder(nn.Module):
 
         encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
 
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-
-        self.dropout = nn.Dropout(p=dropout)
-        self.layer_norm = nn.LayerNorm(ninp, eps=1e-6)
+        self.layer_norm = nn.LayerNorm(ninp)
+        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers, self.layer_norm)
 
     def forward(self, src_seq, src_key_padding_mask=None):
         src = self.src_word_emb(src_seq) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
 
-        enc_output = self.dropout(src)
-        enc_output = self.layer_norm(enc_output)
-
-        enc_output = enc_output.transpose(0, 1)
+        enc_output = src.transpose(0, 1)
 
         memory = self.transformer_encoder(enc_output, src_key_padding_mask=src_key_padding_mask)
 
@@ -105,10 +100,8 @@ class Decoder(nn.Module):
 
         decoder_layers = TransformerDecoderLayer(ninp, nhead, nhid, dropout)
 
-        self.transformer_decoder = TransformerDecoder(decoder_layers, nlayers)
-
-        self.dropout = nn.Dropout(p=dropout)
-        self.layer_norm = nn.LayerNorm(ninp, eps=1e-6)
+        self.layer_norm = nn.LayerNorm(ninp)
+        self.transformer_decoder = TransformerDecoder(decoder_layers, nlayers, self.layer_norm)
 
     def forward(self, tgt, memory, tgt_mask=None,
                 memory_mask=None, tgt_key_padding_mask=None,
@@ -116,10 +109,7 @@ class Decoder(nn.Module):
         tgt = self.trg_word_emb(tgt) * math.sqrt(self.ninp)
         tgt = self.pos_encoder(tgt)
 
-        dec_output = self.dropout(tgt)
-        dec_output = self.layer_norm(dec_output)
-
-        dec_output = dec_output.transpose(0, 1)
+        dec_output = tgt.transpose(0, 1)
 
         output = self.transformer_decoder(tgt=dec_output, memory=memory, tgt_mask=tgt_mask,
                                           memory_mask=memory_mask, tgt_key_padding_mask=tgt_key_padding_mask,
@@ -158,8 +148,7 @@ class PositionalEncoding(nn.Module):
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) *
-                             -(math.log(10000.0) / d_model))
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0, 1)
