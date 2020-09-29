@@ -1,5 +1,5 @@
 {
-  "model_dir": "baseline_newsela_28092020/checkpoints/ninp\=768-n_layers\=6-nheads\=8-nhidden\=3072-dropout\=0.1-epochs\=30-batch_size\=6-optimizer\=AdamW-loss\=tk-2020_09_28_16_31_31",
+  "model_dir": "baseline_newsela_28092020/checkpoints/ninp=768-n_layers=6-nheads=8-nhidden=3072-dropout=0.1-epochs=30-batch_size=6-optimizer=AdamW-loss=tk-2020_09_28_16_31_31",
   "model_file": "epoch=006-val_loss=10.2-val_metrics=2.72e+04-0.0627.pth",
   "save_log": "logs/evaluation_baseline_newsela_27082020.log",
   "save_metrics": "logs/evaluation_metrics_baseline_newsela_28092020.log",
