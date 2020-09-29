@@ -58,6 +58,7 @@ class Predictor(nn.Module):
 
         best_k_prob, best_k_idx = dec_output[:, -1, :].topk(1)
         best_k_idx = best_k_idx.to(self.device)
+        self.init_seq = self.init_seq.to(self.device)
 
         gen_seq = torch.cat([self.init_seq[0], best_k_idx[0]], dim=0).unsqueeze(0)
         return gen_seq, enc_output
