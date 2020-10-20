@@ -17,9 +17,14 @@ class TokenCrossEntropyLoss(nn.Module):
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        outputs_flat = outputs.view(batch_size * seq_len, vocabulary_size)
+        outputs_flat = outputs.view(-1, vocabulary_size)
 
-        targets_flat = targets.view(batch_size * seq_len)
+        targets_flat = targets.view(-1)
+
+        print("\n", outputs_flat[0].topk(3).indices)
+        print("\n", outputs_flat[1].topk(3).indices)
+        print("\n", outputs_flat[2].topk(3).indices)
+        print("\n", targets_flat[0], targets_flat[1], targets_flat[2])
 
         batch_loss = self.criterion(outputs_flat, targets_flat)
 

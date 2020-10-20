@@ -7,7 +7,7 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer, TransformerDec
 class TransformerModel(nn.Module):
 
     def __init__(self, vocab_size, ninp, nhead, nhid, nlayers, dropout=0.1, embedding_layer=None, max_len=512,
-                 trg_emb_prj_weight_sharing=False, emb_src_trg_weight_sharing=False):
+                 trg_emb_prj_weight_sharing=False, emb_src_trg_weight_sharing=True):
         super(TransformerModel, self).__init__()
         self.ninp = ninp
 
@@ -47,9 +47,15 @@ class TransformerModel(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
+        initrange = 0.1
+        self.encoder.src_word_emb.encoder.weight.data.uniform_(-initrange, initrange)
+        self.decoder.trg_word_emb.encoder.weight.data.uniform_(-initrange, initrange)
+        self.trg_word_prj.bias.data.zero_()
+        self.trg_word_prj.weight.data.uniform_(-initrange, initrange)
+
     def forward(self, src, targets):
-        src_key_padding_mask = None  # self.generate_key_padding_mask(src).to(src.device)
-        trg_key_padding_mask = None  # self.generate_key_padding_mask(targets).to(targets.device)
+        src_key_padding_mask = self.generate_key_padding_mask(src).to(src.device)
+        trg_key_padding_mask = self.generate_key_padding_mask(targets).to(targets.device)
 
         trg_mask = self.generate_square_subsequent_mask(targets).to(targets.device)
 
