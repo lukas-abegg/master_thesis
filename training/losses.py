@@ -19,7 +19,7 @@ class TokenCrossEntropyLoss(nn.Module):
 
         outputs_flat = outputs.view(-1, vocabulary_size)
 
-        targets_flat = targets.view(-1)
+        targets_flat = targets.reshape(-1)
 
         print("\n", outputs_flat[0].topk(3).indices)
         print("\n", outputs_flat[1].topk(3).indices)

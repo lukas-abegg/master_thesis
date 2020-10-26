@@ -13,7 +13,7 @@ class AccuracyMetric(nn.Module):
         batch_size, seq_len, vocabulary_size = outputs.size()
 
         outputs = outputs.view(batch_size * seq_len, vocabulary_size)
-        targets = targets.view(batch_size * seq_len)
+        targets = targets.reshape(batch_size * seq_len)
 
         predicts = outputs.argmax(dim=1)
         corrects = predicts == targets

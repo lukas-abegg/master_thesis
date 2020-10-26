@@ -6,7 +6,7 @@
 
   "comet_project": "ts-newsela-baseline",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020",
+  "save_base_dir": "",
   "save_config": "checkpoints/baseline_newsela_28092020.json",
   "save_log": "logs/baseline_newsela_28092020.log",
   "print_every": 1,
@@ -15,12 +15,12 @@
   "model_path": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
 
   "epochs": 30,
-  "batch_size": 6,
-  "loss": "tk",
+  "batch_size": 12,
+  "loss": "ls",
   "label_smoothing": 0.1,
 
   "optimizer": "AdamW",
-  "optimizer_lr": 1e-3,
+  "optimizer_lr": 1e-4,
   "warmup_steps": 4000,
   "beta_1": 0.9,
   "beta_2": 0.999,
@@ -34,6 +34,6 @@
   "transformer_ninp": 512,
   "transformer_nheads": 8,
   "transformer_nhidden": 2048,
-  "transformer_dropout": 0.2,
+  "transformer_dropout": 0.1,
   "transformer_use_gate": false
 }
