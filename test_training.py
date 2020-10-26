@@ -58,7 +58,7 @@ MIN_FREQ = 2
 SRC.build_vocab(train.src, min_freq=MIN_FREQ)
 TGT.build_vocab(train.trg, min_freq=MIN_FREQ)
 
-BATCH_SIZE = 350
+BATCH_SIZE = 100
 # Create iterators to process text in batches of approx. the same length
 train_iter = data.BucketIterator(train, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 val_iter = data.BucketIterator(val, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
