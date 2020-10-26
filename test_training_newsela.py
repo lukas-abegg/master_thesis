@@ -186,6 +186,7 @@ target_vocab_length = len(tokenizer.vocab)
 
 model = MyTransformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
+model = model.cuda()
 
 
 def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
@@ -199,8 +200,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
 
         desc = '  - (Training)   '
         for batch in tqdm(train_iter, mininterval=2, desc=desc, leave=False):
-            src = batch.src
-            trg = batch.trg
+            src = batch.src.cuda() if use_gpu else batch.src
+            trg = batch.trg.cuda() if use_gpu else batch.trg
 
             trg_input = trg[:, :-1]
             targets = trg[:, 1:].contiguous().view(-1)
@@ -209,11 +210,13 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
 
             trg_mask = (trg_input != 0)
             trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+            trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
             size = trg_input.size(1)
             # print(size)
             np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
             np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
+            np_mask = np_mask.cuda() if use_gpu else np_mask
 
             # Forward, backprop, optimizer
             optim.zero_grad()
@@ -232,20 +235,22 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
             for batch in tqdm(val_iter, mininterval=2, desc=desc, leave=False):
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
+
                 # change to shape (bs , max_seq_len)
                 src = src.transpose(0, 1)
                 # change to shape (bs , max_seq_len+1) , Since right shifted
                 trg = trg.transpose(0, 1)
                 trg_input = trg[:, :-1]
                 targets = trg[:, 1:].contiguous().view(-1)
+
                 src_mask = (src != 0)
-                src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1,
-                                                                                                  float(0.0))
+                src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
                 src_mask = src_mask.cuda() if use_gpu else src_mask
+
                 trg_mask = (trg_input != 0)
-                trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1,
-                                                                                                  float(0.0))
+                trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
                 trg_mask = trg_mask.cuda() if use_gpu else trg_mask
+
                 size = trg_input.size(1)
                 # print(size)
                 np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
@@ -298,6 +303,7 @@ def greeedy_decode_sentence(model, sentence):
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
         np_mask = np_mask.cuda()
+
         pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
         add_word = tokenizer.convert_ids_to_tokens([pred.argmax(dim=2)[-1]])
         translated_sentence += " " + add_word
