@@ -91,7 +91,7 @@ class Newsela(TranslationDataset):
 
 # Add the following code anywhere in your machine learning file
 experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-                                 project_name="test_MK30_dataset",
+                                 project_name="test_newsela_dataset",
                                  workspace="abeggluk")
 experiment.display()
 
