@@ -49,8 +49,7 @@ TGT = data.Field(tokenize=tokenize_de, init_token=BOS_WORD,
 MAX_LEN = 20
 train, val, test = datasets.IWSLT.splits(
     exts=('.en', '.de'), fields=(SRC, TGT),
-    filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN
-                          and len(vars(x)['trg']) <= MAX_LEN)
+    filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and len(vars(x)['trg']) <= MAX_LEN)
 
 for i, example in enumerate([(x.src, x.trg) for x in train[0:5]]):
     print("Example_{}:{}".format(i, example))
@@ -157,8 +156,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         # Train model
         model.train()
 
-        desc = '  - (Training)   '
-        for batch in tqdm(train_iter, mininterval=2, desc=desc, leave=False):
+        print("Training started - ")
+        for i, batch in enumerate(train_iter):
             src = batch.src.cuda() if use_gpu else batch.src
             trg = batch.trg.cuda() if use_gpu else batch.trg
 
@@ -183,7 +182,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
 
             # Forward, backprop, optimizer
             optim.zero_grad()
-            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
+            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1),
+                          tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
             preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
             loss.backward()
@@ -196,8 +196,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         model.eval()
         with torch.no_grad():
 
-            desc = '  - (Validation)   '
-            for batch in tqdm(val_iter, mininterval=2, desc=desc, leave=False):
+            print("Evaluation started - ")
+            for i, batch in enumerate(val_iter):
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
 
@@ -209,11 +209,13 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                 targets = trg[:, 1:].contiguous().view(-1)
 
                 src_mask = (src != 0)
-                src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+                src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1,
+                                                                                                  float(0.0))
                 src_mask = src_mask.cuda() if use_gpu else src_mask
 
                 trg_mask = (trg_input != 0)
-                trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+                trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1,
+                                                                                                  float(0.0))
                 trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
                 size = trg_input.size(1)
