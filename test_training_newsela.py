@@ -264,13 +264,14 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                 valid_loss += loss.item() / 1
 
         # Log after each epoch
-        print(
-            f'''Epoch [{epoch + 1}/{num_epochs}] complete. Train Loss: {train_loss / len(train_iter):.3f}. Val Loss: {valid_loss / len(val_iter):.3f}''')
+        print("Epoch [{}/{}] complete. Train Loss: {0:.3f}. Val Loss: {0:.3f}".format(epoch + 1, num_epochs,
+                                                                                      train_loss / len(train_iter),
+                                                                                      valid_loss / len(val_iter)))
 
         # Save best model till now:
         if valid_loss / len(val_iter) < min(valid_losses, default=1e9):
             print("saving state dict")
-            torch.save(model.state_dict(), f"checkpoint_best_epoch.pt")
+            torch.save(model.state_dict(), "checkpoint_best_epoch.pt")
 
         train_losses.append(train_loss / len(train_iter))
         valid_losses.append(valid_loss / len(val_iter))
@@ -279,8 +280,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         sentences = ["This is an example to check how our model is performing.",
                      "We are searching for a running model."]
         for sentence in sentences:
-            print(f"Original Sentence: {sentence}")
-            print(f"Translated Sentence: {greeedy_decode_sentence(model, sentence)}")
+            print("Original Sentence: {}".format(sentence))
+            print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence)))
     return train_losses, valid_losses
 
 

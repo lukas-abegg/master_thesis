@@ -238,7 +238,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         # Save best model till now:
         if valid_loss / len(val_iter) < min(valid_losses, default=1e9):
             print("saving state dict")
-            torch.save(model.state_dict(), f"checkpoint_best_epoch.pt")
+            torch.save(model.state_dict(), "checkpoint_best_epoch.pt")
 
         train_losses.append(train_loss / len(train_iter))
         valid_losses.append(valid_loss / len(val_iter))
