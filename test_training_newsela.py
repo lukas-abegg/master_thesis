@@ -105,18 +105,21 @@ BOS_WORD = tokenizer.cls_token_id
 EOS_WORD = tokenizer.sep_token_id
 
 PATH = "newsela"
+MAX_LEN = 20
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
                                            fields=(SRC, TGT),
                                            train='train',
                                            validation='valid',
                                            test='test',
-                                           path=PATH)
+                                           path=PATH,
+                                           filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and len(vars(x)['trg']) <= MAX_LEN)
 
 BATCH_SIZE = 50
 
-train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data),
-                                                       batch_size=BATCH_SIZE)
+# Create iterators to process text in batches of approx. the same length
+train_iterator = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
+valid_iterator = BucketIterator(valid_data, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
 
 
 class PositionalEncoding(nn.Module):
