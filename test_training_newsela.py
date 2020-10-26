@@ -264,7 +264,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                 valid_loss += loss.item() / 1
 
         # Log after each epoch
-        print("Epoch [{}/{}] complete. Train Loss: {0:.3f}. Val Loss: {0:.3f}".format(epoch + 1, num_epochs,
+        print("Epoch [{0}/{1}] complete. Train Loss: {2:.3f}. Val Loss: {3:.3f}".format(epoch + 1, num_epochs,
                                                                                       train_loss / len(train_iter),
                                                                                       valid_loss / len(val_iter)))
 
