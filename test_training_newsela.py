@@ -294,11 +294,12 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         valid_losses.append(valid_loss / len(val_iter))
 
         # Check Example after each epoch:
-        sentences = ["This is an example to check how our model is performing.",
-                     "We are searching for a running model."]
-        for sentence in sentences:
+        sentences_expected = ["She is the only woman on her team .", "There are many reasons for the job gap ."]
+        sentences = ["'' I am the only woman on my team .", "There are many reasons for the gap between whites and blacks ."]
+        for i, sentence in enumerate(sentences):
             print("Original Sentence: {}".format(sentence))
             print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence)))
+            print("Expected Sentence: {}".format(sentences_expected[i]))
     return train_losses, valid_losses
 
 
