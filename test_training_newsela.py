@@ -24,11 +24,14 @@ from torchtext.datasets import TranslationDataset
 
 from transformers import BertTokenizer
 
+
+bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+
 spacy_en = spacy.load('en')
 
 
 def tokenize_en(text):
-    return [tok.text for tok in spacy_en.tokenizer(text)]
+    return [tok for tok in bert_tokenizer.tokenize(text)]
 
 
 # Special Tokens
@@ -215,10 +218,10 @@ target_vocab_length = len(TGT.vocab)
 
 model = MyTransformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
-model = model.cuda()
+model = model
 
 
-def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
+def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
     train_losses = []
     valid_losses = []
     for epoch in range(num_epochs):
@@ -328,23 +331,23 @@ def greeedy_decode_sentence(model, sentence):
             indexed.append(SRC.vocab.stoi[tok])
         else:
             indexed.append(0)
-    sentence = Variable(torch.LongTensor([indexed])).cuda()
+    sentence = Variable(torch.LongTensor([indexed]))
     trg_init_tok = TGT.vocab.stoi[BOS_WORD]
-    trg = torch.LongTensor([[trg_init_tok]]).cuda()
+    trg = torch.LongTensor([[trg_init_tok]])
     translated_sentence = ""
     maxlen = 25
     for i in range(maxlen):
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
-        np_mask = np_mask.cuda()
+        np_mask = np_mask
 
         pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
         add_word = TGT.vocab.itos[pred.argmax(dim=2)[-1]]
         translated_sentence += " " + add_word
         if add_word == EOS_WORD:
             break
-        trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).cuda()))
+        trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
         # print(trg)
     return translated_sentence
 
