@@ -202,8 +202,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         model.train()
 
         print("Training started - ")
-        desc = "Training - "
-        for batch in tqdm(train_iter, mininterval=2, desc=desc, leave=False):
+        for i, batch in enumerate(train_iter):
             src = batch.src.cuda() if use_gpu else batch.src
             trg = batch.trg.cuda() if use_gpu else batch.trg
 
@@ -234,9 +233,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         model.eval()
         with torch.no_grad():
 
-            print("Evaluation started - ")
-            desc = "Validation - "
-            for batch in tqdm(val_iter, mininterval=2, desc=desc, leave=False):
+            print("Validation started - ")
+            for i, batch in enumerate(val_iter):
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
 
