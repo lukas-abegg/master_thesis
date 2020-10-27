@@ -104,7 +104,7 @@ SRC, TGT = get_fields(100, tokenizer)
 BOS_WORD = tokenizer.cls_token_id
 EOS_WORD = tokenizer.sep_token_id
 
-PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020"
+PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
 MAX_LEN = 20
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
