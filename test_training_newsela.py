@@ -120,13 +120,18 @@ TGT.build_vocab(train_data.trg, min_freq=MIN_FREQ)
 BATCH_SIZE = 100
 
 # Create iterators to process text in batches of approx. the same length
-train_iter = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
-valid_iter = BucketIterator(valid_data, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
+train_iter, valid_iter = BucketIterator((train_data, valid_data), batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 
 batch = next(iter(train_iter))
 src_matrix = batch.src.T
 print(src_matrix, src_matrix.size())
+trg_matrix = batch.trg.T
+print(trg_matrix, trg_matrix.size())
 
+print("--------------")
+batch = next(iter(valid_iter))
+src_matrix = batch.src.T
+print(src_matrix, src_matrix.size())
 trg_matrix = batch.trg.T
 print(trg_matrix, trg_matrix.size())
 
