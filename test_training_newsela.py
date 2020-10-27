@@ -306,11 +306,13 @@ def greeedy_decode_sentence(model, sentence):
 
         pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
         add_word = tokenizer.convert_ids_to_tokens([pred.argmax(dim=2)[-1]])
-        translated_sentence += " " + add_word
+        print("add_word")
+        print(add_word)
+        translated_sentence += " " + add_word[0]
         if add_word == EOS_WORD:
             break
         trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).cuda()))
-        # print(trg)
+        print(trg)
     return translated_sentence
 
 
