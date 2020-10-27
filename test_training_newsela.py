@@ -24,36 +24,38 @@ from torchtext.datasets import TranslationDataset
 
 from transformers import BertTokenizer
 
+spacy_en = spacy.load('en')
+
+
+def tokenize_en(text):
+    return [tok.text for tok in spacy_en.tokenizer(text)]
+
+
+# Special Tokens
+BOS_WORD = '<s>'
+EOS_WORD = '</s>'
+BLANK_WORD = "<blank>"
+
 
 def get_fields(max_seq_length, tokenizer):
     # Model parameter
     MAX_SEQ_LEN = max_seq_length
-    PAD_INDEX = tokenizer.pad_token_id
-    UNK_INDEX = tokenizer.unk_token_id
-    EOS_INDEX = tokenizer.sep_token_id
-    INIT_INDEX = tokenizer.cls_token_id
 
-    src = Field(use_vocab=False,
-                tokenize=tokenizer.encode,
+    src = Field(tokenize=tokenizer,
                 lower=False,
                 include_lengths=False,
                 batch_first=True,
                 fix_length=MAX_SEQ_LEN,
-                pad_token=PAD_INDEX,
-                unk_token=UNK_INDEX,
-                init_token=INIT_INDEX,
-                eos_token=EOS_INDEX)
+                pad_token=BLANK_WORD)
 
-    trg = Field(use_vocab=False,
-                tokenize=tokenizer.encode,
+    trg = Field(tokenize=tokenizer,
                 lower=False,
                 include_lengths=False,
                 batch_first=True,
                 fix_length=MAX_SEQ_LEN,
-                pad_token=PAD_INDEX,
-                unk_token=UNK_INDEX,
-                init_token=INIT_INDEX,
-                eos_token=EOS_INDEX)
+                init_token=BOS_WORD,
+                eos_token=EOS_WORD,
+                pad_token=BLANK_WORD)
 
     return src, trg
 
@@ -95,14 +97,7 @@ experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
                                  workspace="abeggluk")
 experiment.display()
 
-# Load pre-trained model tokenizer (vocabulary)
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-
-SRC, TGT = get_fields(20, tokenizer)
-
-# Special Tokens
-BOS_WORD = tokenizer.cls_token_id
-EOS_WORD = tokenizer.sep_token_id
+SRC, TGT = get_fields(20, tokenize_en)
 
 PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
 MAX_LEN = 20
@@ -115,11 +110,31 @@ train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
                                            path=PATH,
                                            filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and len(vars(x)['trg']) <= MAX_LEN)
 
+for i, example in enumerate([(x.src, x.trg) for x in train_data[0:5]]):
+    print("Example_{}:{}".format(i, example))
+
+MIN_FREQ = 2
+SRC.build_vocab(train_data.src, min_freq=MIN_FREQ)
+TGT.build_vocab(train_data.trg, min_freq=MIN_FREQ)
+
 BATCH_SIZE = 100
 
 # Create iterators to process text in batches of approx. the same length
-train_iterator = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
-valid_iterator = BucketIterator(valid_data, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
+train_iter = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
+valid_iter = BucketIterator(valid_data, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
+
+batch = next(iter(train_iter))
+src_matrix = batch.src.T
+print(src_matrix, src_matrix.size())
+
+trg_matrix = batch.trg.T
+print(trg_matrix, trg_matrix.size())
+
+print(SRC.vocab.itos[1])
+print(TGT.vocab.itos[2])
+print(TGT.vocab.itos[1])
+
+print(TGT.vocab.stoi['</s>'])
 
 
 class PositionalEncoding(nn.Module):
@@ -184,8 +199,8 @@ class MyTransformer(nn.Module):
                 xavier_uniform_(p)
 
 
-source_vocab_length = len(tokenizer.vocab)
-target_vocab_length = len(tokenizer.vocab)
+source_vocab_length = len(SRC.vocab)
+target_vocab_length = len(TGT.vocab)
 
 model = MyTransformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
@@ -292,9 +307,12 @@ def greeedy_decode_sentence(model, sentence):
     sentence = SRC.preprocess(sentence)
     indexed = []
     for tok in sentence:
-        indexed.append(tok)
+        if SRC.vocab.stoi[tok] != 0:
+            indexed.append(SRC.vocab.stoi[tok])
+        else:
+            indexed.append(0)
     sentence = Variable(torch.LongTensor([indexed])).cuda()
-    trg_init_tok = BOS_WORD
+    trg_init_tok = TGT.vocab.stoi[BOS_WORD]
     trg = torch.LongTensor([[trg_init_tok]]).cuda()
     translated_sentence = ""
     maxlen = 25
@@ -305,15 +323,13 @@ def greeedy_decode_sentence(model, sentence):
         np_mask = np_mask.cuda()
 
         pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
-        add_word = tokenizer.convert_ids_to_tokens([pred.argmax(dim=2)[-1]])
-        print("add_word")
-        print(add_word)
-        translated_sentence += " " + add_word[0]
+        add_word = TGT.vocab.itos[pred.argmax(dim=2)[-1]]
+        translated_sentence += " " + add_word
         if add_word == EOS_WORD:
             break
         trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).cuda()))
-        print(trg)
+        # print(trg)
     return translated_sentence
 
 
-train_losses, valid_losses = train(train_iterator, valid_iterator, model, optim, 35)
+train_losses, valid_losses = train(train_iter, valid_iter, model, optim, 35)
