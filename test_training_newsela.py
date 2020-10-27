@@ -25,7 +25,7 @@ from torchtext.datasets import TranslationDataset
 from transformers import BertTokenizer
 
 
-def get_fields(max_seq_length, tokenizer: BertTokenizer):
+def get_fields(max_seq_length, tokenizer):
     # Model parameter
     MAX_SEQ_LEN = max_seq_length
     PAD_INDEX = tokenizer.pad_token_id
