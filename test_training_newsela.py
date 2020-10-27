@@ -104,7 +104,7 @@ SRC, TGT = get_fields(100, tokenizer)
 BOS_WORD = tokenizer.cls_token_id
 EOS_WORD = tokenizer.sep_token_id
 
-PATH = "newsela"
+PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020"
 MAX_LEN = 20
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
@@ -142,9 +142,9 @@ class PositionalEncoding(nn.Module):
 
 
 class MyTransformer(nn.Module):
-    def __init__(self, d_model: int = 512, nhead: int = 8, num_encoder_layers: int = 6,
-                 num_decoder_layers: int = 6, dim_feedforward: int = 2048, dropout: float = 0.1,
-                 activation: str = "relu", source_vocab_length: int = 60000, target_vocab_length: int = 60000) -> None:
+    def __init__(self, d_model=512, nhead=8, num_encoder_layers=6,
+                 num_decoder_layers=6, dim_feedforward=2048, dropout=0.1,
+                 activation="relu", source_vocab_length=60000, target_vocab_length=60000):
         super(MyTransformer, self).__init__()
         self.source_embedding = nn.Embedding(source_vocab_length, d_model)
         self.pos_encoder = PositionalEncoding(d_model)
@@ -160,10 +160,10 @@ class MyTransformer(nn.Module):
         self.d_model = d_model
         self.nhead = nhead
 
-    def forward(self, src: Tensor, tgt: Tensor, src_mask: Optional[Tensor] = None, tgt_mask: Optional[Tensor] = None,
-                memory_mask: Optional[Tensor] = None, src_key_padding_mask: Optional[Tensor] = None,
-                tgt_key_padding_mask: Optional[Tensor] = None,
-                memory_key_padding_mask: Optional[Tensor] = None) -> Tensor:
+    def forward(self, src, tgt, src_mask=None, tgt_mask=None,
+                memory_mask=None, src_key_padding_mask=None,
+                tgt_key_padding_mask=None,
+                memory_key_padding_mask=None):
         if src.size(1) != tgt.size(1):
             raise RuntimeError("the batch number of src and tgt must be equal")
         src = self.source_embedding(src)
@@ -223,8 +223,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
 
             # Forward, backprop, optimizer
             optim.zero_grad()
-            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1),
-                          tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
+            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
             preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
             loss.backward()
