@@ -292,7 +292,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                               tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
                 preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
                 loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
-                valid_loss += loss.item() / 1
+                valid_loss += loss.item() / BATCH_SIZE
 
                 experiment.log_metric("valid_loss", loss.item())
 
