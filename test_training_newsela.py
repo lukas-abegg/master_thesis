@@ -113,6 +113,11 @@ train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
 for i, example in enumerate([(x.src, x.trg) for x in train_data[0:5]]):
     print("Example_{}:{}".format(i, example))
 
+print("-------")
+
+for i, example in enumerate([(x.src, x.trg) for x in valid_data[0:5]]):
+    print("Example_{}:{}".format(i, example))
+
 MIN_FREQ = 2
 SRC.build_vocab(train_data.src, min_freq=MIN_FREQ)
 TGT.build_vocab(train_data.trg, min_freq=MIN_FREQ)
@@ -120,7 +125,8 @@ TGT.build_vocab(train_data.trg, min_freq=MIN_FREQ)
 BATCH_SIZE = 100
 
 # Create iterators to process text in batches of approx. the same length
-train_iter, valid_iter = BucketIterator((train_data, valid_data), batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
+train_iter = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
+valid_iter = BucketIterator(valid_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 
 batch = next(iter(train_iter))
 src_matrix = batch.src.T
@@ -248,6 +254,9 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
             loss.backward()
             optim.step()
+
+            experiment.log_metric("batch_loss", loss.item())
+
             train_loss += loss.item() / BATCH_SIZE
 
         model.eval()
@@ -284,6 +293,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                 preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
                 loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
                 valid_loss += loss.item() / 1
+
+                experiment.log_metric("valid_loss", loss.item())
 
         # Log after each epoch
         print("Epoch [{0}/{1}] complete. Train Loss: {2:.3f}. Val Loss: {3:.3f}".format(epoch + 1, num_epochs,
