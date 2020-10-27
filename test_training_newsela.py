@@ -98,7 +98,7 @@ experiment.display()
 # Load pre-trained model tokenizer (vocabulary)
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
-SRC, TGT = get_fields(100, tokenizer)
+SRC, TGT = get_fields(20, tokenizer)
 
 # Special Tokens
 BOS_WORD = tokenizer.cls_token_id
@@ -115,7 +115,7 @@ train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
                                            path=PATH,
                                            filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and len(vars(x)['trg']) <= MAX_LEN)
 
-BATCH_SIZE = 50
+BATCH_SIZE = 100
 
 # Create iterators to process text in batches of approx. the same length
 train_iterator = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
@@ -292,10 +292,7 @@ def greeedy_decode_sentence(model, sentence):
     sentence = SRC.preprocess(sentence)
     indexed = []
     for tok in sentence:
-        if tokenizer.convert_tokens_to_ids(tok) != 0:
-            indexed.append(tokenizer.convert_tokens_to_ids(tok))
-        else:
-            indexed.append(0)
+        indexed.append(tok)
     sentence = Variable(torch.LongTensor([indexed])).cuda()
     trg_init_tok = BOS_WORD
     trg = torch.LongTensor([[trg_init_tok]]).cuda()
