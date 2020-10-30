@@ -1,4 +1,5 @@
 import torch
+from torch.autograd import Variable
 import numpy as np
 from tqdm import tqdm
 
@@ -18,7 +19,8 @@ class EpochTrainer:
                  optimizer, scheduler,
                  logger, run_name,
                  save_config,
-                 config, experiment: Experiment = None):
+                 config, experiment: Experiment = None,
+                 SRC=None, TRG=None):
 
         self.base_dir = base_dir
 
@@ -40,6 +42,9 @@ class EpochTrainer:
         self.logger = logger
         self.checkpoint_dir = join(self.base_dir, 'checkpoints', run_name)
         self.experiment = experiment
+
+        self.SRC = SRC
+        self.TRG = TRG
 
         logger.info("Save checkpoints in {}".format(self.checkpoint_dir))
 
@@ -90,23 +95,44 @@ class EpochTrainer:
         else:
             desc = '  - (Validation)   '
 
-        for batch in tqdm(dataloader, mininterval=2, desc=desc, leave=False):
+        for batch in tqdm(dataloader, desc=desc, leave=False):
             self.step = self.step + 1
-
-            sources = batch.src
-            sources = sources.to(self.device)
-            targets = batch.trg
-            targets = targets.to(self.device)
 
             if self.experiment is not None:
                 self.experiment.set_step(self.step)
 
-            outputs = self.model(sources, targets)
+            src = batch.src
+            src = src.to(self.device)
+            trg = batch.trg
+            trg = trg.to(self.device)
+
+            trg_input = trg[:, :-1]
+            targets = trg[:, 1:].contiguous().view(-1)
+
+            src_mask = (src != self.SRC.vocab.stoi['[PAD]'])
+            src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+            src_mask = src_mask.to(self.device)
+
+            memory_mask = src_mask.clone()
+            memory_mask = memory_mask.to(self.device)
+
+            size = trg_input.size(1)
+            # print(size)
+            np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
+            np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
+            np_mask = np_mask.to(self.device)
+
+            if mode == 'train':
+                self.optimizer.zero_grad()
+
+            outputs = self.model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)#,
+                                 #src_key_padding_mask=src_mask, memory_key_padding_mask=memory_mask)
+
+            outputs = outputs.transpose(0, 1)
 
             batch_loss, batch_count = self.loss_function(outputs, targets)
 
             if mode == 'train':
-                self.optimizer.zero_grad()
                 batch_loss.backward()
                 if self.clip_grads:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
@@ -158,6 +184,22 @@ class EpochTrainer:
 
             with torch.no_grad():
                 val_epoch_loss, val_epoch_metrics = self.run_epoch(self.val_iterator, mode='val')
+
+                # Check Example after each epoch:
+                sentences = [
+                    "He saw media coverage of the event , and was horrified .",
+                    "Ministers across Alabama reacted in varying ways to the arrival of same-sex marriage in the state ."
+                ]
+
+                sentences_expected = [
+                    "He saw news coverage of the event .",
+                    "Ministers across Alabama reacted in different ways ."
+                ]
+
+                for i, sentence in enumerate(sentences):
+                    print("Original Sentence: {}".format(sentence))
+                    print("Translated Sentence: {}".format(self._greeedy_decode_sentence(sentence)))
+                    print("Expected Sentence: {}".format(sentences_expected[i]))
 
             """ Log Metrics for Epoch"""
             if self.epoch % self.print_every == 0 and self.logger:
@@ -239,3 +281,43 @@ class EpochTrainer:
         now = datetime.now()
         elapsed = now - self.start_time
         return str(elapsed).split('.')[0]  # remove milliseconds
+
+    def _greeedy_decode_sentence(self, sentence):
+        sentence = self.SRC.preprocess(sentence)
+        indexed = []
+
+        for tok in sentence:
+            if self.SRC.vocab.stoi[tok] != 1:
+                indexed.append(self.SRC.vocab.stoi[tok])
+            else:
+                indexed.append(1)
+        sentence = Variable(torch.LongTensor([indexed])).to(self.device)
+        trg_init_tok = self.TRG.vocab.stoi["[CLS]"]
+        trg = torch.LongTensor([[trg_init_tok]]).to(self.device)
+        translated_sentence = ""
+        maxlen = 25
+        for i in range(maxlen):
+
+            src_mask = (sentence != self.SRC.vocab.stoi['[PAD]'])
+            src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+            src_mask = src_mask.to(self.device)
+
+            memory_mask = src_mask.clone()
+            memory_mask = memory_mask.to(self.device)
+
+            size = trg.size(0)
+            np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
+            np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
+            np_mask = np_mask.to(self.device)
+
+            pred = self.model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)#,
+                              #src_key_padding_mask=src_mask, memory_key_padding_mask=memory_mask)
+            pred = pred.transpose(0, 1)
+
+            add_word = self.TRG.vocab.itos[pred.argmax(dim=2)[-1]]
+            translated_sentence += " " + add_word
+            if add_word == "[SEP]":
+                break
+            trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
+            # print(trg)
+        return translated_sentence

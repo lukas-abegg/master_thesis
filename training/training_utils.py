@@ -28,7 +28,7 @@ def init_logger(hyperparameter_config):
     run_name = run_name_format.format(**hyperparameter_config, timestamp=datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
 
     logger = get_logger(run_name, save_log=hyperparameter_config['save_log'])
-    logger.info(f'Run name : {run_name}')
+    logger.info('Run name : {}'.format(run_name))
     logger.info(hyperparameter_config)
 
     return logger, run_name
@@ -38,8 +38,12 @@ def init_logger(hyperparameter_config):
 
 
 def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tokenizer: BertTokenizer):
+
     PATH = os.path.join(base_dir, dataset_config[hyperparameter_config["bert_model"]]["path"])
     print("Load {} dataset from {}".format(dataset_name, PATH))
+
+    BATCH_SIZE = hyperparameter_config["batch_size"]
+    MAX_LEN = dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"]
 
     if dataset_name == 'newsela':
         SRC, TRG = newsela_fields(dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"], tokenizer)
@@ -49,20 +53,35 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
                                                    train='train',
                                                    validation='valid',
                                                    test='test',
-                                                   path=PATH)
+                                                   path=PATH,
+                                                   filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
+                                                                         len(vars(x)['trg']) <= MAX_LEN)
+
     else:  # WikiSimple
         SRC, TRG = wikisimple_fields(dataset_config['max_seq_length'], tokenizer)
 
-        train_data, valid_data, _ = WikiSimple.splits(exts=('.src', '.dst'),
+        train_data, valid_data, train_data = WikiSimple.splits(exts=('.src', '.dst'),
                                                       fields=(SRC, TRG),
                                                       train='train',
                                                       validation='valid',
                                                       test='test',
-                                                      path=PATH)
+                                                      path=PATH,
+                                                      filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
+                                                                            len(vars(x)['trg']) <= MAX_LEN)
 
-    BATCH_SIZE = hyperparameter_config['batch_size']
+    SRC.build_vocab(train_data.src, valid_data.src, train_data.src)
+    TRG.build_vocab(train_data.trg, valid_data.trg, train_data.trg)
 
-    train_iterator, valid_iterator = BucketIterator.splits((train_data, valid_data),
-                                                           batch_size=BATCH_SIZE)
+    # Create iterators to process text in batches of approx. the same length
+    train_iterator = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
+    valid_iterator = BucketIterator(valid_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 
-    return train_iterator, valid_iterator, [len(train_iterator), len(valid_iterator)]
+    for i, example in enumerate([(x.src, x.trg) for x in train_data[0:5]]):
+        print("Example_{}:{}".format(i, example))
+
+    print("-------")
+
+    for i, example in enumerate([(x.src, x.trg) for x in valid_data[0:5]]):
+        print("Example_{}:{}".format(i, example))
+
+    return train_iterator, valid_iterator, [len(train_iterator), len(valid_iterator)], SRC, TRG

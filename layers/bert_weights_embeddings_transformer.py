@@ -24,19 +24,6 @@ class TransformerModel(nn.Module):
             self.trg_word_prj.weight = self.decoder.trg_word_emb.encoder.weight
             self.x_logit_scale = (ninp ** -0.5)
 
-    @staticmethod
-    def generate_key_padding_mask(seq):
-        # x: (batch_size, seq_len)
-        pad_mask = seq == 0  # (batch_size, seq_len)
-        return pad_mask
-
-    @staticmethod
-    def generate_square_subsequent_mask(seq):
-        sz_b, len_s = seq.size()
-        mask = (torch.triu(torch.ones(len_s, len_s)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
-
     def init_weights(self, embedding_layer):
         r"""Initiate parameters in the transformer model."""
 
@@ -143,7 +130,7 @@ class Embedding(nn.Module):
         self.vocab_size = vocab_size
         self.ninp = ninp
 
-        self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=0)
+        self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=1)
 
     def forward(self, x):
         return self.encoder(x)

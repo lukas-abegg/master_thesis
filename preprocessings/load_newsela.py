@@ -6,15 +6,18 @@ from transformers import BertTokenizer
 
 
 def get_fields(max_seq_length, tokenizer: BertTokenizer):
+
     # Model parameter
     MAX_SEQ_LEN = max_seq_length
-    PAD_INDEX = tokenizer.pad_token_id
-    UNK_INDEX = tokenizer.unk_token_id
-    EOS_INDEX = tokenizer.sep_token_id
-    INIT_INDEX = tokenizer.cls_token_id
+    PAD_INDEX = tokenizer.pad_token
+    UNK_INDEX = tokenizer.unk_token
+    EOS_INDEX = tokenizer.sep_token
+    INIT_INDEX = tokenizer.cls_token
 
-    src = Field(use_vocab=False,
-                tokenize=tokenizer.encode,
+    def tokenize(text):
+        return [tok for tok in tokenizer.tokenize(text)]
+
+    src = Field(tokenize=tokenize,
                 lower=False,
                 include_lengths=False,
                 batch_first=True,
@@ -24,8 +27,7 @@ def get_fields(max_seq_length, tokenizer: BertTokenizer):
                 init_token=INIT_INDEX,
                 eos_token=EOS_INDEX)
 
-    trg = Field(use_vocab=False,
-                tokenize=tokenizer.encode,
+    trg = Field(tokenize=tokenize,
                 lower=False,
                 include_lengths=False,
                 batch_first=True,

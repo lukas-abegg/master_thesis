@@ -4,11 +4,11 @@ from torch import nn
 
 class TokenCrossEntropyLoss(nn.Module):
 
-    def __init__(self, pad_index=0):
+    def __init__(self, pad_index=1):
         super(TokenCrossEntropyLoss, self).__init__()
 
         self.pad_index = pad_index
-        self.criterion = nn.CrossEntropyLoss(ignore_index=pad_index)
+        self.criterion = nn.CrossEntropyLoss(ignore_index=pad_index, reduction='sum')
 
     def forward(self, outputs, targets):
         """
@@ -17,16 +17,9 @@ class TokenCrossEntropyLoss(nn.Module):
         """
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        outputs_flat = outputs.view(-1, vocabulary_size)
+        outputs = outputs.contiguous().view(-1, vocabulary_size)
 
-        targets_flat = targets.reshape(-1)
-
-        print("\n", outputs_flat[0].topk(3).indices)
-        print("\n", outputs_flat[1].topk(3).indices)
-        print("\n", outputs_flat[2].topk(3).indices)
-        print("\n", targets_flat[0], targets_flat[1], targets_flat[2])
-
-        batch_loss = self.criterion(outputs_flat, targets_flat)
+        batch_loss = self.criterion(outputs, targets)
 
         count = (targets != self.pad_index).sum().item()
 
@@ -40,7 +33,7 @@ class LabelSmoothingLoss(nn.Module):
     and p_{prob. computed by model}(w) is minimized.
     """
 
-    def __init__(self, label_smoothing, vocabulary_size, pad_index=0):
+    def __init__(self, label_smoothing, vocabulary_size, pad_index=1):
         assert 0.0 < label_smoothing <= 1.0
 
         super(LabelSmoothingLoss, self).__init__()
@@ -64,15 +57,14 @@ class LabelSmoothingLoss(nn.Module):
         batch_size, seq_len, vocabulary_size = outputs.size()
 
         outputs_log_softmax = self.log_softmax(outputs)
-        outputs_flat = outputs_log_softmax.view(batch_size * seq_len, vocabulary_size)
-        targets_flat = targets.view(batch_size * seq_len)
+        outputs_flat = outputs_log_softmax.contiguous().view(-1, vocabulary_size)
 
-        smoothed_targets = self.smoothed_targets.repeat(targets_flat.size(0), 1)
+        smoothed_targets = self.smoothed_targets.repeat(targets.size(0), 1)
         smoothed_targets = smoothed_targets
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-        smoothed_targets.scatter_(1, targets_flat.unsqueeze(1), self.confidence)
+        smoothed_targets.scatter_(1, targets.unsqueeze(1), self.confidence)
         # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-        smoothed_targets.masked_fill_((targets_flat == self.pad_index).unsqueeze(1), 0)
+        smoothed_targets.masked_fill_((targets == self.pad_index).unsqueeze(1), 0)
         # masked_targets: (batch_size * seq_len, vocabulary_size)
 
         loss = self.criterion(outputs_flat, smoothed_targets)

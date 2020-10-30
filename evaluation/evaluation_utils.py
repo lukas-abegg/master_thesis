@@ -41,27 +41,40 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
     PATH = os.path.join(base_dir, dataset_config[hyperparameter_config["bert_model"]]["path"])
     print("Load {} dataset from {}".format(dataset_name, PATH))
 
+    BATCH_SIZE = hyperparameter_config["batch_size"]
+    MAX_LEN = os.path.join(base_dir, dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"])
+
     if dataset_name == 'newsela':
         SRC, TRG = newsela_fields(dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"], tokenizer)
 
-        _, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
-                                                  fields=(SRC, TRG),
-                                                  train='train',
-                                                  validation='valid',
-                                                  test='test',
-                                                  path=PATH)
+        train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
+                                                           fields=(SRC, TRG),
+                                                           train='train',
+                                                           validation='valid',
+                                                           test='test',
+                                                           path=PATH,
+                                                           filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
+                                                                                 len(vars(x)['trg']) <= MAX_LEN)
+
     else:  # WikiSimple
         SRC, TRG = newsela_fields(dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"], tokenizer)
 
-        _, valid_data, test_data = WikiSimple.splits(exts=('.src', '.dst'),
-                                                     fields=(SRC, TRG),
-                                                     train='train',
-                                                     validation='valid',
-                                                     test='test',
-                                                     path=PATH)
+        train_data, valid_data, test_data = WikiSimple.splits(exts=('.src', '.dst'),
+                                                              fields=(SRC, TRG),
+                                                              train='train',
+                                                              validation='valid',
+                                                              test='test',
+                                                              path=PATH,
+                                                              filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
+                                                                                    len(vars(x)['trg']) <= MAX_LEN)
 
-    BATCH_SIZE = hyperparameter_config['batch_size']
+    SRC.build_vocab(train_data.src, valid_data.src, train_data.src)
+    TRG.build_vocab(train_data.trg, valid_data.trg, train_data.trg)
 
-    valid_iterator, test_iterator = BucketIterator.splits((valid_data, test_data), batch_size=BATCH_SIZE)
+    # Create iterators to process text in batches of approx. the same length
+    test_iterator = BucketIterator(test_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 
-    return test_iterator, len(test_iterator)
+    for i, example in enumerate([(x.src, x.trg) for x in test_data[0:5]]):
+        print("Example_{}:{}".format(i, example))
+
+    return test_iterator, len(test_iterator), SRC, TRG

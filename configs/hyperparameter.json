@@ -6,7 +6,7 @@
 
   "comet_project": "ts-newsela-baseline",
 
-  "save_base_dir": "",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020"
   "save_config": "checkpoints/baseline_newsela_28092020.json",
   "save_log": "logs/baseline_newsela_28092020.log",
   "print_every": 1,
@@ -15,8 +15,8 @@
   "model_path": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
 
   "epochs": 30,
-  "batch_size": 12,
-  "loss": "ls",
+  "batch_size":100,
+  "loss": "tk",
   "label_smoothing": 0.1,
 
   "optimizer": "AdamW",

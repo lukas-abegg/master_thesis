@@ -3,7 +3,7 @@ from torch import nn
 
 class AccuracyMetric(nn.Module):
 
-    def __init__(self, pad_index=0):
+    def __init__(self, pad_index=1):
         super(AccuracyMetric, self).__init__()
 
         self.pad_index = pad_index
@@ -12,8 +12,7 @@ class AccuracyMetric(nn.Module):
 
         batch_size, seq_len, vocabulary_size = outputs.size()
 
-        outputs = outputs.view(batch_size * seq_len, vocabulary_size)
-        targets = targets.reshape(batch_size * seq_len)
+        outputs = outputs.contiguous().view(-1, vocabulary_size)
 
         predicts = outputs.argmax(dim=1)
         corrects = predicts == targets
@@ -21,6 +20,7 @@ class AccuracyMetric(nn.Module):
         corrects.masked_fill_((targets == self.pad_index), 0)
 
         correct_count = corrects.sum().item()
+
         count = (targets != self.pad_index).sum().item()
 
         return correct_count, count

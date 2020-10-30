@@ -51,27 +51,30 @@ if __name__ == "__main__":
     bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_save)
     tokenizer = bert_model_loader.tokenizer
 
+    # Load Dataset
+    logger.info('Loading dataset...')
+    train_iterator, valid_iterator, lengths_sets, SRC, TRG = load_data(base_dir_save, dataset_name, dataset_config,
+                                                                       hyperparameter_config, tokenizer)
+
+    source_vocab_length = len(SRC.vocab)
+    target_vocab_length = len(TRG.vocab)
+
     # Load Transformer
     logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, bert_model_loader.tokenizer)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length)
     load_weights = hyperparameter_config['load_weights']
     if load_weights:
         model = load_model(model, base_dir_save, hyperparameter_config)
 
-    # Load Dataset
-    logger.info('Loading dataset...')
-    train_iterator, valid_iterator, lengths_sets = load_data(base_dir_save, dataset_name, dataset_config, hyperparameter_config,
-                                                             tokenizer)
-
     # Load Loss, Accuracy, Optimizer
     if hyperparameter_config['loss'] == "tk":
-        loss_function = TokenCrossEntropyLoss(pad_index=tokenizer.pad_token_id)
+        loss_function = TokenCrossEntropyLoss(pad_index=TRG.vocab.stoi['[PAD]'])
     else:
         loss_function = LabelSmoothingLoss(label_smoothing=hyperparameter_config['label_smoothing'],
                                            vocabulary_size=len(tokenizer.vocab),
-                                           pad_index=tokenizer.pad_token_id)
+                                           pad_index=TRG.vocab.stoi['[PAD]'])
 
-    accuracy_function = AccuracyMetric()
+    accuracy_function = AccuracyMetric(pad_index=TRG.vocab.stoi['[PAD]'])
     optimizer = None
     if hyperparameter_config['optimizer'] == 'Noam':
         optimizer = NoamOptimizer(model.parameters(), d_model=hyperparameter_config['transformer_ninp'],
@@ -103,7 +106,9 @@ if __name__ == "__main__":
             run_name=run_name,
             save_config=hyperparameter_config['save_config'],
             config=hyperparameter_config,
-            experiment=experiment
+            experiment=experiment,
+            SRC=SRC,
+            TRG=TRG
         )
 
         if experiment is not None:

@@ -19,7 +19,7 @@ class Embedding(nn.Module):
         self.ninp = ninp
 
         if embedding_layer is None:
-            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=0)
+            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=1)
         else:
             self.encoder = embedding_layer
 

@@ -27,19 +27,6 @@ class TransformerModel(nn.Module):
 
         self.init_weights()
 
-    @staticmethod
-    def generate_key_padding_mask(seq):
-        # x: (batch_size, seq_len)
-        batch_size, seq_len = seq.size()
-        pad_mask = seq == 0  # (batch_size, seq_len)
-        return pad_mask
-
-    @staticmethod
-    def generate_square_subsequent_mask(sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
-
     def init_weights(self):
         r"""Initiate parameters in the transformer model."""
 
@@ -216,7 +203,7 @@ class Embedding(nn.Module):
         self.ninp = ninp
 
         if embedding_layer is None:
-            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=0)
+            self.encoder = nn.Embedding(vocab_size, ninp, padding_idx=1)
         else:
             self.encoder = embedding_layer
 

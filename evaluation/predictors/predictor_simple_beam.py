@@ -24,10 +24,10 @@ class Predictor(nn.Module):
 
         # Model parameter
         self.max_seq_len = max_length
-        self.src_pad_idx = tokenizer.pad_token_id
-        self.trg_pad_idx = tokenizer.pad_token_id
-        self.trg_bos_idx = tokenizer.cls_token_id
-        self.trg_eos_idx = tokenizer.sep_token_id
+        self.src_pad_idx = 1
+        self.trg_pad_idx = 1
+        self.trg_bos_idx = 2
+        self.trg_eos_idx = 3
 
         # Softmax
         self.softmax = nn.Softmax(dim=-1)

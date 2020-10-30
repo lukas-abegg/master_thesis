@@ -88,12 +88,15 @@ if __name__ == "__main__":
     bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_load)
     tokenizer = bert_model_loader.tokenizer
 
-    # Load Transformer
-    print('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, tokenizer)
-
     # Load Data
     origins = load_origins(os.path.join(BASE_DIR, prediction_config['origins_path']))
+
+    source_vocab_length = prediction_config['source_vocab_length']
+    target_vocab_length = prediction_config['target_vocab_length']
+
+    # Load Transformer
+    print('Loading transformer...')
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length)
 
     # Load Predictor
     try:

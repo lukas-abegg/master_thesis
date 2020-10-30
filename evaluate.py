@@ -21,7 +21,7 @@ from build_models.choose_model import build_model
 from utils.tracking import load_tracking, stop_tracking
 
 
-def load_predictor(base_dir_load, model, beam_approach, evaluation_config, dataset_config, hyperparameter_config, tokenizer, device):
+def load_predictor(base_dir_load, model, beam_approach, evaluation_config, dataset_config, hyperparameter_config, tokenizer, device, SRC, TRG):
     checkpoint_filepath = os.path.join(base_dir_load, evaluation_config["model_dir"], evaluation_config["model_file"])
     max_length = dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"]
     beam_size = evaluation_config["beam_size"]
@@ -121,13 +121,17 @@ if __name__ == "__main__":
     bert_model_loader = BertModelLoader(bert_model_name, BASE_DIR, base_dir_load)
     tokenizer = bert_model_loader.tokenizer
 
-    # Load Transformer
-    logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, tokenizer)
-
     # Load Dataset
     logger.info('Loading dataset...')
-    test_iterator, length_set = load_data(base_dir_load, dataset_name, dataset_config, hyperparameter_config, tokenizer)
+    test_iterator, length_set, SRC, TRG = load_data(base_dir_load, dataset_name, dataset_config, hyperparameter_config,
+                                                    tokenizer)
+
+    source_vocab_length = len(SRC.vocab)
+    target_vocab_length = len(TRG.vocab)
+
+    # Load Transformer
+    logger.info('Loading transformer...')
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length)
 
     # Load Predictor
     try:

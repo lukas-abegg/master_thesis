@@ -9,7 +9,7 @@ nltk.download('wordnet')
 
 class Evaluator:
 
-    def __init__(self, predictor, save_filepath, test_iterator, logger, config, device, experiment=None):
+    def __init__(self, predictor, save_filepath, test_iterator, logger, config, device, experiment=None, SRC=None, TRG=None):
 
         self.test_iterator = test_iterator
         self.predictor = predictor
@@ -25,6 +25,9 @@ class Evaluator:
         self.config = config
         self.experiment = experiment
         self.device = device
+
+        self.SRC = SRC
+        self.TRG = TRG
 
     def _evaluate_sentence_bleu_and_meteor(self, origins, tokenized_origins, references,
                                            tokenized_references, hypotheses, tokenized_hypotheses, round):
