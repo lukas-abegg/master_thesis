@@ -150,8 +150,13 @@ class EpochTrainer:
 
             if self.experiment is not None:
                 batch_loss_to_log = batch_loss_item / batch_count
-                self.experiment.log_metric("batch_loss", batch_loss_to_log)
-                self.experiment.log_metric("batch_accuracy", batch_metric)
+
+                if mode == "train":
+                    self.experiment.log_metric("train_batch_loss_sum", batch_loss_to_log)
+                    self.experiment.log_metric("train_batch_accuracy_sum", batch_metric)
+                else:
+                    self.experiment.log_metric("valid_batch_loss_sum", batch_loss_to_log)
+                    self.experiment.log_metric("valid_batch_accuracy_sum", batch_metric)
 
         epoch_loss = sum(batch_losses) / sum(batch_counts)
         epoch_accuracy = sum(batch_metrics) / sum(batch_counts)
@@ -310,9 +315,7 @@ class EpochTrainer:
             np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
             np_mask = np_mask.to(self.device)
 
-            pred = self.model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)#,
-                              #src_key_padding_mask=src_mask, memory_key_padding_mask=memory_mask)
-            pred = pred.transpose(0, 1)
+            pred = self.model(sentence.transpose(0, 1), trg, tgt_mask=np_mask) #, src_key_padding_mask=src_mask, memory_key_padding_mask=memory_mask)
 
             add_word = self.TRG.vocab.itos[pred.argmax(dim=2)[-1]]
             translated_sentence += " " + add_word

@@ -48,7 +48,7 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
     if dataset_name == 'newsela':
         SRC, TRG = newsela_fields(dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"], tokenizer)
 
-        train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
+        train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                    fields=(SRC, TRG),
                                                    train='train',
                                                    validation='valid',
@@ -60,7 +60,7 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
     else:  # WikiSimple
         SRC, TRG = wikisimple_fields(dataset_config['max_seq_length'], tokenizer)
 
-        train_data, valid_data, train_data = WikiSimple.splits(exts=('.src', '.dst'),
+        train_data, valid_data, test_data = WikiSimple.splits(exts=('.src', '.dst'),
                                                       fields=(SRC, TRG),
                                                       train='train',
                                                       validation='valid',
@@ -69,8 +69,8 @@ def load_data(base_dir, dataset_name, dataset_config, hyperparameter_config, tok
                                                       filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
                                                                             len(vars(x)['trg']) <= MAX_LEN)
 
-    SRC.build_vocab(train_data.src, valid_data.src, train_data.src)
-    TRG.build_vocab(train_data.trg, valid_data.trg, train_data.trg)
+    SRC.build_vocab(train_data.src, valid_data.src, test_data.src)
+    TRG.build_vocab(train_data.trg, valid_data.trg, test_data.trg)
 
     # Create iterators to process text in batches of approx. the same length
     train_iterator = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
