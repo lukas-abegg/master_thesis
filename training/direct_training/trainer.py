@@ -109,12 +109,12 @@ class EpochTrainer:
             trg_input = trg[:, :-1]
             targets = trg[:, 1:].contiguous().view(-1)
 
-            src_mask = (src != self.SRC.vocab.stoi['[PAD]'])
-            src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
-            src_mask = src_mask.to(self.device)
-
-            memory_mask = src_mask.clone()
-            memory_mask = memory_mask.to(self.device)
+            # src_mask = (src != self.SRC.vocab.stoi['[PAD]'])
+            # src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+            # src_mask = src_mask.to(self.device)
+            #
+            # memory_mask = src_mask.clone()
+            # memory_mask = memory_mask.to(self.device)
 
             size = trg_input.size(1)
             # print(size)
@@ -298,12 +298,12 @@ class EpochTrainer:
         maxlen = 25
         for i in range(maxlen):
 
-            src_mask = (sentence != self.SRC.vocab.stoi['[PAD]'])
-            src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
-            src_mask = src_mask.to(self.device)
-
-            memory_mask = src_mask.clone()
-            memory_mask = memory_mask.to(self.device)
+            # src_mask = (sentence != self.SRC.vocab.stoi['[PAD]'])
+            # src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+            # src_mask = src_mask.to(self.device)
+            #
+            # memory_mask = src_mask.clone()
+            # memory_mask = memory_mask.to(self.device)
 
             size = trg.size(0)
             np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
