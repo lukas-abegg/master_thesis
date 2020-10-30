@@ -1,10 +1,10 @@
 {
   "bert_base": {
     "max_seq_length": 150,
-    "path": "data/test/newsela"
+    "path": "data/newsela/splits/bert_base"
   },
   "bio_bert": {
     "max_seq_length": 150,
-    "path": "data/newsela/splits/bert_base"
+    "path": "data/newsela/splits/bio_bert"
   }
 }
