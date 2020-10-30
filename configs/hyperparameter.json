@@ -15,7 +15,7 @@
   "model_path": "epoch=005-val_loss=3.98-val_metrics=53.6-0.0705.pth",
 
   "epochs": 30,
-  "batch_size":75,
+  "batch_size":25,
   "loss": "tk",
   "label_smoothing": 0.1,
 
