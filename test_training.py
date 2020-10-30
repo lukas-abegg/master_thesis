@@ -249,11 +249,11 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         sentences = ["This is an example to check how our model is performing."]
         for sentence in sentences:
             print("Original Sentence: {}".format(sentence))
-            print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence)))
+            print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence, use_gpu)))
     return train_losses, valid_losses
 
 
-def greeedy_decode_sentence(model, sentence):
+def greeedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
     sentence = SRC.preprocess(sentence)
     indexed = []
@@ -262,25 +262,33 @@ def greeedy_decode_sentence(model, sentence):
             indexed.append(SRC.vocab.stoi[tok])
         else:
             indexed.append(0)
-    sentence = Variable(torch.LongTensor([indexed])).cuda()
+    sentence = Variable(torch.LongTensor([indexed]))
     trg_init_tok = TGT.vocab.stoi[BOS_WORD]
-    trg = torch.LongTensor([[trg_init_tok]]).cuda()
+    trg = torch.LongTensor([[trg_init_tok]])
     translated_sentence = ""
+
+    if use_gpu:
+        sentence = sentence.cuda()
+        trg = trg.cuda()
+
     maxlen = 25
     for i in range(maxlen):
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
-        np_mask = np_mask.cuda()
+        np_mask = np_mask.cuda() if use_gpu else np_mask
 
         pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
         add_word = TGT.vocab.itos[pred.argmax(dim=2)[-1]]
         translated_sentence += " " + add_word
         if add_word == EOS_WORD:
             break
-        trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).cuda()))
+        if use_gpu:
+            trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).cuda()))
+        else:
+            trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
         # print(trg)
     return translated_sentence
 
 
-train_losses, valid_losses = train(train_iter, val_iter, model, optim, 35)
+train_losses, valid_losses = train(train_iter, val_iter, model, optim, 35, True)

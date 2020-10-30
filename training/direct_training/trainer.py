@@ -318,6 +318,6 @@ class EpochTrainer:
             translated_sentence += " " + add_word
             if add_word == "[SEP]":
                 break
-            trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
+            trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]]).to(self.device)))
             # print(trg)
         return translated_sentence
