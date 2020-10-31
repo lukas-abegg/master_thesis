@@ -26,7 +26,10 @@ def build_model(hyperparameter_config, dataset_config, bert_model, source_vocab_
         return build_baseline(hyperparameter_config, dataset_config, source_vocab_length, target_vocab_length)
 
 
-def load_model(model, base_dir, hyperparameter_config):
-    PATH = os.path.join(base_dir, hyperparameter_config['model_path'])
+def load_model(model, base_dir=None, hyperparameter_config=None):
+    if base_dir:
+        PATH = os.path.join(base_dir, hyperparameter_config['model_path'])
+    else:
+        PATH = hyperparameter_config['model_path']
     model.load_state_dict(torch.load(PATH))
     return model
