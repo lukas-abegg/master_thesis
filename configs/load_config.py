@@ -4,10 +4,10 @@ import json
 """ Configs """
 
 
-def load_hyperparameter_config_val(base_dir=None, file):
+def load_hyperparameter_config_val(base_dir=None, file=None):
     if base_dir:
         PATH = os.path.join(base_dir, file)
-    else
+    else:
         PATH = file
     with open(PATH, "r") as config_file:
         config = json.load(config_file)
