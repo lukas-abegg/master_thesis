@@ -1,12 +1,12 @@
 {
   "bert_model": "bert_base",
-  "model": "baseline",
+  "model": "bert_encoding",
   "dataset": "newsela",
   "tracking_active": true,
 
-  "comet_project": "test-newsela-dataset",
+  "comet_project": "test-newsela-bert_encoding_dataset",
 
-  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020",
+  "save_base_dir": "/glusterfs/dfs-gfs-dist/abeggluk/bert_encoding_newsela_29082020",
   "save_config": "checkpoints/baseline_newsela_28092020.json",
   "save_log": "logs/baseline_newsela_28092020.log",
   "print_every": 1,
@@ -31,9 +31,9 @@
   "scheduler_gamma": 0.1,
 
   "transformer_n_layers": 6,
-  "transformer_ninp": 512,
+  "transformer_ninp": 768,
   "transformer_nheads": 8,
-  "transformer_nhidden": 2048,
+  "transformer_nhidden": 3072,
   "transformer_dropout": 0.1,
   "transformer_use_gate": false
 }

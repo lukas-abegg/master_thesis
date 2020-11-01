@@ -94,9 +94,12 @@ if __name__ == "__main__":
     source_vocab_length = prediction_config['source_vocab_length']
     target_vocab_length = prediction_config['target_vocab_length']
 
+    SRC = None
+    TRG = None
+
     # Load Transformer
     print('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer)
 
     # Load Predictor
     try:

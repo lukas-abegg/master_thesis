@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # Load Transformer
     logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer)
     load_weights = hyperparameter_config['load_weights']
     if load_weights:
         model = load_model(model, base_dir_save, hyperparameter_config)
