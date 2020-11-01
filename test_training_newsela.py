@@ -24,6 +24,7 @@ from torchtext.datasets import TranslationDataset
 
 from transformers import BertTokenizer
 
+from metrics.accuracy import AccuracyMetric
 
 bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -35,9 +36,9 @@ def tokenize_en(text):
 
 
 # Special Tokens
-BOS_WORD = '<s>'
-EOS_WORD = '</s>'
-BLANK_WORD = "<blank>"
+BOS_WORD = '[CLS]'
+EOS_WORD = '[SEP]'
+BLANK_WORD = "[PAD]"
 
 
 def get_fields(max_seq_length, tokenizer):
@@ -49,6 +50,8 @@ def get_fields(max_seq_length, tokenizer):
                 include_lengths=False,
                 batch_first=True,
                 fix_length=MAX_SEQ_LEN,
+                init_token=BOS_WORD,
+                eos_token=EOS_WORD,
                 pad_token=BLANK_WORD)
 
     trg = Field(tokenize=tokenizer,
@@ -220,6 +223,8 @@ model = MyTransformer(source_vocab_length=source_vocab_length, target_vocab_leng
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 model = model.cuda()
 
+metric = AccuracyMetric()
+
 
 def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
     train_losses = []
@@ -253,12 +258,18 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
             # Forward, backprop, optimizer
             optim.zero_grad()
             preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
-            preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
+            outputs = preds.transpose(0, 1)
+            preds = outputs.contiguous().view(-1, outputs.size(-1))
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
             loss.backward()
             optim.step()
 
-            experiment.log_metric("batch_loss", loss.item())
+            batch_loss_item = loss.item()
+
+            batch_metric, batch_metric_count = metric(outputs, targets)
+
+            experiment.log_metric("train_batch_loss", batch_loss_item)
+            experiment.log_metric("train_batch_accuracy", batch_metric)
 
             train_loss += loss.item() / BATCH_SIZE
 
@@ -293,9 +304,18 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
                 preds = model(src.transpose(0, 1), trg_input.transpose(0, 1),
                               tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
-                preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
+                outputs = preds.transpose(0, 1)
+                preds = outputs.contiguous().view(-1, outputs.size(-1))
                 loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
-                valid_loss += loss.item() / BATCH_SIZE
+
+                batch_loss_item = loss.item()
+
+                batch_metric, batch_metric_count = metric(outputs, targets)
+
+                experiment.log_metric("valid_batch_loss", batch_loss_item)
+                experiment.log_metric("valid_batch_accuracy", batch_metric)
+
+                valid_loss += batch_loss_item / BATCH_SIZE
 
                 experiment.log_metric("valid_loss", loss.item())
 
