@@ -265,13 +265,12 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             batch_metric, batch_metric_count = metric(outputs, targets)
 
-            train_loss += loss.item() / BATCH_SIZE
-
-            experiment.log_metric("train_batch_loss", train_loss)
-            experiment.log_metric("train_loss", batch_loss_item)
+            experiment.log_metric("train_batch_loss", batch_loss_item / BATCH_SIZE)
             experiment.log_metric("train_batch_accuracy", batch_metric)
 
+            train_loss += loss.item() / BATCH_SIZE
 
+            experiment.log_metric("train_loss", loss.item())
 
         model.eval()
         with torch.no_grad():
@@ -312,7 +311,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
                 batch_metric, batch_metric_count = metric(outputs, targets)
 
-                experiment.log_metric("valid_batch_loss", batch_loss_item)
+                experiment.log_metric("valid_batch_loss", batch_loss_item / BATCH_SIZE)
                 experiment.log_metric("valid_batch_accuracy", batch_metric)
 
                 valid_loss += batch_loss_item / BATCH_SIZE
