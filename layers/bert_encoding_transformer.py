@@ -13,7 +13,6 @@ class TransformerModel(nn.Module):
         self.device = device
 
         self.source_embedding = Embedding(src_vocab_length, ninp, embedding_layer, SRC, tokenizer, device)
-        self.pos_encoder = PositionalEncoding(ninp)
         encoder_layer = nn.TransformerEncoderLayer(ninp, nhead, nhid, dropout, "relu")
         encoder_norm = nn.LayerNorm(ninp)
         self.encoder = nn.TransformerEncoder(encoder_layer, nlayers, encoder_norm)
@@ -33,10 +32,8 @@ class TransformerModel(nn.Module):
         if src.size(1) != tgt.size(1):
             raise RuntimeError("the batch number of src and tgt must be equal")
         src = self.source_embedding(src)
-        src = self.pos_encoder(src)
         memory = self.encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
         tgt = self.target_embedding(tgt)
-        tgt = self.pos_encoder(tgt)
         output = self.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=memory_mask,
                               tgt_key_padding_mask=tgt_key_padding_mask,
                               memory_key_padding_mask=memory_key_padding_mask)
