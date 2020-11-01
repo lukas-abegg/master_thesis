@@ -28,9 +28,6 @@ from metrics.accuracy import AccuracyMetric
 
 bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
-spacy_en = spacy.load('en')
-
-
 def tokenize_en(text):
     return [tok for tok in bert_tokenizer.tokenize(text)]
 
@@ -103,10 +100,10 @@ experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
                                  workspace="abeggluk")
 experiment.display()
 
-SRC, TGT = get_fields(20, tokenize_en)
+SRC, TGT = get_fields(150, tokenize_en)
 
 PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
-MAX_LEN = 20
+MAX_LEN = 150
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
                                            fields=(SRC, TGT),
@@ -128,7 +125,7 @@ MIN_FREQ = 2
 SRC.build_vocab(train_data.src, min_freq=MIN_FREQ)
 TGT.build_vocab(train_data.trg, min_freq=MIN_FREQ)
 
-BATCH_SIZE = 100
+BATCH_SIZE = 25
 
 # Create iterators to process text in batches of approx. the same length
 train_iter = BucketIterator(train_data, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
@@ -150,8 +147,6 @@ print(trg_matrix, trg_matrix.size())
 print(SRC.vocab.itos[1])
 print(TGT.vocab.itos[2])
 print(TGT.vocab.itos[1])
-
-print(TGT.vocab.stoi['</s>'])
 
 
 class PositionalEncoding(nn.Module):
