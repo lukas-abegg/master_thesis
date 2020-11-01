@@ -108,8 +108,8 @@ class Embedding(nn.Module):
 
             x_converted.append(tokenized_sequence)
             attention_mask.append(attention)
-        x_converted = torch.Tensor(x_converted).long()
-        attention_mask = torch.Tensor(attention_mask).long()
+        x_converted = torch.Tensor(x_converted).long().to(self.device)
+        attention_mask = torch.Tensor(attention_mask).long().to(self.device)
         sequence_output, _, _ = self.bert(x_converted, token_type_ids=None, attention_mask=attention_mask)
-        sequence_output = sequence_output.transpose(0, 1)
+        sequence_output = sequence_output.transpose(0, 1).to(self.device)
         return sequence_output
