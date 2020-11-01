@@ -100,10 +100,12 @@ experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
                                  workspace="abeggluk")
 experiment.display()
 
-SRC, TGT = get_fields(150, tokenize_en)
+MAX_LEN = 150
+
+SRC, TGT = get_fields(MAX_LEN, tokenize_en)
 
 PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
-MAX_LEN = 150
+
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
                                            fields=(SRC, TGT),
@@ -263,10 +265,13 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             batch_metric, batch_metric_count = metric(outputs, targets)
 
-            experiment.log_metric("train_batch_loss", batch_loss_item)
+            train_loss += loss.item() / BATCH_SIZE
+
+            experiment.log_metric("train_batch_loss", train_loss)
+            experiment.log_metric("train_loss", batch_loss_item)
             experiment.log_metric("train_batch_accuracy", batch_metric)
 
-            train_loss += loss.item() / BATCH_SIZE
+
 
         model.eval()
         with torch.no_grad():
