@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     # Load Transformer
     logger.info('Loading transformer...')
-    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer)
+    model = build_model(hyperparameter_config, dataset_config, bert_model_loader.model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer, device)
 
     # Load Predictor
     try:

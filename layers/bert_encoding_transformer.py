@@ -7,15 +7,17 @@ from torch.nn.init import xavier_uniform_
 class TransformerModel(nn.Module):
 
     def __init__(self, src_vocab_length, trg_vocab_length, ninp, nhead, nhid, nlayers, dropout=0.1,
-                 embedding_layer=None, max_len=512, SRC=None, TRG=None, tokenizer=None):
+                 embedding_layer=None, max_len=512, SRC=None, TRG=None, tokenizer=None, device=None):
         super(TransformerModel, self).__init__()
 
-        self.source_embedding = Embedding(src_vocab_length, ninp, embedding_layer, SRC, tokenizer)
+        self.device = device
+
+        self.source_embedding = Embedding(src_vocab_length, ninp, embedding_layer, SRC, tokenizer, device)
         self.pos_encoder = PositionalEncoding(ninp)
         encoder_layer = nn.TransformerEncoderLayer(ninp, nhead, nhid, dropout, "relu")
         encoder_norm = nn.LayerNorm(ninp)
         self.encoder = nn.TransformerEncoder(encoder_layer, nlayers, encoder_norm)
-        self.target_embedding = Embedding(trg_vocab_length, ninp, embedding_layer, TRG, tokenizer)
+        self.target_embedding = Embedding(trg_vocab_length, ninp, embedding_layer, TRG, tokenizer, device)
         decoder_layer = nn.TransformerDecoderLayer(ninp, nhead, nhid, dropout, "relu")
         decoder_norm = nn.LayerNorm(ninp)
         self.decoder = nn.TransformerDecoder(decoder_layer, nlayers, decoder_norm)
@@ -79,7 +81,7 @@ class PositionalEncoding(nn.Module):
 class Embedding(nn.Module):
     """ Implement input and output embedding """
 
-    def __init__(self, vocab_size, ninp, bert, VOCAB=None, tokenizer=None):
+    def __init__(self, vocab_size, ninp, bert, VOCAB=None, tokenizer=None, device=None):
         super(Embedding, self).__init__()
 
         self.vocab_size = vocab_size
@@ -89,6 +91,7 @@ class Embedding(nn.Module):
         self.VOCAB = VOCAB
         self.PAD = VOCAB.vocab.stoi["[PAD]"]
         self.tokenizer = tokenizer
+        self.device = device
 
     def forward(self, x):
         x_converted = []

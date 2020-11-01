@@ -1,7 +1,7 @@
 from layers.bert_encoding_transformer import TransformerModel as Transformer
 
 
-def build_model(hyperparameter_config, dataset_config, bert_model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer):
+def build_model(hyperparameter_config, dataset_config, bert_model, source_vocab_length, target_vocab_length, SRC, TRG, tokenizer, device):
     n_layers = hyperparameter_config["transformer_n_layers"]
     ninp = hyperparameter_config["transformer_ninp"]
     nhidden = hyperparameter_config["transformer_nhidden"]
@@ -12,5 +12,5 @@ def build_model(hyperparameter_config, dataset_config, bert_model, source_vocab_
     max_len = dataset_config[hyperparameter_config["bert_model"]]["max_seq_length"]
 
     # Load Networks
-    model = Transformer(source_vocab_length, target_vocab_length, ninp, nheads, nhidden, n_layers, dropout, bert_model, max_len, SRC, TRG, tokenizer)
+    model = Transformer(source_vocab_length, target_vocab_length, ninp, nheads, nhidden, n_layers, dropout, bert_model, max_len, SRC, TRG, tokenizer, device)
     return model
