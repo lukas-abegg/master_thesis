@@ -241,14 +241,13 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
             trg_input = trg[:, :-1]
             targets = trg[:, 1:].contiguous().view(-1)
 
-            src_mask = (src != 1)
-            src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+            src_mask = (src == 1)
+            src_mask = src_mask.cuda() if use_gpu else src_mask
 
             memory_mask = src_mask.clone()
             memory_mask = memory_mask.cuda() if use_gpu else memory_mask
 
-            trg_mask = (trg_input != 1)
-            trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+            trg_mask = (trg_input == 1)
             trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
             size = trg_input.size(1)
@@ -290,15 +289,13 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
                 trg_input = trg[:, :-1]
                 targets = trg[:, 1:].contiguous().view(-1)
 
-                src_mask = (src != 1)
-                src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+                src_mask = (src == 1)
                 src_mask = src_mask.cuda() if use_gpu else src_mask
 
                 memory_mask = src_mask.clone()
                 memory_mask = memory_mask.cuda() if use_gpu else memory_mask
 
-                trg_mask = (trg_input != 1)
-                trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+                trg_mask = (trg_input == 1)
                 trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
                 size = trg_input.size(1)
@@ -368,16 +365,14 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
 
     maxlen = 25
     for i in range(maxlen):
-        src_mask = (sentence != 1)
-        src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+        src_mask = (sentence == 1)
         src_mask = src_mask.cuda() if use_gpu else src_mask
 
         memory_mask = src_mask.clone()
         memory_mask = memory_mask.cuda() if use_gpu else memory_mask
 
         trg_input = trg.transpose(0, 1)
-        trg_mask = (trg_input != 1)
-        trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+        trg_mask = (trg_input == 1)
         trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
         size = trg.size(0)
