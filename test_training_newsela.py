@@ -28,6 +28,7 @@ from metrics.accuracy import AccuracyMetric
 
 bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
+
 def tokenize_en(text):
     return [tok for tok in bert_tokenizer.tokenize(text)]
 
@@ -239,10 +240,14 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             trg_input = trg[:, :-1]
             targets = trg[:, 1:].contiguous().view(-1)
-            src_mask = (src != 0)
+
+            src_mask = (src != 1)
             src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
 
-            trg_mask = (trg_input != 0)
+            memory_mask = src_mask.clone()
+            memory_mask = memory_mask.cuda() if use_gpu else memory_mask
+
+            trg_mask = (trg_input != 1)
             trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
             trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
@@ -254,7 +259,9 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             # Forward, backprop, optimizer
             optim.zero_grad()
-            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
+            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask,
+                          src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
+                          memory_key_padding_mask=memory_mask)
             outputs = preds.transpose(0, 1)
             preds = outputs.contiguous().view(-1, outputs.size(-1))
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
@@ -280,18 +287,17 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
 
-                # change to shape (bs , max_seq_len)
-                src = src.transpose(0, 1)
-                # change to shape (bs , max_seq_len+1) , Since right shifted
-                trg = trg.transpose(0, 1)
                 trg_input = trg[:, :-1]
                 targets = trg[:, 1:].contiguous().view(-1)
 
-                src_mask = (src != 0)
+                src_mask = (src != 1)
                 src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
                 src_mask = src_mask.cuda() if use_gpu else src_mask
 
-                trg_mask = (trg_input != 0)
+                memory_mask = src_mask.clone()
+                memory_mask = memory_mask.cuda() if use_gpu else memory_mask
+
+                trg_mask = (trg_input != 1)
                 trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
                 trg_mask = trg_mask.cuda() if use_gpu else trg_mask
 
@@ -301,8 +307,9 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
                 np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
                 np_mask = np_mask.cuda() if use_gpu else np_mask
 
-                preds = model(src.transpose(0, 1), trg_input.transpose(0, 1),
-                              tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
+                preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask,
+                              src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
+                              memory_key_padding_mask=memory_mask)
                 outputs = preds.transpose(0, 1)
                 preds = outputs.contiguous().view(-1, outputs.size(-1))
                 loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
@@ -346,7 +353,7 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
     sentence = SRC.preprocess(sentence)
     indexed = []
     for tok in sentence:
-        if SRC.vocab.stoi[tok] != 0:
+        if SRC.vocab.stoi[tok] != 1:
             indexed.append(SRC.vocab.stoi[tok])
         else:
             indexed.append(0)
@@ -361,12 +368,26 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
 
     maxlen = 25
     for i in range(maxlen):
+        src_mask = (sentence != 1)
+        src_mask = src_mask.float().masked_fill(src_mask == 0, float('-inf')).masked_fill(src_mask == 1, float(0.0))
+        src_mask = src_mask.cuda() if use_gpu else src_mask
+
+        memory_mask = src_mask.clone()
+        memory_mask = memory_mask.cuda() if use_gpu else memory_mask
+
+        trg_input = trg.transpose(0, 1)
+        trg_mask = (trg_input != 1)
+        trg_mask = trg_mask.float().masked_fill(trg_mask == 0, float('-inf')).masked_fill(trg_mask == 1, float(0.0))
+        trg_mask = trg_mask.cuda() if use_gpu else trg_mask
+
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
         np_mask = np_mask.cuda() if use_gpu else np_mask
 
-        pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
+        pred = model(sentence.transpose(0, 1), trg,
+                     tgt_mask=np_mask, src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
+                     memory_key_padding_mask = memory_mask)
         add_word = TGT.vocab.itos[pred.argmax(dim=2)[-1]]
         translated_sentence += " " + add_word
         if add_word == EOS_WORD:
