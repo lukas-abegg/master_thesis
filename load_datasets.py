@@ -103,8 +103,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                            validation='valid',
                                                            test='test',
                                                            path=path,
-                                                           filter_pred=lambda x: len(vars(x)['src']) <= max_len and len(
-                                                               vars(x)['trg']) <= max_len)
+                                                           filter_pred=lambda x: len(vars(x)['src']) <= max_len_src and len(
+                                                               vars(x)['trg']) <= max_len_tgt)
     else:
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
@@ -114,8 +114,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                        validation='valid',
                                                        test='test',
                                                        path=path,
-                                                       filter_pred=lambda x: len(vars(x)['src']) <= max_len and len(
-                                                           vars(x)['trg']) <= max_len)
+                                                       filter_pred=lambda x: len(vars(x)['src']) <= max_len_src and len(
+                                                           vars(x)['trg']) <= max_len_tgt)
 
     SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=1)
     TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=1)

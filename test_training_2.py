@@ -316,8 +316,8 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "./"
-    project_name = "newsela-transformer"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer"
+    project_name = "newsela-transformer"  # newsela-transformer-bert-weights
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
@@ -340,7 +340,8 @@ if __name__ == "__main__":
     EOS_WORD = '[SEP]'
     BLANK_WORD = '[PAD]'
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, BOS_WORD, EOS_WORD, BLANK_WORD)
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
+                                                                    BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]
     # Create iterators to process text in batches of approx. the same length
