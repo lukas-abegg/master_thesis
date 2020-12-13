@@ -317,7 +317,7 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 2,
+        "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
