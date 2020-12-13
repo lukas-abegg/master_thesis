@@ -96,16 +96,17 @@ class Newsela(TranslationDataset):
 
 
 # Add the following code anywhere in your machine learning file
-experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-                                 project_name="test_newsela_dataset",
-                                 workspace="abeggluk")
-experiment.display()
+#experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
+ #                                project_name="test_newsela_dataset",
+ #                                workspace="abeggluk")
+#experiment.display()
 
 MAX_LEN = 150
 
 SRC, TGT = get_fields(MAX_LEN, tokenize_en)
 
-PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
+#PATH = "/glusterfs/dfs-gfs-dist/abeggluk/baseline_newsela_28092020/data/newsela/splits/bert_base"
+PATH = "data/test/newsela"
 
 
 train_data, valid_data, _ = Newsela.splits(exts=('.src', '.dst'),
@@ -218,8 +219,9 @@ source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
 
 model = MyTransformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
-optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
-model = model.cuda()
+optim = torch.optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.98), eps=1e-9)
+#model = model.cuda()
+use_gpu = False
 
 metric = AccuracyMetric()
 
@@ -258,11 +260,12 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             # Forward, backprop, optimizer
             optim.zero_grad()
-            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask,
-                          src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
-                          memory_key_padding_mask=memory_mask)
+            preds = model(src.transpose(0, 1), trg_input.transpose(0, 1),
+                          tgt_mask=np_mask)
+                          #src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
+                          #memory_key_padding_mask=memory_mask)
             outputs = preds.transpose(0, 1)
-            preds = outputs.contiguous().view(-1, outputs.size(-1))
+            preds = outputs.contiguous().view(-1, preds.size(-1))
             loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
             loss.backward()
             optim.step()
@@ -271,12 +274,12 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
             batch_metric, batch_metric_count = metric(outputs, targets)
 
-            experiment.log_metric("train_batch_loss", batch_loss_item / BATCH_SIZE)
-            experiment.log_metric("train_batch_accuracy", batch_metric)
+            #experiment.log_metric("train_batch_loss", batch_loss_item / BATCH_SIZE)
+            #experiment.log_metric("train_batch_accuracy", batch_metric)
 
             train_loss += loss.item() / BATCH_SIZE
 
-            experiment.log_metric("train_loss", loss.item())
+            #experiment.log_metric("train_loss", loss.item())
 
         model.eval()
         with torch.no_grad():
@@ -315,12 +318,12 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
 
                 batch_metric, batch_metric_count = metric(outputs, targets)
 
-                experiment.log_metric("valid_batch_loss", batch_loss_item / BATCH_SIZE)
-                experiment.log_metric("valid_batch_accuracy", batch_metric)
+                #experiment.log_metric("valid_batch_loss", batch_loss_item / BATCH_SIZE)
+                #experiment.log_metric("valid_batch_accuracy", batch_metric)
 
                 valid_loss += batch_loss_item / BATCH_SIZE
 
-                experiment.log_metric("valid_loss", loss.item())
+                #experiment.log_metric("valid_loss", loss.item())
 
         # Log after each epoch
         print("Epoch [{0}/{1}] complete. Train Loss: {2:.3f}. Val Loss: {3:.3f}".format(epoch + 1, num_epochs,
@@ -336,8 +339,8 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=False):
         valid_losses.append(valid_loss / len(val_iter))
 
         # Check Example after each epoch:
-        sentences_expected = ["She is the only woman on her team .", "There are many reasons for the job gap ."]
-        sentences = ["'' I am the only woman on my team .", "There are many reasons for the gap between whites and blacks ."]
+        sentences_expected = ["Questions are limited .", "A Fake Flight Vest"]
+        sentences = ["That has n't stopped his love of learning , and reading , especially histories of European royalty and World War II .", "Richie loves learning , and reading ."]
         for i, sentence in enumerate(sentences):
             print("Original Sentence: {}".format(sentence))
             print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence, use_gpu)))
@@ -363,26 +366,14 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
         sentence = sentence.cuda()
         trg = trg.cuda()
 
-    maxlen = 25
+    maxlen = 20
     for i in range(maxlen):
-        src_mask = (sentence == 1)
-        src_mask = src_mask.cuda() if use_gpu else src_mask
-
-        memory_mask = src_mask.clone()
-        memory_mask = memory_mask.cuda() if use_gpu else memory_mask
-
-        trg_input = trg.transpose(0, 1)
-        trg_mask = (trg_input == 1)
-        trg_mask = trg_mask.cuda() if use_gpu else trg_mask
-
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
         np_mask = np_mask.cuda() if use_gpu else np_mask
 
-        pred = model(sentence.transpose(0, 1), trg,
-                     tgt_mask=np_mask, src_key_padding_mask=src_mask, tgt_key_padding_mask=trg_mask,
-                     memory_key_padding_mask = memory_mask)
+        pred = model(sentence.transpose(0, 1), trg, tgt_mask=np_mask)
         add_word = TGT.vocab.itos[pred.argmax(dim=2)[-1]]
         translated_sentence += " " + add_word
         if add_word == EOS_WORD:
@@ -392,7 +383,8 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
         # print(trg)
+
     return translated_sentence
 
 
-train_losses, valid_losses = train(train_iter, valid_iter, model, optim, 35, True)
+train_losses, valid_losses = train(train_iter, valid_iter, model, optim, 35, use_gpu)

@@ -3,20 +3,21 @@ import torch.nn as nn
 
 
 class Discriminator(nn.Module):
-    def __init__(self, args, src_dict, dst_dict, use_cuda=True):
+    def __init__(self, src_vocab_size, pad_id_src, trg_vocab_size, pad_id_trg, max_len, d_model=512, use_gpu=False):
         super(Discriminator, self).__init__()
 
-        self.src_dict_size = len(src_dict)
-        self.trg_dict_size = len(dst_dict)
-        self.pad_idx = dst_dict.pad()
-        self.fixed_max_len = args.fixed_max_len
-        self.use_cuda = use_cuda
+        self.src_vocab_size = src_vocab_size
+        self.trg_vocab_size = trg_vocab_size
+        self.max_len = max_len
+        self.linear_len = int(max_len / 4)
+        self.use_gpu = use_gpu
+        self.pad_id_trg = pad_id_trg
 
-        self.embed_src_tokens = Embedding(len(src_dict), args.encoder_embed_dim, src_dict.pad())
-        self.embed_trg_tokens = Embedding(len(dst_dict), args.decoder_embed_dim, dst_dict.pad())
+        self.embed_src_tokens = Embedding(self.src_vocab_size, d_model, pad_id_src)
+        self.embed_trg_tokens = Embedding(self.trg_vocab_size, d_model, pad_id_trg)
 
         self.conv1 = nn.Sequential(
-            Conv2d(in_channels=2000,
+            Conv2d(in_channels=1024,
                    out_channels=512,
                    kernel_size=3,
                    stride=1,
@@ -39,12 +40,12 @@ class Discriminator(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            Linear(256 * 12 * 12, 20),
+            Linear(256 * self.linear_len * (self.linear_len-1), 20),
             nn.ReLU(),
             nn.Dropout(),
             Linear(20, 20),
             nn.ReLU(),
-            Linear(20, 2),
+            Linear(20, 1),
         )
 
     def forward(self, src_sentence, trg_sentence):
@@ -55,14 +56,19 @@ class Discriminator(nn.Module):
 
         src_out = torch.stack([src_out] * trg_out.size(1), dim=2)
         trg_out = torch.stack([trg_out] * src_out.size(1), dim=1)
+
         out = torch.cat([src_out, trg_out], dim=3)
+
         out = out.permute(0, 3, 1, 2)
 
         out = self.conv1(out)
         out = self.conv2(out)
+
         out = out.permute(0, 2, 3, 1)
+
         out = out.contiguous().view(batch_size, -1)
-        out = self.classifier(out)
+
+        out = torch.sigmoid(self.classifier(out))
 
         return out
 
@@ -71,7 +77,6 @@ def Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0, **kwargs
     m = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, **kwargs)
     for name, param in m.named_parameters():
         if 'weight' in name:
-            # param.data.uniform_(-0.1, 0.1)
             nn.init.kaiming_uniform_(param.data)
         elif 'bias' in name:
             nn.init.constant_(param.data, 0)
@@ -82,7 +87,6 @@ def Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, **kwargs
     m = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, **kwargs)
     for name, param in m.named_parameters():
         if 'weight' in name:
-            # param.data.uniform_(-0.1, 0.1)
             nn.init.kaiming_uniform_(param.data)
         elif 'bias' in name:
             nn.init.constant_(param.data, 0)

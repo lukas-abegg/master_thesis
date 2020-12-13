@@ -3,6 +3,7 @@ import operator
 
 import torch
 
+## https://github.com/MaximumEntropy/Seq2Seq-PyTorch/blob/master/beam_search.py
 
 class BeamSearchNode(object):
     def __init__(self, previousNode, wordId, logProb, length):

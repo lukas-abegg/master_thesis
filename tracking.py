@@ -1,13 +1,12 @@
 from comet_ml import Experiment
 
 
-def load_tracking(params):
+def load_tracking(project_name):
     # Add the following code anywhere in your machine learning file
     experiment = Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
-                            project_name=params["comet_project"],
+                            project_name=project_name,
                             workspace="abeggluk")
 
-    experiment.log_parameters(params)
     experiment.display()
     return experiment
 
