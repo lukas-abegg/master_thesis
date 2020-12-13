@@ -110,7 +110,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
                 experiment.log_metric("batch_train_acc", logging_meters['train_acc'].avg)
-                experiment.log_metric("batch_train_acc", acc)
+                experiment.log_metric("batch_train_acc", float(acc))
 
             optimizer.zero_grad()
             loss.backward()
@@ -177,7 +177,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
-                    experiment.log_metric("batch_valid_acc", acc)
+                    experiment.log_metric("batch_valid_acc", float(acc))
 
         # Log after each epoch
         print(
@@ -249,6 +249,11 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             print("Translated Sentence: {}".format(sent))
             print("Expected Sentence: {}".format(exp_sentences[step_i]))
             print("---------------------------------------")
+            if experiment is not None:
+                if step_i == 0:
+                    experiment.log_text(str("Train Sample: " + sent))
+                else:
+                    experiment.log_text(str("Validation Sample: " + sent))
 
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):

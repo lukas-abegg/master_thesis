@@ -247,6 +247,11 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             print("Translated Sentence: {}".format(sent))
             print("Expected Sentence: {}".format(exp_sentences[step_i]))
             print("---------------------------------------")
+            if experiment is not None:
+                if step_i == 0:
+                    experiment.log_text(str("Train Sample: " + sent))
+                else:
+                    experiment.log_text(str("Validation Sample: " + sent))
 
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):
