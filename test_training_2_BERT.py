@@ -100,12 +100,12 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(logging_loss.item())
-            print("\nTraining loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                logging_meters['train_loss'].avg,
-                acc,
-                logging_meters['train_acc'].avg,
-                optimizer.param_groups[0]['lr'], step_train_i
-            ))
+            # print("\nTraining loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+            #     logging_meters['train_loss'].avg,
+            #     acc,
+            #     logging_meters['train_acc'].avg,
+            #     optimizer.param_groups[0]['lr'], step_train_i
+            # ))
 
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
@@ -167,23 +167,26 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(logging_loss.item())
-                print("\nValidation loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                    logging_meters['valid_loss'].avg,
-                    acc,
-                    logging_meters['valid_acc'].avg,
-                    optimizer.param_groups[0]['lr'], step_valid_i
-                ))
+                # print("\nValidation loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+                #     logging_meters['valid_loss'].avg,
+                #     acc,
+                #     logging_meters['valid_acc'].avg,
+                #     optimizer.param_groups[0]['lr'], step_valid_i
+                # ))
 
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
                     experiment.log_metric("batch_valid_acc", acc)
 
-        lr_scheduler.step(logging_meters['valid_loss'].avg)
-
         # Log after each epoch
-        print("\nEpoch [{0}/{1}] complete. Train Loss: {2:.3f}. Val Loss: {3:.3f}"
-              .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['valid_loss'].avg))
+        print(
+            "\nEpoch [{0}/{1}] complete. Train loss: {2:.3f}, avgAcc {3:.3f}. Val Loss: {4:.3f}, avgAcc {5:.3f}. lr={6}."
+            .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['train_acc'].avg,
+                    logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
+                    optimizer.param_groups[0]['lr']))
+
+        lr_scheduler.step(logging_meters['valid_loss'].avg)
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -316,7 +319,7 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "./"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer"
     project_name = "newsela_test_bert"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
