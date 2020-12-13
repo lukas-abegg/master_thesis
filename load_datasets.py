@@ -11,16 +11,16 @@ def tokenize_bert(text):
     return [tok for tok in bert_tokenizer.tokenize(text)]
 
 
-def get_fields(max_len, tokenizer, bos_word, eos_word, blank_word):
+def get_fields(max_len_src, max_len_tgt, tokenizer, bos_word, eos_word, blank_word):
 
     src = Field(tokenize=tokenizer,
-                fix_length=max_len,
+                fix_length=max_len_src,
                 init_token=bos_word,
                 eos_token=eos_word,
                 pad_token=blank_word)
 
     trg = Field(tokenize=tokenizer,
-                fix_length=max_len,
+                fix_length=max_len_tgt,
                 init_token=bos_word,
                 eos_token=eos_word,
                 pad_token=blank_word)
@@ -90,9 +90,9 @@ class MWS(TranslationDataset):
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
-def load_dataset_data(base_path, max_len, dataset, bos_word, eos_word, blank_word):
+def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
 
-    SRC, TGT = get_fields(max_len, tokenize_bert, bos_word, eos_word, blank_word)
+    SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, bos_word, eos_word, blank_word)
 
     if dataset == "newsela":
         path = os.path.join(base_path, "newsela/splits/bert_base")

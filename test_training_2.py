@@ -266,7 +266,7 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         sentence = sentence.cuda()
         trg = trg.cuda()
 
-    for i in range(MAX_LEN):
+    for i in range(max_len_tgt):
 
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
@@ -302,9 +302,10 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
-        "sequence_length": 40,
-        "batch_size": 30,
-        "num_epochs": 25,
+        "sequence_length_src": 72,
+        "sequence_length_tgt": 43,
+        "batch_size": 25,
+        "num_epochs": 15,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -320,7 +321,8 @@ if __name__ == "__main__":
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
-    MAX_LEN = hyper_params["sequence_length"]
+    max_len_src = hyper_params["sequence_length_src"]
+    max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
 
@@ -338,7 +340,7 @@ if __name__ == "__main__":
     EOS_WORD = '[SEP]'
     BLANK_WORD = '[PAD]'
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, MAX_LEN, dataset, BOS_WORD, EOS_WORD, BLANK_WORD)
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]
     # Create iterators to process text in batches of approx. the same length
@@ -357,7 +359,9 @@ if __name__ == "__main__":
     model = Transformer(bert_model, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
                         num_encoder_layers=hyper_params["n_layers"], num_decoder_layers=hyper_params["n_layers"],
                         dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                        source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length, load_embedding_weights=hyper_params["load_embedding_weights"])
+                        source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
+                        max_len_src=max_len_src, max_len_tgt=max_len_tgt,
+                        load_embedding_weights=hyper_params["load_embedding_weights"])
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]

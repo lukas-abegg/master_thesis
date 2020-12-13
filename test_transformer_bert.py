@@ -62,13 +62,14 @@ class PositionalEncoding(nn.Module):
 class BertEncoderTransformer(nn.Module):
     def __init__(self, src_vocab, bert_model, bert_tokenizer, blank_word,
                  d_model=768, nhead=8, num_decoder_layers=6, dim_feedforward=3072,
-                 dropout=0.1, activation="relu", target_vocab_length=60000, load_embedding_weights=False):
+                 dropout=0.1, activation="relu", target_vocab_length=60000, max_len_tgt=100,
+                 load_embedding_weights=False):
         super(BertEncoderTransformer, self).__init__()
 
         self.source_embedding = BertEmbedding(src_vocab, bert_model, bert_tokenizer, blank_word)
 
         self.target_embedding = nn.Embedding(target_vocab_length, d_model)
-        self.pos_encoder = PositionalEncoding(d_model)
+        self.pos_encoder = PositionalEncoding(d_model, dropout, max_len_tgt)
         decoder_layer = nn.TransformerDecoderLayer(d_model, nhead, dim_feedforward, dropout, activation)
         decoder_norm = nn.LayerNorm(d_model)
         self.decoder = nn.TransformerDecoder(decoder_layer, num_decoder_layers, decoder_norm)

@@ -27,17 +27,18 @@ class PositionalEncoding(nn.Module):
 class Transformer(nn.Module):
     def __init__(self, bert_model, d_model=512, nhead=8, num_encoder_layers=2,
                  num_decoder_layers=2, dim_feedforward=2048, dropout=0.1,
-                 activation="relu", source_vocab_length=60000, target_vocab_length=60000, load_embedding_weights=False):
+                 activation="relu", source_vocab_length=60000, target_vocab_length=60000, max_len_src=100, max_len_tgt=100, load_embedding_weights=False):
         super(Transformer, self).__init__()
 
         self.source_embedding = nn.Embedding(source_vocab_length, d_model)
-        self.pos_encoder = PositionalEncoding(d_model)
+        self.pos_encoder_src = PositionalEncoding(d_model, dropout, max_len_src)
 
         encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, activation)
         encoder_norm = nn.LayerNorm(d_model)
         self.encoder = nn.TransformerEncoder(encoder_layer, num_encoder_layers, encoder_norm)
 
         self.target_embedding = nn.Embedding(target_vocab_length, d_model)
+        self.pos_encoder_trg = PositionalEncoding(d_model, dropout, max_len_tgt)
 
         decoder_layer = nn.TransformerDecoderLayer(d_model, nhead, dim_feedforward, dropout, activation)
         decoder_norm = nn.LayerNorm(d_model)
@@ -59,14 +60,14 @@ class Transformer(nn.Module):
             raise RuntimeError("the batch number of src and tgt must be equal")
         src = src.transpose(0, 1)
         src = self.source_embedding(src)
-        src = self.pos_encoder(src)
+        src = self.pos_encoder_src(src)
         src = src.transpose(0, 1)
 
         memory = self.encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
         tgt = tgt.transpose(0, 1)
         tgt = self.target_embedding(tgt)
-        tgt = self.pos_encoder(tgt)
+        tgt = self.pos_encoder_trg(tgt)
         tgt = tgt.transpose(0, 1)
 
         output = self.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=memory_mask,
