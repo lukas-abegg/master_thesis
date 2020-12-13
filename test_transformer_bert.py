@@ -76,11 +76,12 @@ class BertEncoderTransformer(nn.Module):
 
         self.out = nn.Linear(d_model, target_vocab_length)
 
-        self._reset_parameters()
         self.d_model = d_model
         self.nhead = nhead
         self.load_embedding_weights = load_embedding_weights
         self.bert_model = bert_model
+
+        self._reset_parameters()
 
     def forward(self, src, tgt, tgt_mask=None,
                 memory_mask=None,
