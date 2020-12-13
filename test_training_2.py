@@ -306,8 +306,8 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
-        "batch_size": 25,
-        "num_epochs": 15,
+        "batch_size": 100,
+        "num_epochs": 25,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -363,7 +363,6 @@ if __name__ == "__main__":
                         num_encoder_layers=hyper_params["n_layers"], num_decoder_layers=hyper_params["n_layers"],
                         dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                         source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
-                        max_len_src=max_len_src, max_len_tgt=max_len_tgt,
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
     ### Start Training

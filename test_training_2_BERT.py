@@ -361,7 +361,7 @@ if __name__ == "__main__":
                                    d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
                                    num_decoder_layers=hyper_params["n_layers"],
                                    dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                                   target_vocab_length=target_vocab_length, max_len_tgt=max_len_tgt)
+                                   target_vocab_length=target_vocab_length)
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
