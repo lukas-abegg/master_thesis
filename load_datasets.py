@@ -95,7 +95,7 @@ def load_dataset_data(max_len, dataset, bos_word, eos_word, blank_word):
     SRC, TGT = get_fields(max_len, tokenize_bert, bos_word, eos_word, blank_word)
 
     if dataset == "newsela":
-        PATH = "data/test/newsela"
+        PATH = "data/newsela"
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
@@ -106,7 +106,7 @@ def load_dataset_data(max_len, dataset, bos_word, eos_word, blank_word):
                                                            filter_pred=lambda x: len(vars(x)['src']) <= max_len and len(
                                                                vars(x)['trg']) <= max_len)
     else:
-        PATH = "data/test/wiki_simple"
+        PATH = "data/wiki_simple"
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
                                                        fields=(SRC, TGT),
