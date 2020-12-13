@@ -308,7 +308,7 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
-        "batch_size": 25,
+        "batch_size": 50,
         "num_epochs": 15,
         "learning_rate": 1e-4,
         "d_model": 768,
@@ -316,13 +316,14 @@ if __name__ == "__main__":
         "dim_feedforward": 3072,
         "n_layers": 6,
         "dropout": 0.1,
+        "load_embedding_weights": False
     }
 
-    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer"
-    project_name = "newsela_test_bert"
+    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_3/bert_base_cased_12"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer_bert_encoder"
+    project_name = "newsela-transformer-bert-encoder"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -361,7 +362,8 @@ if __name__ == "__main__":
                                    d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
                                    num_decoder_layers=hyper_params["n_layers"],
                                    dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                                   target_vocab_length=target_vocab_length)
+                                   target_vocab_length=target_vocab_length,
+                                   load_embedding_weights=hyper_params["load_embedding_weights"])
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
