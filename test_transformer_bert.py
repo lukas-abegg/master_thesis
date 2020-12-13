@@ -8,7 +8,7 @@ from torch.nn.init import xavier_uniform_
 class BertEmbedding(nn.Module):
     def __init__(self, vocab, bert_model, bert_tokenizer, blank_word):
         super(BertEmbedding, self).__init__()
-        self.bert_model = bert_model
+        self.bert_model = bert_model.cuda()
         self.bert_model.eval()
 
         self.tokenizer = bert_tokenizer
