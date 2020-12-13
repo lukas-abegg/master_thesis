@@ -363,7 +363,7 @@ if __name__ == "__main__":
                                    num_decoder_layers=hyper_params["n_layers"],
                                    dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                                    target_vocab_length=target_vocab_length,
-                                   load_embedding_weights=hyper_params["load_embedding_weights"])
+                                   load_embedding_weights=hyper_params["load_embedding_weights"], use_cuda=use_cuda)
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]

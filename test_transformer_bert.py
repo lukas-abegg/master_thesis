@@ -6,14 +6,15 @@ from torch.nn.init import xavier_uniform_
 
 
 class BertEmbedding(nn.Module):
-    def __init__(self, vocab, bert_model, bert_tokenizer, blank_word):
+    def __init__(self, vocab, bert_model, bert_tokenizer, blank_word, use_cuda):
         super(BertEmbedding, self).__init__()
-        self.bert_model = bert_model.cuda()
+        self.bert_model = bert_model
         self.bert_model.eval()
 
         self.tokenizer = bert_tokenizer
         self.vocab = vocab
         self.blank_word = blank_word
+        self.use_cuda = use_cuda
 
     def forward(self, x):
         x_converted = []
@@ -35,7 +36,11 @@ class BertEmbedding(nn.Module):
             attention_mask.append(attention)
 
         x_converted = torch.Tensor(x_converted).long()
+        x_converted = x_converted.cuda() if self.use_cuda else x_converted
+
         attention_mask = torch.Tensor(attention_mask).long()
+        attention_mask = attention_mask.cuda() if self.use_cuda else attention_mask
+
         sequence_output, _, _ = self.bert_model(x_converted, token_type_ids=None, attention_mask=attention_mask)
         return sequence_output
 
@@ -63,10 +68,10 @@ class BertEncoderTransformer(nn.Module):
     def __init__(self, src_vocab, bert_model, bert_tokenizer, blank_word,
                  d_model=768, nhead=8, num_decoder_layers=6, dim_feedforward=3072,
                  dropout=0.1, activation="relu", target_vocab_length=60000,
-                 load_embedding_weights=False):
+                 load_embedding_weights=False, use_cuda=False):
         super(BertEncoderTransformer, self).__init__()
 
-        self.source_embedding = BertEmbedding(src_vocab, bert_model, bert_tokenizer, blank_word)
+        self.source_embedding = BertEmbedding(src_vocab, bert_model, bert_tokenizer, blank_word, use_cuda)
 
         self.target_embedding = nn.Embedding(target_vocab_length, d_model)
         self.pos_encoder = PositionalEncoding(d_model, dropout)
