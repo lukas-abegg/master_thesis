@@ -16,7 +16,7 @@ from configs.load_config import load_evaluation_config, load_dataset_config, \
     load_hyperparameter_config_val
 from evaluation.evaluation_utils import init_logger, load_data
 from build_models.choose_model import build_model
-from tracking import load_tracking, stop_tracking
+from utils.tracking import load_tracking, stop_tracking
 
 
 def load_predictor(base_dir_load, model, beam_approach, evaluation_config, dataset_config, hyperparameter_config, tokenizer, device, SRC, TRG):
