@@ -90,30 +90,30 @@ class MWS(TranslationDataset):
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
-def load_dataset_data(max_len, dataset, bos_word, eos_word, blank_word):
+def load_dataset_data(base_path, max_len, dataset, bos_word, eos_word, blank_word):
 
     SRC, TGT = get_fields(max_len, tokenize_bert, bos_word, eos_word, blank_word)
 
     if dataset == "newsela":
-        PATH = "data/newsela"
+        path = os.path.join(base_path, "newsela/splits/bert_base")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
                                                            train='train',
                                                            validation='valid',
                                                            test='test',
-                                                           path=PATH,
+                                                           path=path,
                                                            filter_pred=lambda x: len(vars(x)['src']) <= max_len and len(
                                                                vars(x)['trg']) <= max_len)
     else:
-        PATH = "data/wiki_simple"
+        path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
                                                        fields=(SRC, TGT),
                                                        train='train',
                                                        validation='valid',
                                                        test='test',
-                                                       path=PATH,
+                                                       path=path,
                                                        filter_pred=lambda x: len(vars(x)['src']) <= max_len and len(
                                                            vars(x)['trg']) <= max_len)
 
