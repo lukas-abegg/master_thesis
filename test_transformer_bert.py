@@ -62,7 +62,7 @@ class PositionalEncoding(nn.Module):
 class BertEncoderTransformer(nn.Module):
     def __init__(self, src_vocab, bert_model, bert_tokenizer, blank_word,
                  d_model=768, nhead=8, num_decoder_layers=6, dim_feedforward=3072,
-                 dropout=0.1, activation="relu", target_vocab_length=60000):
+                 dropout=0.1, activation="relu", target_vocab_length=60000, load_embedding_weights=False):
         super(BertEncoderTransformer, self).__init__()
 
         self.source_embedding = BertEmbedding(src_vocab, bert_model, bert_tokenizer, blank_word)
@@ -78,6 +78,8 @@ class BertEncoderTransformer(nn.Module):
         self._reset_parameters()
         self.d_model = d_model
         self.nhead = nhead
+        self.load_embedding_weights = load_embedding_weights
+        self.bert_model = bert_model
 
     def forward(self, src, tgt, tgt_mask=None,
                 memory_mask=None,
@@ -107,7 +109,9 @@ class BertEncoderTransformer(nn.Module):
             if p.dim() > 1:
                 xavier_uniform_(p)
 
-        #self.target_embedding.weight = bert_model.embeddings.word_embeddings.weight
+        if self.load_embedding_weights:
+            self.target_embedding.weight = self.bert_model.embeddings.word_embeddings.weight
+
         self.target_embedding.weight.requires_grad = False
         self.out.weight.requires_grad = False
         self.out.bias.requires_grad = False

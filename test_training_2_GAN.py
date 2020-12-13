@@ -403,7 +403,7 @@ checkpoints_path = 'checkpoints/'
 source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
 
-generator = Transformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
+generator = Transformer(None, source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 generator_path = checkpoints_path + '../' + 'checkpoint_best_epoch.pt'
 generator.load_state_dict(torch.load(generator_path))
 print("Generator has successfully loaded!")

@@ -22,7 +22,6 @@ bert_model = BertModel.from_pretrained(bert_path, config=bert_config)
 def tokenize_bert(text):
     return [tok for tok in bert_tokenizer.tokenize(text)]
 
-
 # Special Tokens
 BOS_WORD = '[CLS]'
 EOS_WORD = '[SEP]'
@@ -147,7 +146,9 @@ test_iter = data.BucketIterator(test_data, batch_size=BATCH_SIZE, repeat=False, 
 
 source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
-model = Transformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
+
+
+model = Transformer(bert_model, source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 model_path = "checkpoint_best_epoch.pt"
 model.load_state_dict(torch.load(model_path))
 

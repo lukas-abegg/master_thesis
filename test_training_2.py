@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from transformers import BertConfig, BertModel
 
 from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
 from meters import AverageMeter
@@ -310,8 +311,10 @@ if __name__ == "__main__":
         "dim_feedforward": 2048,
         "n_layers": 2,
         "dropout": 0.1,
+        "load_embedding_weights": False
     }
 
+    bert_path = "zzz_bert_models/bert_base_cased_12"
     checkpoint_base = "./"
     project_name = "newsela_test"
     tracking_active = True
@@ -345,10 +348,15 @@ if __name__ == "__main__":
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
 
-    model = Transformer(d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
+    bert_model = None
+    if hyper_params["load_embedding_weights"]:
+        bert_config = BertConfig.from_pretrained(bert_path, output_hidden_states=True)
+        bert_model = BertModel.from_pretrained(bert_path, config=bert_config)
+
+    model = Transformer(bert_model, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
                         num_encoder_layers=hyper_params["n_layers"], num_decoder_layers=hyper_params["n_layers"],
                         dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                        source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
+                        source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length, load_embedding_weights=hyper_params["load_embedding_weights"])
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]

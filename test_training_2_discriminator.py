@@ -187,7 +187,7 @@ val_iter = get_iterator(valid_data, BATCH_SIZE)
 source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
 
-generator = Transformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
+generator = Transformer(None, source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 generator_path = "checkpoint_best_epoch.pt"
 generator.load_state_dict(torch.load(generator_path))
 

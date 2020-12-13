@@ -81,7 +81,7 @@ print(TGT.vocab.stoi['</s>'])
 source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
 
-model = Transformer(source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
+model = Transformer(None, source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 #model = model.cuda()
 
