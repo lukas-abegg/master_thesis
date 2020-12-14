@@ -9,6 +9,7 @@ from transformers import BertConfig, BertModel
 
 from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
 from test_transformer import Transformer
+from test_transformer_bert import BertEncoderTransformer
 
 
 def predict(test_iter, model, use_gpu=True):
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
-        "batch_size": 100,
+        "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -147,11 +148,10 @@ if __name__ == "__main__":
         "load_embedding_weights": False
     }
 
-    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/checkpoints/mle"
-    #checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer_bert_weights/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_3/bert_base_cased_12"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer_bert_encoder/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer_bert_encoder/evaluation/mle"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -175,19 +175,18 @@ if __name__ == "__main__":
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
 
-    bert_model = None
-    if hyper_params["load_embedding_weights"]:
-        bert_config = BertConfig.from_pretrained(bert_path, output_hidden_states=True)
-        bert_model = BertModel.from_pretrained(bert_path, config=bert_config)
+    bert_config = BertConfig.from_pretrained(bert_path, output_hidden_states=True)
+    bert_model = BertModel.from_pretrained(bert_path, config=bert_config)
 
-    model = Transformer(bert_model, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
-                        num_encoder_layers=hyper_params["n_layers"], num_decoder_layers=hyper_params["n_layers"],
-                        dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                        source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
-                        load_embedding_weights=hyper_params["load_embedding_weights"])
+    model = BertEncoderTransformer(SRC.vocab, bert_model, bert_tokenizer, BLANK_WORD,
+                                   d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
+                                   num_decoder_layers=hyper_params["n_layers"],
+                                   dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
+                                   target_vocab_length=target_vocab_length,
+                                   load_embedding_weights=hyper_params["load_embedding_weights"], use_cuda=use_cuda)
 
-    model_path = os.path.join(checkpoint_base, "best_model.pt")
-    #model_path = os.path.join(checkpoint_base, "best_dmodel.pt")
+    model_path = os.path.join(checkpoint_base, "best_dmodel.pt")
+    #model_path = os.path.join(checkpoint_base, "best_model.pt")
     model.load_state_dict(torch.load(model_path))
 
     run(test_iter, model, save_run_files_base, use_cuda)

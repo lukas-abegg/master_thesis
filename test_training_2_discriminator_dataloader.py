@@ -2,16 +2,16 @@ import sys
 
 import numpy as np
 import torch
-from torch.autograd import Variable
-from torch.utils.data.dataset import Dataset
 import torch.nn.functional as F
+from torch.utils.data.dataset import Dataset
 
 
 class DatasetProcessing(Dataset):
-    def __init__(self, data, max_len):
+    def __init__(self, data, max_len_src, max_len_tgt):
         self.data = data
         self.data_size = int(data['labels'].size(0))
-        self.maxlen = max_len
+        self.max_len_src = max_len_src
+        self.max_len_tgt = max_len_tgt
 
         assert self.data['src'].size(0) == self.data['trg'].size(0) \
                and self.data['trg'].size(0) == self.data['labels'].size(0)
@@ -33,19 +33,19 @@ class DatasetProcessing(Dataset):
         return self.data_size
 
     def collater(self, samples):
-        return DatasetProcessing.collate(samples, self.maxlen)
+        return DatasetProcessing.collate(samples, self.max_len_src, self.max_len_tgt)
 
     @staticmethod
-    def collate(samples, maxlen):
+    def collate(samples, max_len_src, max_len_tgt):
         if len(samples) == 0:
             return {}
 
-        def merge(key):
-            return DatasetProcessing.collate_tokens([s[key] for s in samples], maxlen)
+        def merge(key, max_len):
+            return DatasetProcessing.collate_tokens([s[key] for s in samples], max_len)
 
         labels = torch.LongTensor([s['labels'] for s in samples])
-        src_tokens = merge('source')
-        target = merge('target')
+        src_tokens = merge('source', max_len_src)
+        target = merge('target', max_len_tgt)
 
         return {
             'src_tokens': src_tokens,
@@ -54,9 +54,9 @@ class DatasetProcessing(Dataset):
         }
 
     @staticmethod
-    def collate_tokens(values, maxlen):
+    def collate_tokens(values, max_len):
         max_input_size = max(v.size(0) for v in values)
-        assert max_input_size == maxlen
+        assert max_input_size == max_len
 
         res = torch.stack(values, dim=0)
 
@@ -64,7 +64,6 @@ class DatasetProcessing(Dataset):
 
 
 def train_dataloader(dataset, batch_size=32, sample_without_replacement=0, sort_by_source_size=False):
-
     batch_sampler = shuffled_batches_by_size(len(dataset), batch_size=batch_size,
                                              sample=sample_without_replacement,
                                              sort_by_source_size=sort_by_source_size)
@@ -73,7 +72,6 @@ def train_dataloader(dataset, batch_size=32, sample_without_replacement=0, sort_
 
 
 def eval_dataloader(dataset, batch_size=32):
-
     batch_sampler = batches_by_order(len(dataset), batch_size)
 
     return torch.utils.data.DataLoader(dataset, collate_fn=dataset.collater, batch_sampler=batch_sampler)
@@ -119,7 +117,6 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
 
 
 def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eos_word, blank_word, use_gpu):
-
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
@@ -143,7 +140,9 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eo
 
             neg_tokens = []
             for origin_sentence in src:
-                neg_tokens.append(greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_word, eos_word, blank_word, use_gpu))
+                neg_tokens.append(
+                    greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_word, eos_word,
+                                           blank_word, use_gpu))
 
             neg_tokens = torch.stack(neg_tokens)
             pos_tokens = trg
@@ -176,15 +175,15 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eo
     return data
 
 
-def greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_word, eos_word, blank_word, use_gpu=False):
+def greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_word, eos_word, blank_word,
+                           use_gpu=False):
     sentence_tensor = torch.unsqueeze(origin_sentence, 0)
 
     trg_init_tok = tgt_vocab.stoi[bos_word]
     trg = torch.LongTensor([[trg_init_tok]])
 
-    if use_gpu:
-        sentence_tensor = sentence_tensor.cuda()
-        trg = trg.cuda()
+    sentence_tensor = sentence_tensor.cuda() if use_gpu else sentence_tensor
+    trg = trg.cuda() if use_gpu else trg
 
     for i in range(max_len):
         size = trg.size(0)
@@ -194,7 +193,7 @@ def greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_w
         np_mask = np_mask.cuda() if use_gpu else np_mask
 
         pred = generator(sentence_tensor.transpose(0, 1), trg, tgt_mask=np_mask)
-        pred = F.softmax(pred)
+        pred = F.softmax(pred, dim=-1)
         add_word = tgt_vocab.itos[pred.argmax(dim=2)[-1]]
 
         if use_gpu:
@@ -205,5 +204,6 @@ def greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_w
         if add_word == eos_word:
             break
 
-    trg = torch.nn.functional.pad(trg.transpose(0, 1).squeeze(0), (0, max_len - (len(trg))), value=tgt_vocab.stoi[blank_word])
+    trg = torch.nn.functional.pad(trg.transpose(0, 1).squeeze(0), (0, max_len - (len(trg))),
+                                  value=tgt_vocab.stoi[blank_word])
     return trg

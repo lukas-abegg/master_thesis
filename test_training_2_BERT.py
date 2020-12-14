@@ -215,7 +215,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
         if logging_meters['valid_loss'].avg < best_avg_valid_loss:
             best_avg_valid_loss = logging_meters['valid_loss'].avg
 
-            model_path = checkpoints_path + "best_dmodel.pt"
+            model_path = checkpoints_path + "best_model.pt"
 
             print("Save model to", model_path)
             torch.save(model.state_dict(), model_path)
@@ -259,6 +259,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 def greedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
     sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+
     indexed = []
     for tok in sentence:
         if SRC.vocab.stoi[tok] != SRC.vocab.stoi[BLANK_WORD]:
@@ -267,17 +268,17 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
             indexed.append(SRC.vocab.stoi[BLANK_WORD])
 
     sentence = Variable(torch.LongTensor([indexed]))
+
     trg_init_tok = TGT.vocab.stoi[BOS_WORD]
     trg = torch.LongTensor([[trg_init_tok]])
     translated_sentence = ""
 
-    if use_gpu:
-        sentence = sentence.cuda()
-        trg = trg.cuda()
+    sentence = sentence.cuda() if use_gpu else sentence
+    trg = trg.cuda() if use_gpu else trg
 
     for i in range(max_len_tgt):
-
         size = trg.size(0)
+
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)
         np_mask = np_mask.float().masked_fill(np_mask == 0, float('-inf')).masked_fill(np_mask == 1, float(0.0))
         np_mask = np_mask.cuda() if use_gpu else np_mask

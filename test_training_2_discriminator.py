@@ -52,8 +52,9 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, target_voc
     # validation set data loader (only prepare once)
     train = prepare_training_data(train_iter, generator, target_vocab, BOS_WORD, MAX_LEN, EOS_WORD, BLANK_WORD, use_gpu)
     valid = prepare_training_data(val_iter, generator, target_vocab, BOS_WORD, MAX_LEN, EOS_WORD, BLANK_WORD, use_gpu)
-    data_train = DatasetProcessing(data=train, max_len=MAX_LEN)
-    data_valid = DatasetProcessing(data=valid, max_len=MAX_LEN)
+
+    data_train = DatasetProcessing(data=train, max_len_src=max_len_src, max_len_tgt=max_len_tgt)
+    data_valid = DatasetProcessing(data=valid, max_len_src=max_len_src, max_len_tgt=max_len_tgt)
 
     # main training loop
     while lr > min_lr and epoch_i <= max_epoch:
@@ -62,7 +63,7 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, target_voc
         if epoch_i > 1:
             train = prepare_training_data(train_iter, generator, target_vocab, BOS_WORD, MAX_LEN, EOS_WORD, BLANK_WORD,
                                           use_gpu)
-            data_train = DatasetProcessing(data=train, max_len=MAX_LEN)
+            data_train = DatasetProcessing(data=train, max_len_src=max_len_src, max_len_tgt=max_len_tgt)
 
         # discriminator training dataloader
         train_loader = train_dataloader(data_train, batch_size=BATCH_SIZE, sort_by_source_size=False)
