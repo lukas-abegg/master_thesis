@@ -113,6 +113,10 @@ def write_to_file(sentences, filename):
 
 
 def run(test_iter, model, base_path, use_cuda):
+
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+
     for i in range(5):
         origin_sentences, reference_sentences, predicted_sentences = predict(test_iter, model, use_cuda)
 
@@ -137,7 +141,7 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
-        "batch_size": 100,
+        "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -193,5 +197,3 @@ if __name__ == "__main__":
     run(test_iter, model, save_run_files_base, use_cuda)
 
     sys.exit()
-
-

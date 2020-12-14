@@ -256,7 +256,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
-    sentence = SRC.preprocess(sentence)
+    sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
 
     indexed = []
     for tok in sentence:
@@ -312,8 +312,8 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
-        "batch_size": 100,
-        "num_epochs": 25,
+        "batch_size": 50,
+        "num_epochs": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,

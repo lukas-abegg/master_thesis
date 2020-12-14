@@ -54,6 +54,7 @@ def get_parallel_sentences(base_file_path):
 def evaluate_sentence_bleu_and_meteor(origins, tokenized_origins, references, tokenized_references, hypotheses,
                                       tokenized_hypotheses):
     meteor = MeteorMetric()
+    bleu_smoothing_function = SmoothingFunction()
 
     sentence_bleu_scores = []
     meteor_scores = []
