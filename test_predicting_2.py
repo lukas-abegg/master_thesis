@@ -30,7 +30,7 @@ def predict(test_iter, model, use_gpu=True):
         for batch in tqdm(test_iter, desc=desc, leave=False):
 
             src = batch.src.cuda() if use_gpu else batch.src
-            trg = batch.src.cuda() if use_gpu else batch.trg
+            trg = batch.trg.cuda() if use_gpu else batch.trg
 
             # change to shape (bs , max_seq_len)
             src = src.transpose(0, 1)
