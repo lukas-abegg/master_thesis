@@ -140,9 +140,9 @@ if __name__ == "__main__":
         "sequence_length_tgt": 43,
         "batch_size": 50,
         "learning_rate": 1e-4,
-        "d_model": 512,
+        "d_model": 768,
         "n_head": 8,
-        "dim_feedforward": 2048,
+        "dim_feedforward": 3072,
         "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
