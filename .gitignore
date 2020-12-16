@@ -82,3 +82,4 @@ zzz_bert_models/
 checkpoints/
 logs/
 .data/
+evaluations/
