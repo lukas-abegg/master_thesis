@@ -1,8 +1,10 @@
 import os
 
 from torchtext.data import Field, BucketIterator
-from torchtext.datasets import TranslationDataset
+from torchtext.datasets import TranslationDataset, IWSLT
 from transformers import BertTokenizer
+
+import spacy
 
 bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -11,8 +13,14 @@ def tokenize_bert(text):
     return [tok for tok in bert_tokenizer.tokenize(text)]
 
 
-def get_fields(max_len_src, max_len_tgt, tokenizer, bos_word, eos_word, blank_word):
+spacy_en = spacy.load('en')
 
+
+def tokenize_en(text):
+    return [tok.text for tok in spacy_en.tokenizer(text)]
+
+
+def get_fields(max_len_src, max_len_tgt, tokenizer, bos_word, eos_word, blank_word):
     src = Field(tokenize=tokenizer,
                 fix_length=max_len_src,
                 init_token=bos_word,
@@ -91,8 +99,7 @@ class MWS(TranslationDataset):
 
 
 def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
-
-    SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, bos_word, eos_word, blank_word)
+    SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, bos_word, eos_word, blank_word)
 
     if dataset == "newsela":
         path = os.path.join(base_path, "newsela/splits/bert_base")
@@ -104,9 +111,10 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                            validation='valid',
                                                            test='test',
                                                            path=path,
-                                                           filter_pred=lambda x: len(vars(x)['src']) <= max_len_src and len(
+                                                           filter_pred=lambda x: len(
+                                                               vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
-    else:
+    elif dataset == "mws":
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
@@ -117,6 +125,12 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                        path=path,
                                                        filter_pred=lambda x: len(vars(x)['src']) <= max_len_src and len(
                                                            vars(x)['trg']) <= max_len_tgt)
+    else:
+        train_data, valid_data, test_data = IWSLT.splits(exts=('.en', '.de'),
+                                                         fields=(SRC, TGT),
+                                                         filter_pred=lambda x: len(
+                                                             vars(x)['src']) <= max_len_src and len(
+                                                             vars(x)['trg']) <= max_len_tgt)
 
     SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=1)
     TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=1)

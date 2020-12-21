@@ -20,6 +20,12 @@ import spacy
 # Load the Spacy Models
 from test_transformer import Transformer
 
+# CUDA for PyTorch
+use_cuda = torch.cuda.is_available()
+print("Found ", torch.cuda.device_count(), " GPU devices")
+device = torch.device("cuda" if use_cuda else "cpu")
+print("Use device ", device, " for task")
+
 spacy_de = spacy.load('de')
 spacy_en = spacy.load('en')
 
@@ -36,7 +42,6 @@ def tokenize_en(text):
 experiment = comet_ml.Experiment(api_key="tgrD5ElfTdvaGEmJB7AEZG8Ra",
                                  project_name="test_MK30_dataset",
                                  workspace="abeggluk")
-experiment.display()
 
 # Special Tokens
 BOS_WORD = '<s>'
@@ -47,13 +52,11 @@ SRC = data.Field(tokenize=tokenize_en, pad_token=BLANK_WORD)
 TGT = data.Field(tokenize=tokenize_de, init_token=BOS_WORD,
                  eos_token=EOS_WORD, pad_token=BLANK_WORD)
 
-MAX_LEN = 5
+MAX_LEN = 20
 train, val, test = datasets.IWSLT.splits(
     exts=('.en', '.de'), fields=(SRC, TGT),
-    filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and len(vars(x)['trg']) <= MAX_LEN)
-
-for i, example in enumerate([(x.src, x.trg) for x in train[0:5]]):
-    print("Example_{}:{}".format(i, example))
+    filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN
+    and len(vars(x)['trg']) <= MAX_LEN)
 
 MIN_FREQ = 2
 SRC.build_vocab(train.src, min_freq=MIN_FREQ)
@@ -62,28 +65,14 @@ TGT.build_vocab(train.trg, min_freq=MIN_FREQ)
 BATCH_SIZE = 60
 # Create iterators to process text in batches of approx. the same length
 train_iter = data.BucketIterator(train, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
-val_iter = data.BucketIterator(val, batch_size=1, repeat=False, sort_key=lambda x: len(x.src))
-
-batch = next(iter(train_iter))
-src_matrix = batch.src.T
-print(src_matrix, src_matrix.size())
-
-trg_matrix = batch.trg.T
-print(trg_matrix, trg_matrix.size())
-
-print(SRC.vocab.itos[1])
-print(TGT.vocab.itos[2])
-print(TGT.vocab.itos[1])
-
-print(TGT.vocab.stoi['</s>'])
-
+val_iter = data.BucketIterator(val, batch_size=BATCH_SIZE, repeat=False, sort_key=lambda x: len(x.src))
 
 source_vocab_length = len(SRC.vocab)
 target_vocab_length = len(TGT.vocab)
 
 model = Transformer(None, source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length)
 optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
-#model = model.cuda()
+model = model.cuda() if use_cuda else model
 
 
 def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
@@ -97,8 +86,7 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
 
         print("Training started - ")
         for i, batch in enumerate(train_iter):
-            if i > 0:
-                break
+
             src = batch.src.cuda() if use_gpu else batch.src
             trg = batch.trg.cuda() if use_gpu else batch.trg
 
@@ -130,17 +118,16 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
             loss.backward()
             optim.step()
 
-            experiment.log_metric("batch_loss", loss.item())
+            experiment.log_metric("batch_loss", loss.item() / size)
 
-            train_loss += loss.item() / BATCH_SIZE
+            train_loss += loss.item() / size
 
         model.eval()
         with torch.no_grad():
 
             print("Evaluation started - ")
             for i, batch in enumerate(val_iter):
-                if i > 0:
-                    break
+
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
 
@@ -171,9 +158,9 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
                               tgt_mask=np_mask)  # , src_mask = src_mask)#, tgt_key_padding_mask=trg_mask)
                 preds = preds.transpose(0, 1).contiguous().view(-1, preds.size(-1))
                 loss = F.cross_entropy(preds, targets, ignore_index=0, reduction='sum')
-                valid_loss += loss.item() / 1
+                valid_loss += loss.item() / size
 
-                experiment.log_metric("valid_loss", loss.item())
+                experiment.log_metric("valid_loss", loss.item() / size)
 
         # Log after each epoch
         print("Epoch [{0}/{1}] complete. Train Loss: {2:.3f}. Val Loss: {3:.3f}".format(epoch + 1, num_epochs,
@@ -214,7 +201,7 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
         sentence = sentence.cuda()
         trg = trg.cuda()
 
-    maxlen = 5
+    maxlen = MAX_LEN
     for i in range(maxlen):
         size = trg.size(0)
         np_mask = torch.triu(torch.ones(size, size) == 1).transpose(0, 1)

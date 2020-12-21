@@ -223,10 +223,12 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
         # Check Example after each epoch:
         if dataset == "newsela":
-            sentences = ["Mundell was on a recent flight to Orlando .",
-                         "Normally , they would see just one or two sea lions in the entire month ."]
-            exp_sentences = ["A Fake Flight Vest",
-                             "Usually , they see just one or two ."]
+            sentences = ["We activate communities .", "Here 's pagoda structures ."]
+            exp_sentences = ["Wir aktivieren Gemeinschaften .", "Hier sind Pagodenstrukturen ."]
+            #sentences = ["Mundell was on a recent flight to Orlando .",
+            #             "Normally , they would see just one or two sea lions in the entire month ."]
+            #exp_sentences = ["A Fake Flight Vest",
+            #                 "Usually , they see just one or two ."]
         else:
             sentences = [
                 "Diverticulitis is a common digestive disease which involves the formation of pouches diverticula within the bowel wall .",
@@ -242,9 +244,9 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 print("Validation Sample:")
             print("Original Sentence: {}".format(sentences[step_i]))
             greedy_sent = greedy_decode_sentence(model, sentences[step_i], use_gpu)
-            sent = re.split(r'\s+', greedy_sent)
-            sent = bert_tokenizer.convert_tokens_to_string(sent)
-            print("Translated Sentence: {}".format(sent))
+            #sent = re.split(r'\s+', greedy_sent)
+            #sent = bert_tokenizer.convert_tokens_to_string(sent)
+            print("Translated Sentence: {}".format(greedy_sent))
             print("Expected Sentence: {}".format(exp_sentences[step_i]))
             print("---------------------------------------")
             if experiment is not None:
@@ -295,8 +297,8 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    translated_sentence = re.split(r"\s+", translated_sentence)
-    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    #translated_sentence = re.split(r"\s+", translated_sentence)
+    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -318,7 +320,7 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 2,
+        "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
