@@ -311,7 +311,7 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws
+        "dataset": "newsela",  # mws # iwslt
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
         "batch_size": 50,
