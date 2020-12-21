@@ -25,8 +25,8 @@ class PositionalEncoding(nn.Module):
 
 
 class Transformer(nn.Module):
-    def __init__(self, bert_model, d_model=512, nhead=8, num_encoder_layers=2,
-                 num_decoder_layers=2, dim_feedforward=2048, dropout=0.1,
+    def __init__(self, bert_model, d_model=512, nhead=8, num_encoder_layers=6,
+                 num_decoder_layers=6, dim_feedforward=2048, dropout=0.1,
                  activation="relu", source_vocab_length=60000, target_vocab_length=60000,
                  load_embedding_weights=False):
         super(Transformer, self).__init__()
