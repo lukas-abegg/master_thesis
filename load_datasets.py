@@ -14,20 +14,25 @@ def tokenize_bert(text):
 
 
 spacy_en = spacy.load('en')
+spacy_de = spacy.load('de')
 
 
 def tokenize_en(text):
     return [tok.text for tok in spacy_en.tokenizer(text)]
 
 
-def get_fields(max_len_src, max_len_tgt, tokenizer, bos_word, eos_word, blank_word):
-    src = Field(tokenize=tokenizer,
+def tokenize_de(text):
+    return [tok.text for tok in spacy_de.tokenizer(text)]
+
+
+def get_fields(max_len_src, max_len_tgt, tokenizer_src, tokenizer_dst, bos_word, eos_word, blank_word):
+    src = Field(tokenize=tokenizer_src,
                 fix_length=max_len_src,
                 init_token=bos_word,
                 eos_token=eos_word,
                 pad_token=blank_word)
 
-    trg = Field(tokenize=tokenizer,
+    trg = Field(tokenize=tokenizer_dst,
                 fix_length=max_len_tgt,
                 init_token=bos_word,
                 eos_token=eos_word,
@@ -99,11 +104,11 @@ class MWS(TranslationDataset):
 
 
 def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
-    SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, bos_word, eos_word, blank_word)
-
     if dataset == "newsela":
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+
         path = os.path.join(base_path, "newsela/splits/bert_base")
-        #path = os.path.join(base_path, "data/test/newsela")
+        # path = os.path.join(base_path, "data/test/newsela")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
@@ -115,6 +120,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
     elif dataset == "mws":
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
@@ -126,6 +133,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                        filter_pred=lambda x: len(vars(x)['src']) <= max_len_src and len(
                                                            vars(x)['trg']) <= max_len_tgt)
     else:
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_de, bos_word, eos_word, blank_word)
+
         train_data, valid_data, test_data = IWSLT.splits(exts=('.en', '.de'),
                                                          fields=(SRC, TGT),
                                                          filter_pred=lambda x: len(

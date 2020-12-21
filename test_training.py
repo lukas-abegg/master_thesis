@@ -48,7 +48,8 @@ BOS_WORD = '<s>'
 EOS_WORD = '</s>'
 BLANK_WORD = "<blank>"
 
-SRC = data.Field(tokenize=tokenize_en, pad_token=BLANK_WORD)
+SRC = data.Field(tokenize=tokenize_en, init_token=BOS_WORD,
+                 eos_token=EOS_WORD, pad_token=BLANK_WORD)
 TGT = data.Field(tokenize=tokenize_de, init_token=BOS_WORD,
                  eos_token=EOS_WORD, pad_token=BLANK_WORD)
 
@@ -179,7 +180,9 @@ def train(train_iter, val_iter, model, optim, num_epochs, use_gpu=True):
         sentences = ["This is an example to check how our model is performing."]
         for sentence in sentences:
             print("Original Sentence: {}".format(sentence))
-            print("Translated Sentence: {}".format(greeedy_decode_sentence(model, sentence, use_gpu)))
+            sent = greeedy_decode_sentence(model, sentence, use_gpu)
+            print("Translated Sentence: {}".format(sent))
+            experiment.log_text(sent)
     return train_losses, valid_losses
 
 
@@ -225,6 +228,6 @@ def greeedy_decode_sentence(model, sentence, use_gpu=False):
     return translated_sentence
 
 
-train_losses, valid_losses = train(train_iter, val_iter, model, optim, 35, False)
+train_losses, valid_losses = train(train_iter, val_iter, model, optim, 35, use_cuda)
 
 
