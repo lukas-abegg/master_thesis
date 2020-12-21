@@ -1,7 +1,7 @@
 import os
 
 from torchtext.data import Field, BucketIterator
-from torchtext.datasets import TranslationDataset, IWSLT
+from torchtext.datasets import TranslationDataset, WMT14
 from transformers import BertTokenizer
 
 import spacy
@@ -135,7 +135,7 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
     else:
         SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_de, bos_word, eos_word, blank_word)
 
-        train_data, valid_data, test_data = IWSLT.splits(exts=('.en', '.de'),
+        train_data, valid_data, test_data = WMT14.splits(exts=('.en', '.de'),
                                                          fields=(SRC, TGT),
                                                          filter_pred=lambda x: len(
                                                              vars(x)['src']) <= max_len_src and len(
