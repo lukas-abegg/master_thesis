@@ -229,12 +229,15 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             #             "Normally , they would see just one or two sea lions in the entire month ."]
             #exp_sentences = ["A Fake Flight Vest",
             #                 "Usually , they see just one or two ."]
-        else:
+        elif dataset == "mws":
             sentences = [
                 "Diverticulitis is a common digestive disease which involves the formation of pouches diverticula within the bowel wall .",
                 '"In 1998 , swine flu was found in pigs in four U .S . states ."']
             exp_sentences = ["Diverticulitis is a disease of the digestive system .",
                              "Swine flu is common in pigs ."]
+        else:
+            sentences = ["This is an example to check how our model is performing ."]
+            exp_sentences = ["Hier ist ein Beispiel , um prüfen wie gut unser Modell ist ."]
 
         print("\nTranslate Samples:")
         for step_i in range(0, len(sentences)):
@@ -312,8 +315,8 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws # iwslt
-        "sequence_length_src": 72,
-        "sequence_length_tgt": 43,
+        "sequence_length_src": 20,
+        "sequence_length_tgt": 20,
         "batch_size": 50,
         "num_epochs": 50,
         "learning_rate": 1e-4,
@@ -326,8 +329,10 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
+    #checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
     project_name = "newsela-transformer"  # newsela-transformer-bert-weights
+    project_name = "test_MK30_dataset"  # newsela-transformer-bert-weights
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
@@ -361,6 +366,11 @@ if __name__ == "__main__":
     ### Load Generator
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
+
+    if experiment is not None:
+        experiment.log_other("source_vocab_length", source_vocab_length)
+        experiment.log_other("target_vocab_length", target_vocab_length)
+        experiment.log_other("len_train_data", str(len(train_data)))
 
     bert_model = None
     if hyper_params["load_embedding_weights"]:

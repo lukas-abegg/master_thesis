@@ -54,7 +54,7 @@ TGT = data.Field(tokenize=tokenize_de, init_token=BOS_WORD,
                  eos_token=EOS_WORD, pad_token=BLANK_WORD)
 
 MAX_LEN = 20
-train, val, test = datasets.WMT14.splits(
+train, val, test = datasets.IWSLT.splits(
     exts=('.en', '.de'), fields=(SRC, TGT),
     filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN
     and len(vars(x)['trg']) <= MAX_LEN)
