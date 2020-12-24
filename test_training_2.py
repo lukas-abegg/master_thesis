@@ -90,7 +90,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             loss = criterion(preds, targets)
 
             sample_size = targets.size(0)
-            logging_loss = loss.item() / sample_size
+            logging_loss = loss / sample_size
 
             # Accuracy
             predicts = preds.argmax(dim=1)
@@ -152,7 +152,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 loss = criterion(preds, targets)
 
                 sample_size = targets.size(0)
-                logging_loss = loss.item() / sample_size
+                logging_loss = loss / sample_size
 
                 # Accuracy
                 predicts = preds.argmax(dim=1)
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
     #checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "newsela-transformer"  # newsela-transformer-bert-weights
+    #project_name = "newsela-transformer"  # newsela-transformer-bert-weights
     project_name = "test_MK30_dataset"  # newsela-transformer-bert-weights
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
