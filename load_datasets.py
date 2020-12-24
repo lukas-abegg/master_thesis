@@ -27,13 +27,13 @@ def tokenize_de(text):
 
 def get_fields(max_len_src, max_len_tgt, tokenizer_src, tokenizer_dst, bos_word, eos_word, blank_word):
     src = Field(tokenize=tokenizer_src,
-                fix_length=max_len_src,
-                init_token=bos_word,
-                eos_token=eos_word,
+                #fix_length=max_len_src,
+                #init_token=bos_word,
+                #eos_token=eos_word,
                 pad_token=blank_word)
 
     trg = Field(tokenize=tokenizer_dst,
-                fix_length=max_len_tgt,
+                #fix_length=max_len_tgt,
                 init_token=bos_word,
                 eos_token=eos_word,
                 pad_token=blank_word)
@@ -176,8 +176,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                              vars(x)['src']) <= max_len_src and len(
                                                              vars(x)['trg']) <= max_len_tgt)
 
-    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=1)
-    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=1)
+    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=2)
+    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=2)
 
     return train_data, valid_data, test_data, SRC, TGT
 

@@ -50,7 +50,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     best_avg_valid_acc = 0
 
     step_train_i = 0
-    step_valid_i = 0
+
     for epoch in range(1, num_epochs + 1):
 
         if experiment is not None:
@@ -90,7 +90,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             loss = criterion(preds, targets)
 
             sample_size = targets.size(0)
-            logging_loss = loss / sample_size
+            logging_loss = loss.item() / sample_size
 
             # Accuracy
             predicts = preds.argmax(dim=1)
@@ -117,8 +117,8 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
 
-            # del src, trg, preds, loss, labels, acc
-            del src, trg, preds, loss, acc
+            # del src, trg, preds, loss, acc
+            del src, trg, trg_input, targets, preds, loss, logging_loss, acc
 
         # set validation mode
         model.eval()
@@ -127,10 +127,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
             desc = '  - (Validation)   '
             for batch in tqdm(val_iter, desc=desc, leave=False):
-                step_valid_i = step_valid_i + 1
-
-                if experiment is not None:
-                    experiment.set_step(step_valid_i)
 
                 src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
@@ -156,7 +152,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 loss = criterion(preds, targets)
 
                 sample_size = targets.size(0)
-                logging_loss = loss / sample_size
+                logging_loss = loss.item() / sample_size
 
                 # Accuracy
                 predicts = preds.argmax(dim=1)
@@ -178,6 +174,9 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
                     experiment.log_metric("batch_valid_acc", float(acc))
 
+                # del src, trg, preds, loss, acc
+                del src, trg, trg_input, targets, preds, loss, logging_loss, acc
+
         # Log after each epoch
         print("\nEpoch [{0}/{1}] complete. Train loss: {2:.3f}, avgAcc {3:.3f}. Val Loss: {4:.3f}, avgAcc {5:.3f}. lr={6}."
               .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['train_acc'].avg,
@@ -190,10 +189,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
             experiment.log_metric("epoch_train_acc", logging_meters['train_acc'].avg)
 
+            experiment.log_metric("current_lr", optimizer.param_groups[0]['lr'])
+
             experiment.log_metric("epoch_valid_loss", logging_meters['valid_loss'].avg)
             experiment.log_metric("epoch_valid_acc", logging_meters['valid_acc'].avg)
-
-            experiment.log_metric("current_lr", optimizer.param_groups[0]['lr'])
 
             experiment.log_epoch_end(epoch_cnt=epoch)
 
@@ -223,18 +222,19 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
         # Check Example after each epoch:
         if dataset == "newsela":
-            sentences = ["We activate communities .", "Here 's pagoda structures ."]
-            exp_sentences = ["Wir aktivieren Gemeinschaften .", "Hier sind Pagodenstrukturen ."]
-            #sentences = ["Mundell was on a recent flight to Orlando .",
-            #             "Normally , they would see just one or two sea lions in the entire month ."]
-            #exp_sentences = ["A Fake Flight Vest",
-            #                 "Usually , they see just one or two ."]
+            sentences = [
+                "Mundell was on a recent flight to Orlando .",
+                "Normally , they would see just one or two sea lions in the entire month ."]
+            exp_sentences = [
+                "A Fake Flight Vest",
+                "Usually , they see just one or two ."]
         elif dataset == "mws":
             sentences = [
                 "Diverticulitis is a common digestive disease which involves the formation of pouches diverticula within the bowel wall .",
                 '"In 1998 , swine flu was found in pigs in four U .S . states ."']
-            exp_sentences = ["Diverticulitis is a disease of the digestive system .",
-                             "Swine flu is common in pigs ."]
+            exp_sentences = [
+                "Diverticulitis is a disease of the digestive system .",
+                "Swine flu is common in pigs ."]
         else:
             sentences = ["This is an example to check how our model is performing ."]
             exp_sentences = ["Hier ist ein Beispiel , um prüfen wie gut unser Modell ist ."]
@@ -254,30 +254,30 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             print("---------------------------------------")
             if experiment is not None:
                 if step_i == 0:
-                    experiment.log_text(str("Train Sample: " + greedy_sent))
+                    experiment.log_text(str("Train Sample: " + sentences[step_i] +
+                                            "\nPredicted Sample: " + greedy_sent))
                 else:
-                    experiment.log_text(str("Validation Sample: " + greedy_sent))
+                    experiment.log_text(str("Validation Sample: " + sentences[step_i] +
+                                            "\nPredicted Sample: " + greedy_sent))
 
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
-    sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+    #sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+    sentence = SRC.preprocess(sentence)
 
     indexed = []
     for tok in sentence:
-        if SRC.vocab.stoi[tok] != SRC.vocab.stoi[BLANK_WORD]:
-            indexed.append(SRC.vocab.stoi[tok])
-        else:
-            indexed.append(SRC.vocab.stoi[BLANK_WORD])
+        indexed.append(SRC.vocab.stoi[tok])
 
     sentence = Variable(torch.LongTensor([indexed]))
+    sentence = sentence.cuda() if use_gpu else sentence
 
     trg_init_tok = TGT.vocab.stoi[BOS_WORD]
     trg = torch.LongTensor([[trg_init_tok]])
-    translated_sentence = ""
-
-    sentence = sentence.cuda() if use_gpu else sentence
     trg = trg.cuda() if use_gpu else trg
+
+    translated_sentence = ""
 
     for i in range(max_len_tgt):
         size = trg.size(0)
@@ -351,9 +351,12 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    BOS_WORD = '[CLS]'
-    EOS_WORD = '[SEP]'
-    BLANK_WORD = '[PAD]'
+    #BOS_WORD = '[CLS]'
+    #EOS_WORD = '[SEP]'
+    #BLANK_WORD = '[PAD]'
+    BOS_WORD = '<s>'
+    EOS_WORD = '</s>'
+    BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
