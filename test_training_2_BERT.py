@@ -35,8 +35,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     logging_meters['valid_loss'] = AverageMeter()
     logging_meters['valid_acc'] = AverageMeter()
 
+    # define loss function
     criterion = nn.CrossEntropyLoss(ignore_index=TGT.vocab.stoi[BLANK_WORD], reduction='sum')
 
+    # define optimizer
     # optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=512, warmup_steps=2500)
     # optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
@@ -95,8 +97,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             # Accuracy
             predicts = preds.argmax(dim=1)
             corrects = predicts == targets
+            all = targets == targets
             corrects.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
-            acc = corrects.sum()
+            all.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
+            acc = corrects.sum().float() / all.sum()
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(logging_loss.item())
@@ -110,7 +114,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
                 experiment.log_metric("batch_train_acc", logging_meters['train_acc'].avg)
-                experiment.log_metric("batch_train_acc", float(acc))
 
             optimizer.zero_grad()
             loss.backward()
@@ -162,8 +165,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 # Accuracy
                 predicts = preds.argmax(dim=1)
                 corrects = predicts == targets
+                all = targets == targets
                 corrects.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
-                acc = corrects.sum()
+                all.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
+                acc = corrects.sum().float() / all.sum()
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(logging_loss.item())
@@ -177,7 +182,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
-                    experiment.log_metric("batch_valid_acc", float(acc))
 
         # Log after each epoch
         print(

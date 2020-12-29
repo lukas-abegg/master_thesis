@@ -88,7 +88,9 @@ class Transformer(nn.Module):
             self.source_embedding.weight = self.bert_model.embeddings.word_embeddings.weight
             self.target_embedding.weight = self.bert_model.embeddings.word_embeddings.weight
 
-        self.source_embedding.weight.requires_grad = False
-        self.target_embedding.weight.requires_grad = False
-        self.out.weight.requires_grad = False
-        self.out.bias.requires_grad = False
+        for p in self.source_embedding.parameters():
+            p.requires_grad = False
+        for p in self.target_embedding.parameters():
+            p.requires_grad = False
+        for p in self.out.parameters():
+            p.requires_grad = False

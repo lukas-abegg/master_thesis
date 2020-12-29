@@ -35,8 +35,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     logging_meters['valid_loss'] = AverageMeter()
     logging_meters['valid_acc'] = AverageMeter()
 
+    # define loss function
     criterion = nn.CrossEntropyLoss(ignore_index=TGT.vocab.stoi[BLANK_WORD], reduction='sum')
 
+    # define optimizer
     # optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=512, warmup_steps=2500)
     # optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
@@ -95,8 +97,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             # Accuracy
             predicts = preds.argmax(dim=1)
             corrects = predicts == targets
+            all = targets == targets
             corrects.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
-            acc = corrects.sum()
+            all.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
+            acc = corrects.sum().float() / all.sum()
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(logging_loss.item())
@@ -110,7 +114,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
                 experiment.log_metric("batch_train_acc", logging_meters['train_acc'].avg)
-                experiment.log_metric("batch_train_acc", float(acc))
 
             optimizer.zero_grad()
             loss.backward()
@@ -157,8 +160,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 # Accuracy
                 predicts = preds.argmax(dim=1)
                 corrects = predicts == targets
+                all = targets == targets
                 corrects.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
-                acc = corrects.sum()
+                all.masked_fill_((targets == TGT.vocab.stoi[BLANK_WORD]), 0)
+                acc = corrects.sum().float() / all.sum()
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(logging_loss.item())
@@ -172,7 +177,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
-                    experiment.log_metric("batch_valid_acc", float(acc))
 
                 # del src, trg, preds, loss, acc
                 del src, trg, trg_input, targets, preds, loss, logging_loss, acc
@@ -315,8 +319,8 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws # iwslt
-        "sequence_length_src": 20,
-        "sequence_length_tgt": 20,
+        "sequence_length_src": 40,
+        "sequence_length_tgt": 40,
         "batch_size": 50,
         "num_epochs": 50,
         "learning_rate": 1e-4,
@@ -328,13 +332,13 @@ if __name__ == "__main__":
         "load_embedding_weights": False
     }
 
-    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    #checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    #project_name = "newsela-transformer"  # newsela-transformer-bert-weights
-    project_name = "test_MK30_dataset"  # newsela-transformer-bert-weights
-    tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    bert_path = "./zzz_bert_models_1/bert_base_cased_12"  # "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
+    # checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
+    checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
+    project_name = "newsela-transformer"  # newsela-transformer-bert-weights
+    # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
+    tracking_active = False
+    base_path = "./data"  # "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]

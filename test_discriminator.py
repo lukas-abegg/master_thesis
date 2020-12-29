@@ -1,15 +1,17 @@
+import math
+
 import torch
 import torch.nn as nn
 
 
 class Discriminator(nn.Module):
-    def __init__(self, src_vocab_size, pad_id_src, trg_vocab_size, pad_id_trg, max_len, d_model=512, use_gpu=False):
+    def __init__(self, src_vocab_size, pad_id_src, trg_vocab_size, pad_id_trg, max_len_src, max_len_tgt, d_model=512, use_gpu=False):
         super(Discriminator, self).__init__()
 
         self.src_vocab_size = src_vocab_size
         self.trg_vocab_size = trg_vocab_size
-        self.max_len = max_len
-        self.linear_len = int(max_len / 4)
+        self.linear_len_src = int(math.floor(max_len_src/4))
+        self.linear_len_tgt = int(math.floor((max_len_tgt-1)/4))
         self.use_gpu = use_gpu
         self.pad_id_trg = pad_id_trg
 
@@ -40,13 +42,15 @@ class Discriminator(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            Linear(256 * self.linear_len * (self.linear_len-1), 20),
+            Linear(256 * self.linear_len_src * self.linear_len_tgt, self.linear_len_src * self.linear_len_tgt),
             nn.ReLU(),
             nn.Dropout(),
-            Linear(20, 20),
+            Linear(self.linear_len_src * self.linear_len_tgt, self.linear_len_src * self.linear_len_tgt),
             nn.ReLU(),
-            Linear(20, 1),
+            Linear(self.linear_len_src * self.linear_len_tgt, 1),
         )
+
+        self._reset_parameters()
 
     def forward(self, src_sentence, trg_sentence):
         batch_size = src_sentence.size(0)
@@ -72,6 +76,13 @@ class Discriminator(nn.Module):
 
         return out
 
+    def _reset_parameters(self):
+        # fix discriminator word embedding (as Wu et al. do)
+        for p in self.embed_src_tokens.parameters():
+            p.requires_grad = False
+        for p in self.embed_trg_tokens.parameters():
+            p.requires_grad = False
+
 
 def Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0, **kwargs):
     m = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, **kwargs)
@@ -93,7 +104,7 @@ def Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, **kwargs
     return m
 
 
-def Linear(in_features, out_features, bias=True, dropout=0):
+def Linear(in_features, out_features, bias=True):
     """Weight-normalized Linear layer (input: N x T x C)"""
     m = nn.Linear(in_features, out_features, bias=bias)
     nn.init.kaiming_uniform_(m.weight.data)

@@ -27,13 +27,13 @@ def tokenize_de(text):
 
 def get_fields(max_len_src, max_len_tgt, tokenizer_src, tokenizer_dst, bos_word, eos_word, blank_word):
     src = Field(tokenize=tokenizer_src,
-                #fix_length=max_len_src,
+                fix_length=max_len_src,
                 #init_token=bos_word,
                 #eos_token=eos_word,
                 pad_token=blank_word)
 
     trg = Field(tokenize=tokenizer_dst,
-                #fix_length=max_len_tgt,
+                fix_length=max_len_tgt,
                 init_token=bos_word,
                 eos_token=eos_word,
                 pad_token=blank_word)

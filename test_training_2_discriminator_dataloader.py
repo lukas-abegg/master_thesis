@@ -1,4 +1,5 @@
 import sys
+from tqdm import tqdm
 
 import numpy as np
 import torch
@@ -116,17 +117,17 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eos_word, blank_word, use_gpu):
+def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
-    print("preparing discriminator data.")
 
     generator.eval()
     with torch.no_grad():
-        for i, batch in enumerate(data_iter):
-            sys.stdout.write('\r' + 'Finishing ' + str(i + 1) + '/' + str(len(data_iter)))
-            sys.stdout.flush()
+        i = 0
+        desc = '  - (Generate Samples)   '
+        for batch in tqdm(data_iter, desc=desc, leave=False):
+            i = i + 1
 
             # a tensor with max possible translation length
             src = batch.src.cuda() if use_gpu else batch.src
@@ -141,7 +142,7 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eo
             neg_tokens = []
             for origin_sentence in src:
                 neg_tokens.append(
-                    greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len, bos_word, eos_word,
+                    greedy_decode_sentence(generator, origin_sentence, tgt_vocab, max_len_trg, bos_word, eos_word,
                                            blank_word, use_gpu))
 
             neg_tokens = torch.stack(neg_tokens)
@@ -149,7 +150,6 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eo
             src_tokens = src
 
             assert neg_tokens.size() == pos_tokens.size()
-            assert src_tokens.size() == pos_tokens.size()
 
             src_data_temp.append(src_tokens)
             trg_data_temp.append(pos_tokens)
@@ -161,16 +161,14 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len, eo
 
         src_data_temp = torch.cat(src_data_temp, dim=0)
         trg_data_temp = torch.cat(trg_data_temp, dim=0)
-        src_data_temp = src_data_temp.cpu().int()
-        trg_data_temp = trg_data_temp.cpu().int()
+        src_data_temp = src_data_temp.cuda().int() if use_gpu else src_data_temp.cpu().int()
+        trg_data_temp = trg_data_temp.cuda().int() if use_gpu else trg_data_temp.cpu().int()
 
         labels_temp = np.asarray(labels_temp)
         labels = torch.from_numpy(labels_temp)
-        labels = labels.cpu()
+        labels = labels.cuda() if use_gpu else labels.cpu()
 
         data = {'src': src_data_temp, 'trg': trg_data_temp, 'labels': labels}
-
-        print('\n' + "preparing discriminator data done!")
 
     return data
 
