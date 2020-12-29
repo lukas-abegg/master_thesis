@@ -117,7 +117,7 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu):
+def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu, max_bath=50):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
@@ -126,8 +126,12 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg
     with torch.no_grad():
         i = 0
         desc = '  - (Generate Samples)   '
+        max_batch = max_bath
         for batch in tqdm(data_iter, desc=desc, leave=False):
             i = i + 1
+
+            if i > max_batch:
+                return
 
             # a tensor with max possible translation length
             src = batch.src.cuda() if use_gpu else batch.src

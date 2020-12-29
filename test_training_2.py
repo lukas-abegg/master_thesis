@@ -318,7 +318,7 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt
+        "dataset": "mws",  # mws # iwslt
         "sequence_length_src": 40,
         "sequence_length_tgt": 40,
         "batch_size": 50,
@@ -332,13 +332,13 @@ if __name__ == "__main__":
         "load_embedding_weights": False
     }
 
-    bert_path = "./zzz_bert_models_1/bert_base_cased_12"  # "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    # checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
-    checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "newsela-transformer"  # newsela-transformer-bert-weights
+    bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
+    #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
+    project_name = "discriminator-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
-    tracking_active = False
-    base_path = "./data"  # "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    tracking_active = True
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
