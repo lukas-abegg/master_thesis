@@ -79,7 +79,7 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, target_voc
         if experiment is not None:
             experiment.set_epoch(epoch_i)
 
-        if epoch_i > 1:
+        if (epoch_i % 5) == 0:
             print("Prepare Train Data")
             train = prepare_training_data(train_iter, generator, target_vocab, BOS_WORD, max_len_tgt, EOS_WORD,
                                           BLANK_WORD, use_gpu)
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         "sequence_length_src": 40,
         "sequence_length_tgt": 40,
         "batch_size": 50,
-        "num_epochs": 15,
+        "num_epochs": 25,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
