@@ -174,6 +174,8 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg
 
         data = {'src': src_data_temp, 'trg': trg_data_temp, 'labels': labels}
 
+        data = data.cuda() if use_gpu else data.cpu()
+
     return data
 
 
