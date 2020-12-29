@@ -103,15 +103,19 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, target_voc
 
             sources = batch['src_tokens']
             targets = batch['trg_tokens'][:, 1:]
+            labels = batch['labels'].unsqueeze(1)
+
+            len_labels = batch['labels'].size(0)
 
             sources = sources.cuda() if use_gpu else sources
             targets = targets.cuda() if use_gpu else targets
+            labels = labels.cuda() if use_gpu else labels
 
             disc_out = discriminator(sources, targets)
 
-            loss = criterion(disc_out, batch['labels'].unsqueeze(1).float())
+            loss = criterion(disc_out, labels.float())
             prediction = torch.round(disc_out).int()
-            acc = torch.sum(prediction == batch['labels'].unsqueeze(1)).float() / len(batch['labels'])
+            acc = torch.sum(prediction == labels).float() / len_labels
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(loss.item())
@@ -144,15 +148,19 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, target_voc
 
                 sources = batch['src_tokens']
                 targets = batch['trg_tokens'][:, 1:]
+                labels = batch['labels'].unsqueeze(1)
+
+                len_labels = batch['labels'].size(0)
 
                 sources = sources.cuda() if use_gpu else sources
                 targets = targets.cuda() if use_gpu else targets
+                labels = labels.cuda() if use_gpu else labels
 
                 disc_out = discriminator(sources, targets)
 
-                loss = criterion(disc_out, batch['labels'].unsqueeze(1).float())
+                loss = criterion(disc_out, labels.float())
                 prediction = torch.round(disc_out).int()
-                acc = torch.sum(prediction == batch['labels'].unsqueeze(1)).float() / len(batch['labels'])
+                acc = torch.sum(prediction == labels).float() / len_labels
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(loss.item())
