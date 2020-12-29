@@ -131,7 +131,7 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg
             i = i + 1
 
             if i > max_batch:
-                return
+                break
 
             # a tensor with max possible translation length
             src = batch.src.cuda() if use_gpu else batch.src
