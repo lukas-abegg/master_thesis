@@ -117,7 +117,7 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu, max_bath=50):
+def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu, max_bath=2):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
@@ -165,16 +165,11 @@ def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg
 
         src_data_temp = torch.cat(src_data_temp, dim=0)
         trg_data_temp = torch.cat(trg_data_temp, dim=0)
-        src_data_temp = src_data_temp.cuda().int() if use_gpu else src_data_temp.cpu().int()
-        trg_data_temp = trg_data_temp.cuda().int() if use_gpu else trg_data_temp.cpu().int()
 
         labels_temp = np.asarray(labels_temp)
         labels = torch.from_numpy(labels_temp)
-        labels = labels.cuda() if use_gpu else labels.cpu()
 
         data = {'src': src_data_temp, 'trg': trg_data_temp, 'labels': labels}
-
-        data = data.cuda() if use_gpu else data.cpu()
 
     return data
 

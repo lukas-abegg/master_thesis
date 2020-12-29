@@ -226,7 +226,7 @@ if __name__ == "__main__":
         "sequence_length_src": 40,
         "sequence_length_tgt": 40,
         "batch_size": 50,
-        "num_epochs": 50,
+        "num_epochs": 15,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
