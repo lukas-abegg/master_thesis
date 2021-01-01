@@ -304,8 +304,8 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    #translated_sentence = re.split(r"\s+", translated_sentence)
-    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    translated_sentence = re.split(r"\s+", translated_sentence)
+    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -355,12 +355,12 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    #BOS_WORD = '[CLS]'
-    #EOS_WORD = '[SEP]'
-    #BLANK_WORD = '[PAD]'
-    BOS_WORD = '<s>'
-    EOS_WORD = '</s>'
-    BLANK_WORD = "<blank>"
+    BOS_WORD = '[CLS]'
+    EOS_WORD = '[SEP]'
+    BLANK_WORD = '[PAD]'
+    #BOS_WORD = '<s>'
+    #EOS_WORD = '</s>'
+    #BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
