@@ -232,7 +232,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             exp_sentences = [
                 "A Fake Flight Vest",
                 "Usually , they see just one or two ."]
-        elif dataset == "mws":
+        elif dataset == "mws" or dataset == "pwkp":
             sentences = [
                 "Diverticulitis is a common digestive disease which involves the formation of pouches diverticula within the bowel wall .",
                 '"In 1998 , swine flu was found in pigs in four U .S . states ."']
@@ -318,15 +318,15 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt
+        "dataset": "mws",  # mws # iwslt #pwkp
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
-        "batch_size": 100,
-        "num_epochs": 100,
-        "learning_rate": 5e-4,
-        "d_model": 512,
+        "batch_size": 50,
+        "num_epochs": 50,
+        "learning_rate": 1e-4,
+        "d_model": 768,
         "n_head": 8,
-        "dim_feedforward": 2048,
+        "dim_feedforward": 3072,
         "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": True
