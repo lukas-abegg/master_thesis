@@ -319,26 +319,26 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws # iwslt
-        "sequence_length_src": 40,
-        "sequence_length_tgt": 40,
-        "batch_size": 50,
-        "num_epochs": 50,
-        "learning_rate": 1e-4,
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
+        "batch_size": 100,
+        "num_epochs": 100,
+        "learning_rate": 5e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
         "n_layers": 6,
         "dropout": 0.1,
-        "load_embedding_weights": False
+        "load_embedding_weights": True
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_3"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "discriminator-mws"  # newsela-transformer-bert-weights
+    project_name = "transformer-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
