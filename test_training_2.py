@@ -319,11 +319,11 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt #pwkp
+        "dataset": "pwkp",  # mws # iwslt #pwkp
         "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "sequence_length_tgt": 67,
         "batch_size": 50,
-        "num_epochs": 50,
+        "num_epochs": 100,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -334,9 +334,9 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_2"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "transformer-mws"  # newsela-transformer-bert-weights
+    project_name = "transformer-pwkp"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
