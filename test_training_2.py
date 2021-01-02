@@ -328,7 +328,7 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 3,
+        "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
@@ -392,7 +392,7 @@ if __name__ == "__main__":
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
     model_path = "best_model.pt"
-    model_path = os.path.join(checkpoint_base, 'checkpoints/mle/_2', model_path)
+    model_path = os.path.join(checkpoint_base, '../_2/checkpoints/mle', model_path)
     model.load_state_dict(torch.load(model_path))
     print("Generator is successfully loaded!")
 
