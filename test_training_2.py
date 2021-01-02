@@ -323,7 +323,7 @@ if __name__ == "__main__":
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
         "batch_size": 50,
-        "num_epochs": 100,
+        "num_epochs": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
@@ -334,12 +334,12 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_6"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_1"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
     project_name = "transformer-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -390,6 +390,11 @@ if __name__ == "__main__":
                         dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                         source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                         load_embedding_weights=hyper_params["load_embedding_weights"])
+
+    model_path = "best_model.pt"
+    model_path = os.path.join(checkpoint_base, 'checkpoints/mle/_2', model_path)
+    model.load_state_dict(torch.load(model_path))
+    print("Generator is successfully loaded!")
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
