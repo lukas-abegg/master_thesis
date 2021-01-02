@@ -16,6 +16,7 @@ from transformers import BertConfig, BertModel
 from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
 from meters import AverageMeter
 from test_transformer import Transformer
+from training.optimizer import NoamOptimizer
 
 
 def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True, experiment=None):
@@ -39,13 +40,13 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     criterion = nn.CrossEntropyLoss(ignore_index=TGT.vocab.stoi[BLANK_WORD], reduction='sum')
 
     # define optimizer
-    # optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=512, warmup_steps=2500)
+    optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=hyper_params["d_model"], warmup_steps=4000)
     # optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                                 lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
-                                 eps=1e-9)
+    #optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
+    #                             lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
+    #                             eps=1e-9)
 
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
+    #lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -187,7 +188,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                       logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                       optimizer.param_groups[0]['lr']))
 
-        lr_scheduler.step(logging_meters['valid_loss'].avg)
+        #lr_scheduler.step(logging_meters['valid_loss'].avg)
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -318,27 +319,27 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt #pwkp
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "newsela",  # mws # iwslt #pwkp
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 41,
         "batch_size": 50,
-        "num_epochs": 50,
+        "num_epochs": 100,
         "learning_rate": 1e-4,
-        "d_model": 768,
+        "d_model": 512,
         "n_head": 8,
-        "dim_feedforward": 3072,
+        "dim_feedforward": 2048,
         "n_layers": 6,
         "dropout": 0.1,
-        "load_embedding_weights": True
+        "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_3"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_3"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "transformer-mws"  # newsela-transformer-bert-weights
+    project_name = "transformer-newsela"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_8"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
