@@ -305,8 +305,8 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    translated_sentence = re.split(r"\s+", translated_sentence)
-    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    #translated_sentence = re.split(r"\s+", translated_sentence)
+    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -320,8 +320,8 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws # iwslt #pwkp
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "sequence_length_src": 56,
+        "sequence_length_tgt": 49,
         "batch_size": 50,
         "num_epochs": 100,
         "learning_rate": 1e-4,

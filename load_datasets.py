@@ -136,8 +136,8 @@ class IWSLT(TranslationDataset):
 
 def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
     if dataset == "newsela":
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
 
         path = os.path.join(base_path, "newsela/splits/bert_base")
         # path = os.path.join(base_path, "data/test/newsela")
@@ -152,8 +152,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
     elif dataset == "mws":
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
 
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
