@@ -167,8 +167,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                            vars(x)['src']) <= max_len_src and len(
                                                            vars(x)['trg']) <= max_len_tgt)
     elif dataset == "pwkp":
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
+        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
 
         path = os.path.join(base_path, "pwkp")
 
