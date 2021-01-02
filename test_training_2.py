@@ -40,13 +40,13 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     criterion = nn.CrossEntropyLoss(ignore_index=TGT.vocab.stoi[BLANK_WORD], reduction='sum')
 
     # define optimizer
-    optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=hyper_params["d_model"], warmup_steps=4000)
+    # optimizer = NoamOptimizer(filter(lambda p: p.requires_grad, model.parameters()), d_model=hyper_params["d_model"], warmup_steps=4000)
     # optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
-    #optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-    #                             lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
-    #                             eps=1e-9)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
+                                 lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
+                                 eps=1e-9)
 
-    #lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -188,7 +188,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                       logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                       optimizer.param_groups[0]['lr']))
 
-        #lr_scheduler.step(logging_meters['valid_loss'].avg)
+        lr_scheduler.step(logging_meters['valid_loss'].avg)
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -328,18 +328,18 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 6,
+        "n_layers": 3,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_4"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_5"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
     project_name = "transformer-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -356,12 +356,12 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    BOS_WORD = '[CLS]'
-    EOS_WORD = '[SEP]'
-    BLANK_WORD = '[PAD]'
-    #BOS_WORD = '<s>'
-    #EOS_WORD = '</s>'
-    #BLANK_WORD = "<blank>"
+    #BOS_WORD = '[CLS]'
+    #EOS_WORD = '[SEP]'
+    #BLANK_WORD = '[PAD]'
+    BOS_WORD = '<s>'
+    EOS_WORD = '</s>'
+    BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
