@@ -319,9 +319,9 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "pwkp",  # mws # iwslt #pwkp
-        "sequence_length_src": 51,
-        "sequence_length_tgt": 44,
+        "dataset": "mws",  # mws # iwslt #pwkp #wikilarge
+        "sequence_length_src": 56,
+        "sequence_length_tgt": 49,
         "batch_size": 50,
         "num_epochs": 100,
         "learning_rate": 1e-4,
@@ -334,12 +334,12 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_0"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_2"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "transformer-pwkp"  # newsela-transformer-bert-weights
+    project_name = "transformer-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]

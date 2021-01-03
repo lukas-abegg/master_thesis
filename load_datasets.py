@@ -110,7 +110,38 @@ class PWKP(TranslationDataset):
     @classmethod
     def splits(cls, exts, fields, root='data/test',
                train='train', validation='valid', test='test', **kwargs):
-        """Create dataset objects for splits of the Newsela dataset.
+        """Create dataset objects for splits of the PWKP dataset.
+
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(PWKP, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
+class WIKILARGE(TranslationDataset):
+    name = 'wikilarge'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        """Create dataset objects for splits of the Wiki-Large dataset.
 
         Arguments:
             exts: A tuple containing the extension to path for each language.
@@ -141,7 +172,7 @@ class IWSLT(TranslationDataset):
     @classmethod
     def splits(cls, exts, fields, root='data/test',
                train='train', validation='valid', test='test', **kwargs):
-        """Create dataset objects for splits of the Newsela dataset.
+        """Create dataset objects for splits of the IWSLT dataset.
 
         Arguments:
             exts: A tuple containing the extension to path for each language.
@@ -212,6 +243,23 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                         filter_pred=lambda x: len(
                                                             vars(x)['src']) <= max_len_src and len(
                                                             vars(x)['trg']) <= max_len_tgt)
+
+    elif dataset == "wikilarge":
+        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+
+        path = os.path.join(base_path, "wikilarge")
+
+        train_data, valid_data, test_data = WIKILARGE.splits(exts=('.src', '.dst'),
+                                                        fields=(SRC, TGT),
+                                                        train='train',
+                                                        validation='valid',
+                                                        test='test',
+                                                        path=path,
+                                                        filter_pred=lambda x: len(
+                                                            vars(x)['src']) <= max_len_src and len(
+                                                            vars(x)['trg']) <= max_len_tgt)
+
     else:
         SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_de, bos_word, eos_word, blank_word)
 

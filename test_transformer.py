@@ -59,17 +59,17 @@ class Transformer(nn.Module):
                 memory_key_padding_mask=None):
         if src.size(1) != tgt.size(1):
             raise RuntimeError("the batch number of src and tgt must be equal")
-        src = src.transpose(0, 1)
+        #src = src.transpose(0, 1)
         src = self.source_embedding(src)
         src = self.pos_encoder(src)
-        src = src.transpose(0, 1)
+        #src = src.transpose(0, 1)
 
         memory = self.encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
-        tgt = tgt.transpose(0, 1)
+        #tgt = tgt.transpose(0, 1)
         tgt = self.target_embedding(tgt)
         tgt = self.pos_encoder(tgt)
-        tgt = tgt.transpose(0, 1)
+        #tgt = tgt.transpose(0, 1)
 
         output = self.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=memory_mask,
                               tgt_key_padding_mask=tgt_key_padding_mask,
