@@ -161,7 +161,7 @@ class WIKILARGE(TranslationDataset):
             path = kwargs['path']
             del kwargs['path']
 
-        return super(PWKP, cls).splits(
+        return super(WIKILARGE, cls).splits(
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
