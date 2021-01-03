@@ -305,8 +305,8 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    #translated_sentence = re.split(r"\s+", translated_sentence)
-    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    translated_sentence = re.split(r"\s+", translated_sentence)
+    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -320,8 +320,8 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws # iwslt #pwkp #wikilarge
-        "sequence_length_src": 56,
-        "sequence_length_tgt": 49,
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 50,
         "num_epochs": 100,
         "learning_rate": 1e-4,
@@ -334,12 +334,12 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_2"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_2"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
     project_name = "transformer-mws"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -356,12 +356,12 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    #BOS_WORD = '[CLS]'
-    #EOS_WORD = '[SEP]'
-    #BLANK_WORD = '[PAD]'
-    BOS_WORD = '<s>'
-    EOS_WORD = '</s>'
-    BLANK_WORD = "<blank>"
+    BOS_WORD = '[CLS]'
+    EOS_WORD = '[SEP]'
+    BLANK_WORD = '[PAD]'
+    #BOS_WORD = '<s>'
+    #EOS_WORD = '</s>'
+    #BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
