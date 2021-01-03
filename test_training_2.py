@@ -233,7 +233,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             exp_sentences = [
                 "A Fake Flight Vest",
                 "Usually , they see just one or two ."]
-        elif dataset == "mws" or dataset == "pwkp":
+        elif dataset == "mws" or dataset == "pwkp" or dataset == "wikilarge":
             sentences = [
                 "Diverticulitis is a common digestive disease which involves the formation of pouches diverticula within the bowel wall .",
                 '"In 1998 , swine flu was found in pigs in four U .S . states ."']
@@ -305,8 +305,8 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    translated_sentence = re.split(r"\s+", translated_sentence)
-    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    #translated_sentence = re.split(r"\s+", translated_sentence)
+    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -319,9 +319,9 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "wikilarge",  # mws # iwslt #pwkp #wikilarge
-        "sequence_length_src": 89,
-        "sequence_length_tgt": 73,
+        "dataset": "pwkp",  # mws # iwslt #pwkp #wikilarge
+        "sequence_length_src": 51,
+        "sequence_length_tgt": 44,
         "batch_size": 50,
         "num_epochs": 100,
         "learning_rate": 1e-4,
@@ -334,12 +334,12 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/wikilarge_transformer/_2"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_0_1"
     #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    project_name = "transformer-wikilarge"  # newsela-transformer-bert-weights
+    project_name = "transformer-pwkp"  # newsela-transformer-bert-weights
     # project_name = "test_MK30_dataseta"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -356,12 +356,12 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    BOS_WORD = '[CLS]'
-    EOS_WORD = '[SEP]'
-    BLANK_WORD = '[PAD]'
-    #BOS_WORD = '<s>'
-    #EOS_WORD = '</s>'
-    #BLANK_WORD = "<blank>"
+    #BOS_WORD = '[CLS]'
+    #EOS_WORD = '[SEP]'
+    #BLANK_WORD = '[PAD]'
+    BOS_WORD = '<s>'
+    EOS_WORD = '</s>'
+    BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
