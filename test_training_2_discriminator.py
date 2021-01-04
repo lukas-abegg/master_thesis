@@ -231,6 +231,7 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws # iwslt
+        "tokenizer": "word",  # wordpiece
         "sequence_length_src": 40,
         "sequence_length_tgt": 40,
         "batch_size": 50,
@@ -256,6 +257,7 @@ if __name__ == "__main__":
     max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
+    tokenizer = hyper_params["tokenizer"]
 
     experiment = None
     if tracking_active:
@@ -267,14 +269,16 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    # BOS_WORD = '[CLS]'
-    # EOS_WORD = '[SEP]'
-    # BLANK_WORD = '[PAD]'
-    BOS_WORD = '<s>'
-    EOS_WORD = '</s>'
-    BLANK_WORD = "<blank>"
+    if tokenizer == "wordpiece":
+        BOS_WORD = '[CLS]'
+        EOS_WORD = '[SEP]'
+        BLANK_WORD = '[PAD]'
+    else:
+        BOS_WORD = '<s>'
+        EOS_WORD = '</s>'
+        BLANK_WORD = "<blank>"
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]

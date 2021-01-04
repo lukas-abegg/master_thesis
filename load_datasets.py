@@ -196,11 +196,13 @@ class IWSLT(TranslationDataset):
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
-def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
-    if dataset == "newsela":
+def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, bos_word, eos_word, blank_word):
+    if tokenizer == "wordpiece":
         SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
+    else:
+        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
 
+    if dataset == "newsela":
         path = os.path.join(base_path, "newsela/splits/bert_base")
         # path = os.path.join(base_path, "data/test/newsela")
 
@@ -214,9 +216,6 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
     elif dataset == "mws":
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
-
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
@@ -229,9 +228,6 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                            vars(x)['src']) <= max_len_src and len(
                                                            vars(x)['trg']) <= max_len_tgt)
     elif dataset == "pwkp":
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
-
         path = os.path.join(base_path, "pwkp")
 
         train_data, valid_data, test_data = PWKP.splits(exts=('.src', '.dst'),
@@ -245,9 +241,6 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                             vars(x)['trg']) <= max_len_tgt)
 
     elif dataset == "wikilarge":
-        #SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_bert, tokenize_bert, bos_word, eos_word, blank_word)
-        SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenize_en, tokenize_en, bos_word, eos_word, blank_word)
-
         path = os.path.join(base_path, "wikilarge")
 
         train_data, valid_data, test_data = WIKILARGE.splits(exts=('.src', '.dst'),

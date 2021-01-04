@@ -183,10 +183,11 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 del src, trg, trg_input, targets, preds, loss, logging_loss, acc
 
         # Log after each epoch
-        print("\nEpoch [{0}/{1}] complete. Train loss: {2:.3f}, avgAcc {3:.3f}. Val Loss: {4:.3f}, avgAcc {5:.3f}. lr={6}."
-              .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['train_acc'].avg,
-                      logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
-                      optimizer.param_groups[0]['lr']))
+        print(
+            "\nEpoch [{0}/{1}] complete. Train loss: {2:.3f}, avgAcc {3:.3f}. Val Loss: {4:.3f}, avgAcc {5:.3f}. lr={6}."
+            .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['train_acc'].avg,
+                    logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
+                    optimizer.param_groups[0]['lr']))
 
         lr_scheduler.step(logging_meters['valid_loss'].avg)
 
@@ -252,8 +253,8 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 print("Validation Sample:")
             print("Original Sentence: {}".format(sentences[step_i]))
             greedy_sent = greedy_decode_sentence(model, sentences[step_i], use_gpu)
-            #sent = re.split(r'\s+', greedy_sent)
-            #sent = bert_tokenizer.convert_tokens_to_string(sent)
+            # sent = re.split(r'\s+', greedy_sent)
+            # sent = bert_tokenizer.convert_tokens_to_string(sent)
             print("Translated Sentence: {}".format(greedy_sent))
             print("Expected Sentence: {}".format(exp_sentences[step_i]))
             print("---------------------------------------")
@@ -268,7 +269,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
-    #sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+    # sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
     sentence = SRC.preprocess(sentence)
 
     indexed = []
@@ -305,8 +306,9 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    #translated_sentence = re.split(r"\s+", translated_sentence)
-    #translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    if tokenizer == "wordpiece":
+        translated_sentence = re.split(r"\s+", translated_sentence)
+        translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -320,6 +322,7 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws # iwslt #pwkp #wikilarge
+        "tokenizer": "word",  # wordpiece
         "sequence_length_src": 55,
         "sequence_length_tgt": 35,
         "batch_size": 50,
@@ -343,6 +346,7 @@ if __name__ == "__main__":
     max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
+    tokenizer = hyper_params["tokenizer"]
 
     experiment = None
     if tracking_active:
@@ -354,14 +358,16 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    #BOS_WORD = '[CLS]'
-    #EOS_WORD = '[SEP]'
-    #BLANK_WORD = '[PAD]'
-    BOS_WORD = '<s>'
-    EOS_WORD = '</s>'
-    BLANK_WORD = "<blank>"
+    if tokenizer == "wordpiece":
+        BOS_WORD = '[CLS]'
+        EOS_WORD = '[SEP]'
+        BLANK_WORD = '[PAD]'
+    else:
+        BOS_WORD = '<s>'
+        EOS_WORD = '</s>'
+        BLANK_WORD = "<blank>"
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]
