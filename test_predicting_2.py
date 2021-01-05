@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
-        "tokenizer": "word",  # wordpiece
+        "tokenizer": "wordpiece",  # wordpiece
         "sequence_length_src": 70,
         "sequence_length_tgt": 41,
         "batch_size": 50,
