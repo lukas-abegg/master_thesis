@@ -97,8 +97,9 @@ def greedy_decode_sentence(model, origin_sentence, use_gpu=False):
         else:
             trg = torch.cat((trg, torch.LongTensor([[pred.argmax(dim=2)[-1]]])))
 
-    translated_sentence = re.split(r"\s+", translated_sentence)
-    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
+    if tokenizer == "wordpiece":
+        translated_sentence = re.split(r"\s+", translated_sentence)
+        translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
     return translated_sentence
 
@@ -139,6 +140,7 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
+        "tokenizer": "word",  # wordpiece
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
         "batch_size": 50,
@@ -161,14 +163,20 @@ if __name__ == "__main__":
     max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
+    tokenizer = hyper_params["tokenizer"]
 
     ### Load Data
     # Special Tokens
-    BOS_WORD = '[CLS]'
-    EOS_WORD = '[SEP]'
-    BLANK_WORD = '[PAD]'
+    if tokenizer == "wordpiece":
+        BOS_WORD = '[CLS]'
+        EOS_WORD = '[SEP]'
+        BLANK_WORD = '[PAD]'
+    else:
+        BOS_WORD = '<s>'
+        EOS_WORD = '</s>'
+        BLANK_WORD = "<blank>"
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]
@@ -191,7 +199,6 @@ if __name__ == "__main__":
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
     model_path = os.path.join(checkpoint_base, "best_model.pt")
-    #model_path = os.path.join(checkpoint_base, "best_dmodel.pt")
     model.load_state_dict(torch.load(model_path))
 
     run(test_iter, model, save_run_files_base, use_cuda)

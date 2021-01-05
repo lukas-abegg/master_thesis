@@ -113,7 +113,7 @@ def validate_single_round(origins, references, predictions):
     return bleu_score_nltk, bleu_score_local, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
-def validate(origin_groups, reference_groups, prediction_groups):
+def validate(origin_groups, reference_groups, prediction_groups, experiment=None):
     bleu_score_nltk = 0
     bleu_score_local = 0
     avg_sentence_bleu_scores = 0
@@ -127,6 +127,13 @@ def validate(origin_groups, reference_groups, prediction_groups):
 
         bleu_score_nltk_s, bleu_score_local_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(
             origins, references, predictions)
+
+        if experiment is not None:
+            experiment.log_metric("bleu_score_nltk_s", float(bleu_score_nltk_s))
+            experiment.log_metric("bleu_score_local_s", float(bleu_score_local_s))
+            experiment.log_metric("avg_sentence_bleu_scores_s", float(avg_sentence_bleu_scores_s))
+            experiment.log_metric("avg_meteor_scores_s", float(avg_meteor_scores_s))
+            experiment.log_metric("sari_score_s", float(sari_score_s))
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
@@ -164,7 +171,8 @@ if __name__ == "__main__":
 
     bleu_score_nltk, bleu_score_local, avg_sentence_bleu_scores, avg_meteor_scores, sari_score = validate(origin_groups,
                                                                                                           reference_groups,
-                                                                                                          prediction_groups)
+                                                                                                          prediction_groups,
+                                                                                                          experiment)
 
     if experiment is not None:
         experiment.log_metric("bleu_score_nltk", float(bleu_score_nltk))
