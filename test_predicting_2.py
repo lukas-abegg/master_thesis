@@ -139,24 +139,24 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws
-        "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "pwkp",  # mws
+        "tokenizer": "word",  # wordpiece
+        "sequence_length_src": 51,
+        "sequence_length_tgt": 44,
         "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 4,
+        "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_0_1/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_0_1/evaluation/mle"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
