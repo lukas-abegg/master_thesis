@@ -140,9 +140,9 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 56,
-        "sequence_length_tgt": 49,
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_3/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_3/evaluation/mle"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_2/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_2/evaluation/mle"
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
     max_len_src = hyper_params["sequence_length_src"]
