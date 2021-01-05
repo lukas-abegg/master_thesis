@@ -148,15 +148,15 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 6,
+        "n_layers": 4,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_2/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_2/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_3/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_0_3/evaluation/mle"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
