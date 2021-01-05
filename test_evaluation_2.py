@@ -89,7 +89,7 @@ def tokenize(sentences):
 
 def validate_single_round(origins, references, predictions):
     bleu_smoothing_function = SmoothingFunction()
-    bleu = BleuMetric()
+    #bleu = BleuMetric()
     sari = SARISentenceMetric()
 
     tokenized_origins = tokenize(origins)
@@ -103,19 +103,19 @@ def validate_single_round(origins, references, predictions):
 
     bleu_score_nltk = corpus_bleu(list_of_tokenized_references, tokenized_predictions,
                                   smoothing_function=bleu_smoothing_function.method3)
-    bleu_score_local = bleu.evaluate_results(tokenized_predictions, list_of_tokenized_references)
+    #bleu_score_local = bleu.evaluate_results(tokenized_predictions, list_of_tokenized_references)
     sari_score = sari.evaluate_results(tokenized_origins, tokenized_predictions, tokenized_references)
 
     avg_sentence_bleu_scores, avg_meteor_scores = evaluate_sentence_bleu_and_meteor(origins, tokenized_origins,
                                                                                     references, tokenized_references,
                                                                                     predictions, tokenized_predictions)
 
-    return bleu_score_nltk, bleu_score_local, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
+    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
 def validate(origin_groups, reference_groups, prediction_groups, experiment=None):
     bleu_score_nltk = 0
-    bleu_score_local = 0
+    #bleu_score_local = 0
     avg_sentence_bleu_scores = 0
     avg_meteor_scores = 0
     sari_score = 0
@@ -125,12 +125,11 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         references = reference_groups[i]
         predictions = prediction_groups[i]
 
-        bleu_score_nltk_s, bleu_score_local_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(
-            origins, references, predictions)
+        bleu_score_nltk_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(origins, references, predictions)
 
         if experiment is not None:
             experiment.log_metric("bleu_score_nltk_s", float(bleu_score_nltk_s))
-            experiment.log_metric("bleu_score_local_s", float(bleu_score_local_s))
+            #experiment.log_metric("bleu_score_local_s", float(bleu_score_local_s))
             experiment.log_metric("avg_sentence_bleu_scores_s", float(avg_sentence_bleu_scores_s))
             experiment.log_metric("avg_meteor_scores_s", float(avg_meteor_scores_s))
             experiment.log_metric("sari_score_s", float(sari_score_s))
@@ -138,8 +137,8 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
 
-        if bleu_score_local < bleu_score_local_s:
-            bleu_score_local = bleu_score_local_s
+        #if bleu_score_local < bleu_score_local_s:
+        #    bleu_score_local = bleu_score_local_s
 
         if avg_sentence_bleu_scores < avg_sentence_bleu_scores_s:
             avg_sentence_bleu_scores = avg_sentence_bleu_scores_s
@@ -150,11 +149,11 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         if sari_score < sari_score_s:
             sari_score = sari_score_s
 
-    return bleu_score_nltk, bleu_score_local, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
+    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
 if __name__ == "__main__":
-    project_name = "newsela-transformer-eval"  # newsela-transformer-bert-weights
+    project_name = "transformer-newsela-eval"  # newsela-transformer-bert-weights
     tracking_active = True
     base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_1/evaluation/mle"
 
@@ -169,20 +168,20 @@ if __name__ == "__main__":
 
     origin_groups, reference_groups, prediction_groups = get_parallel_sentences(base_file_path)
 
-    bleu_score_nltk, bleu_score_local, avg_sentence_bleu_scores, avg_meteor_scores, sari_score = validate(origin_groups,
-                                                                                                          reference_groups,
-                                                                                                          prediction_groups,
-                                                                                                          experiment)
+    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score = validate(origin_groups,
+                                                                                        reference_groups,
+                                                                                        prediction_groups,
+                                                                                        experiment)
 
     if experiment is not None:
         experiment.log_metric("bleu_score_nltk", float(bleu_score_nltk))
-        experiment.log_metric("bleu_score_local", float(bleu_score_local))
+        #experiment.log_metric("bleu_score_local", float(bleu_score_local))
         experiment.log_metric("avg_sentence_bleu_scores", float(avg_sentence_bleu_scores))
         experiment.log_metric("avg_meteor_scores", float(avg_meteor_scores))
         experiment.log_metric("sari_score", float(sari_score))
 
     print("bleu_score_nltk = ", bleu_score_nltk)
-    print("bleu_score_local = ", bleu_score_local)
+    #print("bleu_score_local = ", bleu_score_local)
     print("avg_sentence_bleu_scores = ", avg_sentence_bleu_scores)
     print("avg_meteor_scores = ", avg_meteor_scores)
     print("sari_score = ", sari_score)
