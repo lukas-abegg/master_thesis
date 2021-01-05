@@ -140,9 +140,9 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 55,
-        "sequence_length_tgt": 35,
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
@@ -154,9 +154,9 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_5/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_5/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/evaluation/mle"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
