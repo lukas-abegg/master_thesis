@@ -493,9 +493,9 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "mws",  # mws # iwslt
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 40,
-        "sequence_length_tgt": 40,
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 50,
         "num_epochs": 15,
         "learning_rate_g": 1e-4,
@@ -503,16 +503,14 @@ if __name__ == "__main__":
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 6,
+        "n_layers": 4,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_1"
-    #checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/test_MK30_dataset/_1"
-    # project_name = "newsela-transformer"  # newsela-transformer-bert-weights
-    project_name = "gan-mws"  # newsela-transformer-bert-weights
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3"
+    project_name = "gan-mws"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
