@@ -487,10 +487,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt
+        "dataset": "newsela",  # mws # iwslt
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
         "num_epochs": 15,
         "learning_rate_g": 1e-4,
@@ -504,10 +504,10 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3"
-    project_name = "gan-mws"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
+    project_name = "gan-newsela"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
