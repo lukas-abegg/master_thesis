@@ -117,7 +117,7 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu, max_bath=10):
+def prepare_training_data(data_iter, generator, tgt_vocab, bos_word, max_len_trg, eos_word, blank_word, use_gpu, max_bath=200):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
