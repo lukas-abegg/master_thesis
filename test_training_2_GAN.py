@@ -26,7 +26,7 @@ import spacy
 spacy_en = spacy.load('en')
 
 
-def train(train_iter, val_iter, generator, discriminator, max_epochs, target_vocab, checkpoint_base, use_gpu=False,
+def train(train_iter, val_iter, generator, discriminator, max_epochs, target_vocab, checkpoints_path, use_gpu=False,
           experiment=None):
     if use_gpu:
         generator.cuda()
@@ -34,11 +34,6 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, target_voc
     else:
         discriminator.cpu()
         generator.cpu()
-
-    # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/')
-    if not os.path.exists(checkpoints_path):
-        os.makedirs(checkpoints_path)
 
     g_logging_meters = OrderedDict()
     g_logging_meters['train_loss_joint'] = AverageMeter()
@@ -492,10 +487,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt
+        "dataset": "mws",  # mws # iwslt
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 50,
         "num_epochs": 15,
         "learning_rate_g": 1e-4,
@@ -509,10 +504,10 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
-    project_name = "gan-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3"
+    project_name = "gan-mws"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -570,7 +565,7 @@ if __name__ == "__main__":
     generator_path = "best_model.pt"
     generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
     generator.load_state_dict(torch.load(generator_path))
-    print("Generator is successfully loaded!")
+    print("Generator is successfully loaded from:", str(generator_path))
 
     ### Load Discriminator
     discriminator = Discriminator(src_vocab_size=source_vocab_length, pad_id_src=SRC.vocab.stoi[BLANK_WORD],
@@ -579,17 +574,23 @@ if __name__ == "__main__":
     discriminator_path = "best_dmodel.pt"
     discriminator_path = os.path.join(checkpoint_base, 'checkpoints/discriminator', discriminator_path)
     discriminator.load_state_dict(torch.load(discriminator_path))
-    print("Discriminator is successfully loaded!")
+    print("Discriminator is successfully loaded:", str(discriminator_path))
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
 
+    # adversarial training checkpoints saving path
+    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/reward/')
+    if not os.path.exists(checkpoints_path):
+        os.makedirs(checkpoints_path)
+    print("GAN will be saved at:", str(checkpoints_path))
+
     if experiment is not None:
         with experiment.train():
-            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoint_base, use_cuda,
+            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoints_path, use_cuda,
                   experiment)
     else:
-        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoint_base, use_cuda,
+        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoints_path, use_cuda,
               experiment)
 
     print("Training finished")
