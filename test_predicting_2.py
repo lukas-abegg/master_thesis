@@ -139,10 +139,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "pwkp",  # mws
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 60,
-        "sequence_length_tgt": 50,
+        "dataset": "wikilarge",  # mws
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 90,
+        "sequence_length_tgt": 75,
         "batch_size": 50,
         "learning_rate": 1e-4,
         "d_model": 512,
@@ -154,9 +154,9 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/wikilarge_transformer/_0/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/wikilarge_transformer/_0/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/wikilarge_transformer/_2/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/wikilarge_transformer/_2/evaluation/mle"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
