@@ -201,12 +201,12 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, checkpoint
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(loss.item())
-            print("D training loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                logging_meters['train_loss'].avg,
-                                                                                                                                                                                                                         acc,
-                logging_meters['train_acc'].avg,
-                optimizer.param_groups[0]['lr'], i
-            ))
+            # print("D training loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+            #     logging_meters['train_loss'].avg,
+            #                                                                                                                                                                                                              acc,
+            #     logging_meters['train_acc'].avg,
+            #     optimizer.param_groups[0]['lr'], i
+            # ))
 
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
@@ -246,12 +246,12 @@ def train(train_iter, val_iter, generator, discriminator, num_epochs, checkpoint
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(loss.item())
-                print("D eval loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                    logging_meters['valid_loss'].avg,
-                    acc,
-                    logging_meters['valid_acc'].avg,
-                    optimizer.param_groups[0]['lr'], i
-                ))
+                # print("D eval loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+                #     logging_meters['valid_loss'].avg,
+                #     acc,
+                #     logging_meters['valid_acc'].avg,
+                #     optimizer.param_groups[0]['lr'], i
+                # ))
 
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)

@@ -10,13 +10,12 @@ import torch.nn as nn
 from torchtext.data import Field, BucketIterator
 from torchtext.datasets import TranslationDataset
 from tqdm import tqdm
-from transformers import BartTokenizer, BartForConditionalGeneration
+from transformers import BartTokenizer, BartForConditionalGeneration, get_linear_schedule_with_warmup
 
 from meters import AverageMeter
 
 
 def get_fields(max_len_src, max_len_tgt, tokenizer, blank_word):
-
     src = Field(tokenize=tokenizer.encode,
                 fix_length=max_len_src,
                 pad_token=blank_word,
@@ -128,7 +127,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, tokenizer, u
                                  lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
                                  eps=1e-9)
 
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
+    # lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
+    num_train_steps = 6211 * num_epochs
+    print(num_train_steps)
+    lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=4000, num_train_steps=num_train_steps)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -285,7 +287,8 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, tokenizer, u
                         logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                         optimizer.param_groups[0]['lr']))
 
-        lr_scheduler.step(logging_meters['valid_loss'].avg)
+        # lr_scheduler.step(logging_meters['valid_loss'].avg)
+        lr_scheduler.step()
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -359,7 +362,7 @@ def greedy_decode_sentence(model, sentence, tokenizer, device):
     tokenized_sentence = tokenized_sentence.to(device)
 
     pred_sent = model.generate(tokenized_sentence["input_ids"], num_beams=1, max_length=max_len_tgt)
-    translated_sentence = tokenizer.decode(pred_sent[0], clean_up_tokenization_spaces=False)
+    translated_sentence = tokenizer.decode(pred_sent[0], clean_up_tokenization_spaces=False, skip_special_tokens=True)
 
     return translated_sentence
 
@@ -378,7 +381,7 @@ if __name__ == "__main__":
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
         "batch_size": 15,
-        "num_epochs": 10,
+        "num_epochs": 5,
         "learning_rate": 1e-5,
         "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
     }
