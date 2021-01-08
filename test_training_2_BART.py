@@ -101,7 +101,7 @@ def get_iterator(data, batch_size):
     return BucketIterator(data, batch_size=batch_size, repeat=False, sort_key=lambda x: len(x.src))
 
 
-def train(train_iter, val_iter, model, num_epochs, checkpoint_base, tokenizer, use_gpu=True, experiment=None,
+def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_base, tokenizer, use_gpu=True, experiment=None,
           device="cpu"):
     if use_gpu:
         model.cuda()
@@ -128,7 +128,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, tokenizer, u
                                  eps=1e-9)
 
     # lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
-    num_train_steps = 6211 * num_epochs
+    num_train_steps = num_steps_epoch * num_epochs
     print(num_train_steps)
     lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=4000, num_train_steps=num_train_steps)
 
@@ -425,19 +425,25 @@ if __name__ == "__main__":
     source_vocab_length = tokenizer.vocab_size
     target_vocab_length = tokenizer.vocab_size
 
+    if len(train_data) % BATCH_SIZE > 0:
+        num_steps = (len(train_data) / BATCH_SIZE) + 1
+    else:
+        num_steps = (len(train_data) / BATCH_SIZE)
+
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
         experiment.log_other("target_vocab_length", target_vocab_length)
         experiment.log_other("len_train_data", str(len(train_data)))
+        experiment.log_other("num_steps", str(num_steps))
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     if experiment is not None:
         with experiment.train():
-            train(train_iter, val_iter, model, NUM_EPOCHS, checkpoint_base, tokenizer, use_cuda, experiment, device)
+            train(train_iter, val_iter, model, NUM_EPOCHS, num_steps, checkpoint_base, tokenizer, use_cuda, experiment, device)
     else:
-        train(train_iter, val_iter, model, NUM_EPOCHS, checkpoint_base, tokenizer, use_cuda, experiment, device)
+        train(train_iter, val_iter, model, NUM_EPOCHS, num_steps, checkpoint_base, tokenizer, use_cuda, experiment, device)
 
     print("Training finished")
     sys.exit()
