@@ -374,10 +374,10 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
-        "sequence_length_src": 72,
-        "sequence_length_tgt": 43,
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
-        "num_epochs": 15,
+        "num_epochs": 25,
         "learning_rate": 1e-5,
         "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
@@ -388,7 +388,7 @@ if __name__ == "__main__":
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
     project_name = "bart-newsela"
     tracking_active = False
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -420,6 +420,11 @@ if __name__ == "__main__":
     ### Load Generator
     source_vocab_length = tokenizer.vocab_size
     target_vocab_length = tokenizer.vocab_size
+
+    if experiment is not None:
+        experiment.log_other("source_vocab_length", source_vocab_length)
+        experiment.log_other("target_vocab_length", target_vocab_length)
+        experiment.log_other("len_train_data", str(len(train_data)))
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
