@@ -328,10 +328,10 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     generator = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "./"  #"/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
     project_name = "discriminator-bart-newsela"
-    tracking_active = False
-    base_path = "./"  #"/glusterfs/dfs-gfs-dist/abeggluk/data_6"
+    tracking_active = True
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
