@@ -129,8 +129,9 @@ def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_b
 
     # lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
     num_train_steps = num_steps_epoch * num_epochs
+    warmup_steps = 4000
     print(num_train_steps)
-    lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=4000, num_train_steps=num_train_steps)
+    lr_scheduler = get_linear_schedule_with_warmup(optimizer, warmup_steps, num_train_steps)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -426,9 +427,9 @@ if __name__ == "__main__":
     target_vocab_length = tokenizer.vocab_size
 
     if len(train_data) % BATCH_SIZE > 0:
-        num_steps = (len(train_data) / BATCH_SIZE) + 1
+        num_steps = math.floor(len(train_data) / BATCH_SIZE) + 1
     else:
-        num_steps = (len(train_data) / BATCH_SIZE)
+        num_steps = math.floor(len(train_data) / BATCH_SIZE)
 
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
