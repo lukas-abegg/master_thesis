@@ -378,18 +378,18 @@ if __name__ == "__main__":
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
         "batch_size": 15,
-        "num_epochs": 25,
+        "num_epochs": 10,
         "learning_rate": 1e-5,
-        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
+        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
     project_name = "bart-newsela"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_7"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_8"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
