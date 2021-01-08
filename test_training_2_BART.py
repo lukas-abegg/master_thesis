@@ -377,7 +377,7 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
-        "batch_size": 50,
+        "batch_size": 25,
         "num_epochs": 25,
         "learning_rate": 1e-5,
         "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
