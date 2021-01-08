@@ -3,9 +3,10 @@ import os
 import sys
 from collections import OrderedDict
 
+from comet_ml import Experiment
+
 import torch
 import torch.nn as nn
-from comet_ml import Experiment
 from torchtext.data import Field, BucketIterator
 from torchtext.datasets import TranslationDataset
 from tqdm import tqdm
