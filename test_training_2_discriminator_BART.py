@@ -3,14 +3,13 @@ import os
 import sys
 from collections import OrderedDict
 
-from torchtext.data import BucketIterator, Field
-from torchtext.datasets import TranslationDataset
 from tqdm import tqdm
 
 from comet_ml import Experiment
 
 import torch
-
+from torchtext.data import BucketIterator, Field
+from torchtext.datasets import TranslationDataset
 from transformers import BartTokenizer, BartForConditionalGeneration
 
 from meters import AverageMeter
