@@ -579,7 +579,7 @@ if __name__ == "__main__":
                                   trg_vocab_size=target_vocab_length, pad_id_trg=TGT.vocab.stoi[BLANK_WORD],
                                   max_len_src=max_len_src, max_len_tgt=max_len_tgt, use_gpu=False)
     discriminator_path = "best_dmodel.pt"
-    discriminator_path = os.path.join(checkpoint_base, 'checkpoints/discriminator', discriminator_path)
+    discriminator_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/discriminator', discriminator_path)
     discriminator.load_state_dict(torch.load(discriminator_path))
     print("Discriminator is successfully loaded:", str(discriminator_path))
 
@@ -587,7 +587,7 @@ if __name__ == "__main__":
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/joint/reward/')
+    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/reward/')
     if not os.path.exists(checkpoints_path):
         os.makedirs(checkpoints_path)
     print("GAN will be saved at:", str(checkpoints_path))
