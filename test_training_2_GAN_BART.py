@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from torchtext.data import BucketIterator, Field
 from torchtext.datasets import TranslationDataset
 
-from transformers import BartTokenizer, BartForConditionalGeneration
+from transformers import BartTokenizer, BartForConditionalGeneration, get_linear_schedule_with_warmup
 
 from PGLoss import PGLoss
 from meters import AverageMeter
@@ -116,7 +116,7 @@ def get_iterator(data, batch_size):
     return BucketIterator(data, batch_size=batch_size, repeat=False, sort_key=lambda x: len(x.src))
 
 
-def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint_base, tokenizer, beam_size, use_gpu=False,
+def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps, checkpoint_base, tokenizer, beam_size, use_gpu=False,
           experiment=None, device="cpu"):
     if use_gpu:
         generator = generator.to(device)
@@ -151,6 +151,12 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
                        lr=hyper_params["learning_rate_d"],
                        betas=(0.9, 0.98), eps=1e-9)
 
+    num_train_steps = num_steps * max_epochs
+    warmup_steps = 4000
+    print(num_train_steps)
+    lr_scheduler_g = get_linear_schedule_with_warmup(g_optimizer, warmup_steps, num_train_steps)
+    lr_scheduler_d = get_linear_schedule_with_warmup(d_optimizer, warmup_steps, num_train_steps)
+
     # Start Joint Training
     print("-------------- Start Joint Training --------------")
 
@@ -171,8 +177,6 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
         # set training mode
         generator.train()
         discriminator.train()
-        update_learning_rate(num_update, 8e4, hyper_params["learning_rate_g"], 0.5, g_optimizer)
-        update_learning_rate(num_update, 8e4, hyper_params["learning_rate_d"], 0.5, d_optimizer)
 
         i = 0
         desc = '  - (Training)   '
@@ -518,6 +522,9 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
                     joint_training, mle_training
                     ))
 
+        lr_scheduler_g.step()
+        lr_scheduler_d.step()
+
         if experiment is not None:
             experiment.log_metric("epoch_train_loss_joint_g", g_logging_meters['train_loss_joint'].avg)
             experiment.log_metric("epoch_train_acc_joint_g", g_logging_meters['train_acc_joint'].avg)
@@ -572,12 +579,6 @@ def convert_ids_to_tokens(tensor, tokenizer):
 
     translated_sentence = tokenize_en(decoded_sent)
     return translated_sentence
-
-
-def update_learning_rate(update_times, target_times, init_lr, lr_shrink, optimizer):
-    lr = init_lr * (lr_shrink ** (update_times // target_times))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
 
 
 if __name__ == "__main__":
@@ -639,10 +640,16 @@ if __name__ == "__main__":
     source_vocab_length = tokenizer.vocab_size
     target_vocab_length = tokenizer.vocab_size
 
+    if len(train_data) % BATCH_SIZE > 0:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE) + 1
+    else:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE)
+
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
         experiment.log_other("target_vocab_length", target_vocab_length)
         experiment.log_other("len_train_data", str(len(train_data)))
+        experiment.log_other("num_steps", str(num_steps))
 
     ### Load Generator
     generator_path = "best_model.pt"
@@ -670,10 +677,10 @@ if __name__ == "__main__":
 
     if experiment is not None:
         with experiment.train():
-            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, checkpoints_path, tokenizer, beam_size, use_cuda,
+            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, num_steps, checkpoints_path, tokenizer, beam_size, use_cuda,
                   experiment, device)
     else:
-        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, checkpoints_path, tokenizer, beam_size, use_cuda,
+        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, num_steps, checkpoints_path, tokenizer, beam_size, use_cuda,
               experiment, device)
 
     print("Training finished")

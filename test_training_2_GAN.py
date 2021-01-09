@@ -12,7 +12,7 @@ import torch
 from torch.autograd import Variable
 from torch.optim import Adam
 import torch.nn.functional as F
-from transformers import BertModel, BertConfig
+from transformers import BertModel, BertConfig, get_linear_schedule_with_warmup
 
 from PGLoss import PGLoss
 from load_datasets import get_iterator, load_dataset_data, bert_tokenizer
@@ -26,7 +26,7 @@ import spacy
 spacy_en = spacy.load('en')
 
 
-def train(train_iter, val_iter, generator, discriminator, max_epochs, target_vocab, checkpoints_path, use_gpu=False,
+def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps, target_vocab, checkpoints_path, use_gpu=False,
           experiment=None):
     if use_gpu:
         generator.cuda()
@@ -61,6 +61,12 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, target_voc
                        lr=hyper_params["learning_rate_d"],
                        betas=(0.9, 0.98), eps=1e-9)
 
+    num_train_steps = num_steps * max_epochs
+    warmup_steps = 4000
+    print(num_train_steps)
+    lr_scheduler_g = get_linear_schedule_with_warmup(g_optimizer, warmup_steps, num_train_steps)
+    lr_scheduler_d = get_linear_schedule_with_warmup(d_optimizer, warmup_steps, num_train_steps)
+
     # Start Joint Training
     print("-------------- Start Joint Training --------------")
 
@@ -81,8 +87,6 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, target_voc
         # set training mode
         generator.train()
         discriminator.train()
-        update_learning_rate(num_update, 8e4, hyper_params["learning_rate_g"], 0.5, g_optimizer)
-        update_learning_rate(num_update, 8e4, hyper_params["learning_rate_d"], 0.5, d_optimizer)
 
         i = 0
         desc = '  - (Training)   '
@@ -411,6 +415,9 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, target_voc
                     joint_training, mle_training
                     ))
 
+        lr_scheduler_g.step()
+        lr_scheduler_d.step()
+
         if experiment is not None:
             experiment.log_metric("epoch_train_loss_joint_g", g_logging_meters['train_loss_joint'].avg)
             experiment.log_metric("epoch_train_acc_joint_g", g_logging_meters['train_acc_joint'].avg)
@@ -471,12 +478,6 @@ def convert_ids_to_tokens(tensor, vocab_field):
 
     translated_sentence = tokenize_en(bert_tokenizer.convert_tokens_to_string(sentence))
     return translated_sentence
-
-
-def update_learning_rate(update_times, target_times, init_lr, lr_shrink, optimizer):
-    lr = init_lr * (lr_shrink ** (update_times // target_times))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
 
 
 if __name__ == "__main__":
@@ -546,10 +547,16 @@ if __name__ == "__main__":
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
 
+    if len(train_data) % BATCH_SIZE > 0:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE) + 1
+    else:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE)
+
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
         experiment.log_other("target_vocab_length", target_vocab_length)
         experiment.log_other("len_train_data", str(len(train_data)))
+        experiment.log_other("num_steps", str(num_steps))
 
     bert_model = None
     if hyper_params["load_embedding_weights"]:
@@ -587,10 +594,10 @@ if __name__ == "__main__":
 
     if experiment is not None:
         with experiment.train():
-            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoints_path, use_cuda,
+            train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, num_steps, TGT.vocab, checkpoints_path, use_cuda,
                   experiment)
     else:
-        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, TGT.vocab, checkpoints_path, use_cuda,
+        train(train_iter, val_iter, generator, discriminator, NUM_EPOCHS, num_steps, TGT.vocab, checkpoints_path, use_cuda,
               experiment)
 
     print("Training finished")
