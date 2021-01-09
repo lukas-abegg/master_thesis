@@ -164,6 +164,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                 pg_loss.backward()
                 torch.nn.utils.clip_grad_norm_(generator.parameters(), 1.0)
                 g_optimizer.step()
+                lr_scheduler_g.step()
 
                 # del src, trg, preds, loss, ...
                 del src, trg, trg_input, targets, np_mask, sys_out_batch, out_batch, predictions, tokenized_origins, \
@@ -220,6 +221,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(generator.parameters(), 1.0)
                 g_optimizer.step()
+                lr_scheduler_g.step()
 
                 # del src, trg, preds, loss, ...
                 del src, trg, trg_input, targets, np_mask, preds, loss, logging_loss, corrects, all, acc
@@ -284,6 +286,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
             d_loss.backward()
             torch.nn.utils.clip_grad_norm_(discriminator.parameters(), 1.0)
             d_optimizer.step()
+            lr_scheduler_d.step()
 
             # del src, trg, preds, loss, ...
             del src, trg, neg_tokens, fake_sentences, fake_labels, true_sentences, true_labels, src_sentences, trg_sentences, labels, \
@@ -415,9 +418,6 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                     d_optimizer.param_groups[0]['lr'],
                     joint_training, mle_training
                     ))
-
-        lr_scheduler_g.step()
-        lr_scheduler_d.step()
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss_joint_g", g_logging_meters['train_loss_joint'].avg)
