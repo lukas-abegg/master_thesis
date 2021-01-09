@@ -152,7 +152,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                        betas=(0.9, 0.98), eps=1e-9)
 
     num_train_steps = num_steps * max_epochs
-    warmup_steps = 4000
+    warmup_steps = 0    #4000
     print(num_train_steps)
     lr_scheduler_g = get_linear_schedule_with_warmup(g_optimizer, warmup_steps, num_train_steps)
     lr_scheduler_d = get_linear_schedule_with_warmup(d_optimizer, warmup_steps, num_train_steps)
@@ -589,12 +589,12 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "newsela",  # mws # iwslt
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 3,
-        "num_epochs": 5,
-        "learning_rate_g": 1e-5,
+        "num_epochs": 3,
+        "learning_rate_g": 1e-6,
         "learning_rate_d": 1e-5,
         "bart_model": "facebook/bart-large",  # facebook/bart-large-cnn,
         "beam_size": 1
@@ -652,8 +652,8 @@ if __name__ == "__main__":
         experiment.log_other("num_steps", str(num_steps))
 
     ### Load Generator
-    generator_path = "best_model.pt"
-    generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
+    generator_path = "best_generator_g_model.pt"
+    generator_path = os.path.join(checkpoint_base, 'checkpoints/joint/pg_loss', generator_path)
     generator.load_state_dict(torch.load(generator_path))
     print("Generator is successfully loaded from:", str(generator_path))
 
