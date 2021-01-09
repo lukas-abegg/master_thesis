@@ -84,8 +84,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
     SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenizer, blank_word)
 
     if dataset == "newsela":
-        #path = os.path.join(base_path, "newsela/splits/bert_base")
-        path = os.path.join(base_path, "data/test/newsela")
+        path = os.path.join(base_path, "newsela/splits/bert_base")
+        # path = os.path.join(base_path, "data/test/newsela")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
