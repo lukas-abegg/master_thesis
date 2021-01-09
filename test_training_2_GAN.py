@@ -493,9 +493,9 @@ if __name__ == "__main__":
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
         "batch_size": 50,
-        "num_epochs": 15,
-        "learning_rate_g": 1e-4,
-        "learning_rate_d": 1e-4,
+        "num_epochs": 3,
+        "learning_rate_g": 1e-5,
+        "learning_rate_d": 1e-5,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
@@ -508,7 +508,7 @@ if __name__ == "__main__":
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
     project_name = "gan-newsela"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_7"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
