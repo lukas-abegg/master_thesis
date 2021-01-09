@@ -505,7 +505,7 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1"
     project_name = "gan-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_7"
@@ -570,7 +570,7 @@ if __name__ == "__main__":
                             source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                             load_embedding_weights=hyper_params["load_embedding_weights"])
     generator_path = "best_model.pt"
-    generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
+    generator_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/mle', generator_path)
     generator.load_state_dict(torch.load(generator_path))
     print("Generator is successfully loaded from:", str(generator_path))
 
@@ -587,7 +587,7 @@ if __name__ == "__main__":
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/reward/')
+    checkpoints_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/joint/reward/')
     if not os.path.exists(checkpoints_path):
         os.makedirs(checkpoints_path)
     print("GAN will be saved at:", str(checkpoints_path))
