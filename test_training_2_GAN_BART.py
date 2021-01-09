@@ -603,7 +603,7 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     generator = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
     project_name = "gan-bart-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
