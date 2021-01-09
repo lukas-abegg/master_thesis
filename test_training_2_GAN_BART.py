@@ -119,8 +119,8 @@ def get_iterator(data, batch_size):
 def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint_base, tokenizer, beam_size, use_gpu=False,
           experiment=None, device="cpu"):
     if use_gpu:
-        generator.cuda()
-        discriminator.cuda()
+        generator.to("cuda:0")
+        discriminator.to("cuda:2")
     else:
         discriminator.cpu()
         generator.cpu()
