@@ -589,10 +589,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
-        "batch_size": 10,
+        "dataset": "mws",  # mws # iwslt
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
+        "batch_size": 3,
         "num_epochs": 3,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
@@ -603,8 +603,8 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     generator = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
-    project_name = "gan-bart-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0"
+    project_name = "gan-bart-mws"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
