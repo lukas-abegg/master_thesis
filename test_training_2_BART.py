@@ -378,20 +378,20 @@ if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     hyper_params = {
-        "dataset": "mws",  # mws
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "newsela",  # mws
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 15,
         "num_epochs": 10,
-        "learning_rate": 1e-5,
-        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
+        "learning_rate": 5e-7,
+        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1"
-    project_name = "bart-wms"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_4"
+    project_name = "bart-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
 
@@ -423,6 +423,11 @@ if __name__ == "__main__":
     val_iter = get_iterator(valid_data, BATCH_SIZE)
 
     ### Load Generator
+    model_path = "best_model.pt"
+    model_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", 'checkpoints/mle', model_path)
+    model.load_state_dict(torch.load(model_path))
+    print("Generator is successfully loaded!")
+
     source_vocab_length = tokenizer.vocab_size
     target_vocab_length = tokenizer.vocab_size
 
