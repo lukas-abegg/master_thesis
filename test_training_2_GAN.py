@@ -125,6 +125,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
 
                 # Forward, backprop, optimizer
                 sys_out_batch = generator(src.transpose(0, 1), trg_input.transpose(0, 1), tgt_mask=np_mask)
+                sys_out_batch = sys_out_batch.transpose(0, 1)
                 #sys_out_batch = F.log_softmax(sys_out_batch.transpose(0, 1), dim=-1)
                 out_batch = sys_out_batch.contiguous().view(-1, sys_out_batch.size(-1))
 
