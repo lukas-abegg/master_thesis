@@ -218,7 +218,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
                                   decoder_input_ids=inputs["decoder_input_ids"])
                 # model outputs are always tuple in pytorch-transformers (see doc)
                 preds = preds.logits
-                preds = F.log_softmax(preds, dim=-1)
+                #preds = F.log_softmax(preds, dim=-1)
                 out_batch = preds.contiguous().view(-1, preds.size(-1))
 
                 _, predictions = out_batch.topk(1)
