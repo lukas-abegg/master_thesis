@@ -384,16 +384,16 @@ if __name__ == "__main__":
         "batch_size": 15,
         "num_epochs": 10,
         "learning_rate": 1e-5,
-        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
+        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1"
     project_name = "bart-wms"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_5"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
