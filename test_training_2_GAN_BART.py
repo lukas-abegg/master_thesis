@@ -119,7 +119,9 @@ def get_iterator(data, batch_size):
 def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint_base, tokenizer, beam_size, use_gpu=False,
           experiment=None, device="cpu"):
     if use_gpu:
+        generator = generator.to(device)
         generator = torch.nn.DataParallel(generator, device_ids=[0, 1])
+        discriminator = discriminator.to(device)
         discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     else:
         discriminator.cpu()
