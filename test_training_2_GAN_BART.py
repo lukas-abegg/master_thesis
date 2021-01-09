@@ -120,7 +120,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
           experiment=None, device="cpu"):
     if use_gpu:
         generator.to("cuda:0")
-        discriminator.to("cuda:2")
+        discriminator.to("cuda:1")
     else:
         discriminator.cpu()
         generator.cpu()
