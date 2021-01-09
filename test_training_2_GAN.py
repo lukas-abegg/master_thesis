@@ -62,7 +62,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                        betas=(0.9, 0.98), eps=1e-9)
 
     num_train_steps = num_steps * max_epochs
-    warmup_steps = 4000
+    warmup_steps = 100
     print(num_train_steps)
     lr_scheduler_g = get_linear_schedule_with_warmup(g_optimizer, warmup_steps, num_train_steps)
     lr_scheduler_d = get_linear_schedule_with_warmup(d_optimizer, warmup_steps, num_train_steps)
@@ -493,7 +493,7 @@ if __name__ == "__main__":
         "tokenizer": "wordpiece",  # wordpiece
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
-        "batch_size": 45,
+        "batch_size": 50,
         "num_epochs": 3,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
