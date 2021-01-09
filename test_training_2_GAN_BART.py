@@ -120,9 +120,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
           experiment=None, device="cpu"):
     if use_gpu:
         generator = generator.to(device)
-        generator = torch.nn.DataParallel(generator, device_ids=[0, 1])
         discriminator = discriminator.to(device)
-        discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 1])
     else:
         discriminator.cpu()
         generator.cpu()
@@ -593,7 +591,7 @@ if __name__ == "__main__":
         "dataset": "mws",  # mws # iwslt
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
-        "batch_size": 5,
+        "batch_size": 3,
         "num_epochs": 5,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
