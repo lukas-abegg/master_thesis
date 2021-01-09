@@ -592,7 +592,7 @@ if __name__ == "__main__":
         "dataset": "newsela",  # mws # iwslt
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
-        "batch_size": 3,
+        "batch_size": 10,
         "num_epochs": 5,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
