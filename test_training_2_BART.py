@@ -390,7 +390,7 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_4"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4"
     project_name = "bart-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
@@ -424,7 +424,7 @@ if __name__ == "__main__":
 
     ### Load Generator
     model_path = "best_model.pt"
-    model_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", 'checkpoints/mle', model_path)
+    model_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2", 'checkpoints/mle', model_path)
     model.load_state_dict(torch.load(model_path))
     print("Generator is successfully loaded!")
 
