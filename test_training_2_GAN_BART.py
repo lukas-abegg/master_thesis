@@ -119,8 +119,8 @@ def get_iterator(data, batch_size):
 def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint_base, tokenizer, beam_size, use_gpu=False,
           experiment=None, device="cpu"):
     if use_gpu:
-        generator.cuda()
-        discriminator.cuda()
+        generator = torch.nn.DataParallel(generator, device_ids=[0, 2])
+        discriminator = torch.nn.DataParallel(discriminator, device_ids=[0, 2])
     else:
         discriminator.cpu()
         generator.cpu()
@@ -543,7 +543,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
         if best_valid_acc < g_logging_meters['valid_acc'].avg:
             best_valid_acc = g_logging_meters['valid_acc'].avg
 
-            generator_model_path_to_save = checkpoints_path + "joint_{0:.3f}.epoch_{1}.pt".format(
+            generator_model_path_to_save = checkpoint_base + "joint_{0:.3f}.epoch_{1}.pt".format(
                 g_logging_meters['valid_loss'].avg, epoch_i)
 
             print("Save model to", generator_model_path_to_save)
@@ -552,7 +552,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint
         if g_logging_meters['valid_loss'].avg < best_dev_loss:
             best_dev_loss = g_logging_meters['valid_loss'].avg
 
-            generator_model_path_to_save = checkpoints_path + "best_generator_g_model.pt"
+            generator_model_path_to_save = checkpoint_base + "best_generator_g_model.pt"
 
             print("Save model to", generator_model_path_to_save)
             torch.save(generator.state_dict(), generator_model_path_to_save)
