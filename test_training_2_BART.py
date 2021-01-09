@@ -378,22 +378,22 @@ if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     hyper_params = {
-        "dataset": "newsela",  # mws
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
+        "dataset": "mws",  # mws
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 15,
         "num_epochs": 10,
         "learning_rate": 1e-5,
-        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
+        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_3"
-    project_name = "bart-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0"
+    project_name = "bart-wms"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_5"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
