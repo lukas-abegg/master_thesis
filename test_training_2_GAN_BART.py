@@ -119,8 +119,8 @@ def get_iterator(data, batch_size):
 def train(train_iter, val_iter, generator, discriminator, max_epochs, checkpoint_base, tokenizer, beam_size, use_gpu=False,
           experiment=None, device="cpu"):
     if use_gpu:
-        generator.to("cuda:0")
-        discriminator.to("cuda:1")
+        generator.cuda()
+        discriminator.cuda()
     else:
         discriminator.cpu()
         generator.cpu()
@@ -645,10 +645,10 @@ if __name__ == "__main__":
         experiment.log_other("len_train_data", str(len(train_data)))
 
     ### Load Generator
-    generator_path = "best_model.pt"
-    generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
-    generator.load_state_dict(torch.load(generator_path))
-    print("Generator is successfully loaded from:", str(generator_path))
+    # generator_path = "best_model.pt"
+    # generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
+    # generator.load_state_dict(torch.load(generator_path))
+    # print("Generator is successfully loaded from:", str(generator_path))
 
     ### Load Discriminator
     discriminator = Discriminator(src_vocab_size=source_vocab_length, pad_id_src=tokenizer.pad_token_id,
