@@ -568,7 +568,7 @@ def tokenize_en(text):
 
 
 def convert_ids_to_tokens(tensor, tokenizer):
-    decoded_sent = tokenizer.decode(tensor, clean_up_tokenization_spaces=False)
+    decoded_sent = tokenizer.decode(tensor, clean_up_tokenization_spaces=False, skip_special_tokens=True)
 
     translated_sentence = tokenize_en(decoded_sent)
     return translated_sentence
@@ -604,7 +604,7 @@ if __name__ == "__main__":
 
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
     project_name = "gan-bart-newsela"
-    tracking_active = False
+    tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
@@ -636,8 +636,8 @@ if __name__ == "__main__":
     val_iter = get_iterator(valid_data, BATCH_SIZE)
 
     ### Load Generator
-    source_vocab_length = len(SRC.vocab)
-    target_vocab_length = len(TGT.vocab)
+    source_vocab_length = tokenizer.vocab_size
+    target_vocab_length = tokenizer.vocab_size
 
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
@@ -651,8 +651,8 @@ if __name__ == "__main__":
     print("Generator is successfully loaded from:", str(generator_path))
 
     ### Load Discriminator
-    discriminator = Discriminator(src_vocab_size=source_vocab_length, pad_id_src=SRC.vocab.stoi[BLANK_WORD],
-                                  trg_vocab_size=target_vocab_length, pad_id_trg=TGT.vocab.stoi[BLANK_WORD],
+    discriminator = Discriminator(src_vocab_size=source_vocab_length, pad_id_src=tokenizer.pad_token_id,
+                                  trg_vocab_size=target_vocab_length, pad_id_trg=tokenizer.pad_token_id,
                                   max_len_src=max_len_src, max_len_tgt=max_len_tgt, use_gpu=False)
     discriminator_path = "best_dmodel.pt"
     discriminator_path = os.path.join(checkpoint_base, 'checkpoints/discriminator', discriminator_path)
