@@ -211,6 +211,7 @@ def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_b
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
+            lr_scheduler.step()
 
             # del src, trg, preds, loss, labels, acc
             del src, trg, preds, loss, acc
@@ -288,8 +289,6 @@ def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_b
                         logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                         optimizer.param_groups[0]['lr']))
 
-        # lr_scheduler.step(logging_meters['valid_loss'].avg)
-        lr_scheduler.step()
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
