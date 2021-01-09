@@ -493,7 +493,7 @@ if __name__ == "__main__":
         "tokenizer": "wordpiece",  # wordpiece
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
-        "batch_size": 50,
+        "batch_size": 45,
         "num_epochs": 3,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
