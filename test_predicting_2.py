@@ -155,7 +155,7 @@ if __name__ == "__main__":
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
 
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/checkpoints/joint/pgloss"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4/evaluation/joint/pgloss"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/evaluation/joint/pgloss"
 
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
