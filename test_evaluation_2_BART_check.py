@@ -166,7 +166,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
 
 if __name__ == "__main__":
-    project_name = "transformer-newsela-eval"  # newsela-transformer-bert-weights
+    project_name = "bart-newsela-check"  # newsela-transformer-bert-weights
     tracking_active = True
 
     base_file_paths = []
