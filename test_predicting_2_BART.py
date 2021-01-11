@@ -165,7 +165,7 @@ def run(test_iter, model, base_path, tokenizer, use_cuda, device):
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
-    for i in range(1, 5):
+    for i in range(1, 2): #5):
         beam_size = i
 
         origin_sentences, reference_sentences, predicted_sentences = predict(test_iter, model, tokenizer, beam_size, use_cuda, device)
@@ -190,9 +190,9 @@ if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     hyper_params = {
-        "dataset": "mws",  # mws
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "newsela",  # mws
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 15,
         "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
@@ -200,8 +200,8 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2/evaluation/mle"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0/evaluation/mle"
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
