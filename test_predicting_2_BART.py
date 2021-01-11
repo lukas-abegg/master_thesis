@@ -160,21 +160,23 @@ def write_to_file(sentences, filename):
     print("Sentences saved to file", filename)
 
 
-def run(test_iter, model, base_path, tokenizer, beam_size, use_cuda, device):
+def run(test_iter, model, base_path, tokenizer, use_cuda, device):
 
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
-    for i in range(5):
+    for i in range(1, 5):
+        beam_size = i
+
         origin_sentences, reference_sentences, predicted_sentences = predict(test_iter, model, tokenizer, beam_size, use_cuda, device)
 
-        filename = os.path.join(base_path, str(i + 1) + "_origin_sentences.txt")
+        filename = os.path.join(base_path, str(i) + "_origin_sentences.txt")
         write_to_file(origin_sentences, filename)
 
-        filename = os.path.join(base_path, str(i + 1) + "_reference_sentences.txt")
+        filename = os.path.join(base_path, str(i) + "_reference_sentences.txt")
         write_to_file(reference_sentences, filename)
 
-        filename = os.path.join(base_path, str(i + 1) + "_predicted_sentences.txt")
+        filename = os.path.join(base_path, str(i) + "_predicted_sentences.txt")
         write_to_file(predicted_sentences, filename)
 
 
@@ -192,22 +194,20 @@ if __name__ == "__main__":
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
         "batch_size": 15,
-        "beam_size": 4,
-        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
+        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1/evaluation/mle/_4"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0/evaluation/mle"
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
-    beam_size = hyper_params["beam_size"]
 
     ### Load Data
     # Special Tokens
@@ -229,6 +229,6 @@ if __name__ == "__main__":
     model_path = os.path.join(checkpoint_base, "best_model.pt")
     model.load_state_dict(torch.load(model_path))
 
-    run(test_iter, model, save_run_files_base, tokenizer, beam_size, use_cuda, device)
+    run(test_iter, model, save_run_files_base, tokenizer, use_cuda, device)
 
     sys.exit()
