@@ -154,10 +154,10 @@ if __name__ == "__main__":
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/checkpoints/joint/pgloss"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/evaluation/joint/pgloss"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3_1/checkpoints/joint/pgloss"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3_1/evaluation/joint/pgloss"
 
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
