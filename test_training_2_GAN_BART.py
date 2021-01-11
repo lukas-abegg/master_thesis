@@ -550,11 +550,10 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
         if best_valid_acc < g_logging_meters['valid_acc'].avg:
             best_valid_acc = g_logging_meters['valid_acc'].avg
 
-            generator_model_path_to_save = checkpoint_base + "joint_{0:.3f}.epoch_{1}.pt".format(
-                g_logging_meters['valid_loss'].avg, epoch_i)
+        generator_model_path_to_save = checkpoint_base + "joint_{0:.3f}.epoch_{1}.pt".format(g_logging_meters['valid_loss'].avg, epoch_i)
 
-            print("Save model to", generator_model_path_to_save)
-            torch.save(generator.state_dict(), generator_model_path_to_save)
+        print("Save model to", generator_model_path_to_save)
+        torch.save(generator.state_dict(), generator_model_path_to_save)
 
         if g_logging_meters['valid_loss'].avg < best_dev_loss:
             best_dev_loss = g_logging_meters['valid_loss'].avg
