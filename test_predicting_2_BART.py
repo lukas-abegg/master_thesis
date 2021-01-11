@@ -194,7 +194,7 @@ if __name__ == "__main__":
         "sequence_length_src": 76,
         "sequence_length_tgt": 65,
         "batch_size": 15,
-        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
+        "bart_model": "facebook/bart-large-cnn"  # facebook/bart-large-cnn
     }
 
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
