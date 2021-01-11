@@ -170,7 +170,7 @@ if __name__ == "__main__":
     tracking_active = True
 
     base_file_paths = []
-    base_file_paths.append("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0/checkpoints/mle")
+    base_file_paths.append("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0/evaluation/mle")
     base_file_paths.append("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_1/evaluation/mle")
     base_file_paths.append("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2/evaluation/mle")
     base_file_paths.append("/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_3/evaluation/mle")
