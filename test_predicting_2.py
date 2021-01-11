@@ -140,11 +140,10 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 55,
-        "sequence_length_tgt": 35,
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
-        "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
@@ -154,8 +153,10 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4/evaluation/mle"
+
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/checkpoints/joint/pgloss"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4/evaluation/joint/pgloss"
+
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
@@ -197,7 +198,7 @@ if __name__ == "__main__":
                         source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
-    model_path = os.path.join(checkpoint_base, "best_model.pt")
+    model_path = os.path.join(checkpoint_base, "best_generator_g_model.pt")
     model.load_state_dict(torch.load(model_path))
 
     run(test_iter, model, save_run_files_base, use_cuda)
