@@ -593,7 +593,7 @@ if __name__ == "__main__":
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
         "batch_size": 10,
-        "num_epochs": 3,
+        "num_epochs": 5,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
         "bart_model": "facebook/bart-large",  # facebook/bart-large-cnn,
