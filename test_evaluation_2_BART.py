@@ -34,7 +34,7 @@ def get_parallel_sentences(base_file_path):
     reference_groups = []
     prediction_groups = []
 
-    for i in range(5):
+    for i in range(1, 5):
         filename = os.path.join(base_file_path, str(i) + "_origin_sentences.txt")
         origins = read_from_file(filename)
         origin_groups.append(origins)
@@ -143,28 +143,28 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
-            best_beam_size["bleu_score_nltk"] = i
+            best_beam_size["bleu_score_nltk"] = i+1
 
         #if bleu_score_local < bleu_score_local_s:
         #    bleu_score_local = bleu_score_local_s
 
         if avg_sentence_bleu_scores < avg_sentence_bleu_scores_s:
             avg_sentence_bleu_scores = avg_sentence_bleu_scores_s
-            best_beam_size["avg_sentence_bleu_scores"] = i
+            best_beam_size["avg_sentence_bleu_scores"] = i+1
 
         if avg_meteor_scores < avg_meteor_scores_s:
             avg_meteor_scores = avg_meteor_scores_s
-            best_beam_size["avg_meteor_scores"] = i
+            best_beam_size["avg_meteor_scores"] = i+1
 
         if sari_score < sari_score_s:
             sari_score = sari_score_s
-            best_beam_size["sari_score"] = i
+            best_beam_size["sari_score"] = i+1
 
     return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size
 
 
 if __name__ == "__main__":
-    project_name = "bart-mws"  # newsela-transformer-bert-weights
+    project_name = "bart-mws-eval"  # newsela-transformer-bert-weights
     tracking_active = True
     base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0/evaluation/mle"
 
