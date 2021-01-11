@@ -139,10 +139,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws
+        "dataset": "mws",  # mws
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
         "batch_size": 50,
         "d_model": 512,
         "n_head": 8,
@@ -154,8 +154,8 @@ if __name__ == "__main__":
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1/checkpoints/joint/pgloss"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1/evaluation/joint/pgloss"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/checkpoints/joint/reward"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3/evaluation/joint/reward"
 
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
