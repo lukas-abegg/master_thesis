@@ -34,14 +34,14 @@ class PGLoss(torch.nn.Module):
             if use_gpu:
                 row_idx = row_idx.cuda()
 
-            #bleu_i = self.calculate_bleu(tokenized_predictions[i], tokenized_targets[i])
-            #sari_i = self.calculate_sari(tokenized_origins[i], tokenized_predictions[i], tokenized_targets[i])
+            bleu_i = self.calculate_bleu(tokenized_predictions[i], tokenized_targets[i])
+            sari_i = self.calculate_sari(tokenized_origins[i], tokenized_predictions[i], tokenized_targets[i])
             reward_i = reward[i].item()
 
-            #loss_q = (self.lambda_q * bleu_i) + ((1 - self.lambda_q) * sari_i)
-            #loss_r = (self.lambda_r * reward_i) + ((1 - self.lambda_r) * loss_q)
+            loss_q = (self.lambda_q * bleu_i) + ((1 - self.lambda_q) * sari_i)
+            loss_r = (self.lambda_r * reward_i) + ((1 - self.lambda_r) * loss_q)
 
-            loss += self.calculate_loss(logprobs[i], row_idx, trg_labels, reward_i)
+            loss += self.calculate_loss(logprobs[i], row_idx, trg_labels, loss_r)
 
         if self.size_average:
             loss = loss / bsz
