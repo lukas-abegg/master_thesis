@@ -200,8 +200,8 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0/evaluation/mle"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1/checkpoints/mle"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1/evaluation/mle"
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]

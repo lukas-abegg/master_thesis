@@ -160,7 +160,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
             sari_score = sari_score_s
             best_beam_size["sari_score"] = i
 
-    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
+    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size
 
 
 if __name__ == "__main__":
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
     origin_groups, reference_groups, prediction_groups = get_parallel_sentences(base_file_path)
 
-    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score = validate(origin_groups,
+    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size = validate(origin_groups,
                                                                                         reference_groups,
                                                                                         prediction_groups,
                                                                                         experiment)
@@ -190,9 +190,11 @@ if __name__ == "__main__":
         experiment.log_metric("avg_sentence_bleu_scores", float(avg_sentence_bleu_scores))
         experiment.log_metric("avg_meteor_scores", float(avg_meteor_scores))
         experiment.log_metric("sari_score", float(sari_score))
+        experiment.log_other("best_beam_size", best_beam_size)
 
     print("bleu_score_nltk = ", bleu_score_nltk)
     #print("bleu_score_local = ", bleu_score_local)
     print("avg_sentence_bleu_scores = ", avg_sentence_bleu_scores)
     print("avg_meteor_scores = ", avg_meteor_scores)
     print("sari_score = ", sari_score)
+    print("best_beam_size = ", best_beam_size)
