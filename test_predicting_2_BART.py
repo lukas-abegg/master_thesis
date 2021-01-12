@@ -9,7 +9,6 @@ from transformers import BartTokenizer, BartForConditionalGeneration
 
 
 def get_fields(max_len_src, max_len_tgt, tokenizer, blank_word):
-
     src = Field(tokenize=tokenizer.encode,
                 fix_length=max_len_src,
                 pad_token=blank_word,
@@ -63,8 +62,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
     SRC, TGT = get_fields(max_len_src, max_len_tgt, tokenizer, blank_word)
 
     if dataset == "newsela":
-        path = os.path.join(base_path, "newsela/splits/bert_base")
-        #path = os.path.join(base_path, "data/test/newsela")
+        #path = os.path.join(base_path, "newsela/splits/bert_base")
+        path = os.path.join(base_path, "data/test/newsela")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
@@ -95,15 +94,20 @@ def get_iterator(data, batch_size):
     return BucketIterator(data, batch_size=batch_size, repeat=False, sort_key=lambda x: len(x.src))
 
 
-def predict(test_iter, model, tokenizer, beam_size, use_gpu=True, device="cpu"):
+def predict(test_iter, model, tokenizer, beam_size, max_len_tgt, use_gpu=True, device="cpu"):
     if use_gpu:
         model.cuda()
     else:
         model.cpu()
 
-    origin_sentences = []
-    reference_sentences = []
-    predicted_sentences = []
+    origin_sentences_1 = []
+    origin_sentences_2 = []
+
+    reference_sentences_1 = []
+    reference_sentences_2 = []
+
+    predicted_sentences_1 = []
+    predicted_sentences_2 = []
 
     model.eval()
     with torch.no_grad():
@@ -122,18 +126,23 @@ def predict(test_iter, model, tokenizer, beam_size, use_gpu=True, device="cpu"):
             trg = trg.transpose(0, 1)
 
             for origin_sentence, reference_sentence in zip(src, trg):
-                predicted_sentence = greedy_decode_sentence(model, origin_sentence, tokenizer, beam_size, device)
+                predicted_sentence_1, predicted_sentence_2 = greedy_decode_sentence(model, origin_sentence, tokenizer,
+                                                                                    beam_size, max_len_tgt, device)
 
-                origin_sentences.append(convert_ids_to_tokens(origin_sentence, tokenizer))
+                origin_sentences_1.append(convert_ids_to_tokens(origin_sentence, tokenizer))
+                origin_sentences_2.append(convert_ids_to_tokens(origin_sentence, tokenizer))
 
                 reference_sentence = reference_sentence[1:]
-                reference_sentences.append(convert_ids_to_tokens(reference_sentence, tokenizer))
+                reference_sentences_1.append(convert_ids_to_tokens(reference_sentence, tokenizer))
+                reference_sentences_2.append(convert_ids_to_tokens(reference_sentence, tokenizer))
 
-                predicted_sentences.append(predicted_sentence)
+                predicted_sentences_1.append(predicted_sentence_1)
+                predicted_sentences_2.append(predicted_sentence_2)
 
         print("Predicting finished - ")
 
-    return origin_sentences, reference_sentences, predicted_sentences
+    return origin_sentences_1, origin_sentences_2, reference_sentences_1, reference_sentences_2, \
+           predicted_sentences_1, predicted_sentences_2
 
 
 def convert_ids_to_tokens(tensor, tokenizer):
@@ -141,14 +150,40 @@ def convert_ids_to_tokens(tensor, tokenizer):
     return translated_sentence
 
 
-def greedy_decode_sentence(model, origin_sentence, tokenizer, beam_size, device):
+def greedy_decode_sentence(model, origin_sentence, tokenizer, beam_size, max_len_tgt, device):
     origin_sentence = torch.unsqueeze(origin_sentence, 0)
     origin_sentence = origin_sentence.to(device)
 
-    pred_sent = model.generate(origin_sentence, num_beams=beam_size, max_length=max_len_tgt, early_stopping=True)
-    translated_sentence = tokenizer.decode(pred_sent[0], clean_up_tokenization_spaces=False, skip_special_tokens=True)
+    if beam_size > 1:
+        pred_sent = model.generate(
+            origin_sentence,
+            num_beams=beam_size,
+            num_return_sequences=2,
+            max_length=max_len_tgt,
+            early_stopping=True)
 
-    return translated_sentence
+        translated_sentence_1 = tokenizer.decode(pred_sent[0], clean_up_tokenization_spaces=False,
+                                                 skip_special_tokens=True)
+        translated_sentence_2 = tokenizer.decode(pred_sent[1], clean_up_tokenization_spaces=False,
+                                                 skip_special_tokens=True)
+    else:
+        pred_sent_1 = model.generate(
+            origin_sentence,
+            num_beams=beam_size,
+            max_length=max_len_tgt,
+            early_stopping=True)
+
+        translated_sentence_1 = tokenizer.decode(pred_sent_1[0], clean_up_tokenization_spaces=False, skip_special_tokens=True)
+
+        pred_sent_2 = model.generate(
+            origin_sentence,
+            num_beams=beam_size,
+            max_length=max_len_tgt,
+            early_stopping=True)
+
+        translated_sentence_2 = tokenizer.decode(pred_sent_2[0], clean_up_tokenization_spaces=False, skip_special_tokens=True)
+
+    return translated_sentence_1, translated_sentence_2
 
 
 def write_to_file(sentences, filename):
@@ -160,24 +195,55 @@ def write_to_file(sentences, filename):
     print("Sentences saved to file", filename)
 
 
-def run(test_iter, model, base_path, tokenizer, use_cuda, device):
-
+def run(test_iter, model, base_path, tokenizer, max_len_tgt, use_cuda, device):
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
-    for i in range(1, 2): #5):
+    for i in [1, 2, 4, 6, 12]:
         beam_size = i
 
-        origin_sentences, reference_sentences, predicted_sentences = predict(test_iter, model, tokenizer, beam_size, use_cuda, device)
+        origin_sentences_1, origin_sentences_2, reference_sentences_1, reference_sentences_2, \
+        predicted_sentences_1, predicted_sentences_2 = predict(test_iter, model, tokenizer, beam_size, max_len_tgt,
+                                                               use_cuda, device)
 
-        filename = os.path.join(base_path, str(i) + "_origin_sentences.txt")
-        write_to_file(origin_sentences, filename)
+        filename = os.path.join(base_path, str(i) + "_origin_sentences_1.txt")
+        write_to_file(origin_sentences_1, filename)
+        filename = os.path.join(base_path, str(i) + "_origin_sentences_2.txt")
+        write_to_file(origin_sentences_2, filename)
 
-        filename = os.path.join(base_path, str(i) + "_reference_sentences.txt")
-        write_to_file(reference_sentences, filename)
+        filename = os.path.join(base_path, str(i) + "_reference_sentences_1.txt")
+        write_to_file(reference_sentences_1, filename)
+        filename = os.path.join(base_path, str(i) + "_reference_sentences_2.txt")
+        write_to_file(reference_sentences_2, filename)
 
-        filename = os.path.join(base_path, str(i) + "_predicted_sentences.txt")
-        write_to_file(predicted_sentences, filename)
+        filename = os.path.join(base_path, str(i) + "_predicted_sentences_1.txt")
+        write_to_file(predicted_sentences_1, filename)
+        filename = os.path.join(base_path, str(i) + "_predicted_sentences_2.txt")
+        write_to_file(predicted_sentences_2, filename)
+
+
+def init_data(hyper_params, set):
+    tokenizer = BartTokenizer.from_pretrained(set["bart_model"])
+    base_model = BartForConditionalGeneration.from_pretrained(set["bart_model"])
+
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    dataset = set["dataset"]
+
+    max_len_src = hyper_params["sequence_length_src"]
+    max_len_tgt = hyper_params["sequence_length_tgt"]
+
+    ### Load Data
+    # Special Tokens
+    BLANK_WORD = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+
+    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
+                                                                    tokenizer, BLANK_WORD)
+
+    BATCH_SIZE = hyper_params["batch_size"]
+    # Create iterators to process text in batches of approx. the same length
+    test_iter = get_iterator(test_data, BATCH_SIZE)
+
+    return test_iter, base_model, tokenizer
 
 
 if __name__ == "__main__":
@@ -189,46 +255,84 @@ if __name__ == "__main__":
 
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-    hyper_params = {
-        "dataset": "newsela",  # mws
+    hyper_params_newsela = {
         "sequence_length_src": 70,
         "sequence_length_tgt": 45,
-        "batch_size": 15,
-        "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
+        "batch_size": 15
     }
 
-    tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
-    model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
+    hyper_params_mws = {
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
+        "batch_size": 15
+    }
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4/checkpoints/mle"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4/evaluation/mle"
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    bart_large_experiments_newsela = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss",
+         "model": "checkpoints/joint/pg_loss/best_generator_g_model.pt"}
+    ]
 
-    max_len_src = hyper_params["sequence_length_src"]
-    max_len_tgt = hyper_params["sequence_length_tgt"]
+    bart_large_cnn_experiments_newsela = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_1", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_3", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"}
+    ]
 
-    dataset = hyper_params["dataset"]
+    bart_large_experiments_mws = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/joint/pg_loss",
+         "model": "checkpoints/joint/pg_loss/best_generator_g_model.pt"}
+    ]
 
-    ### Load Data
-    # Special Tokens
-    BOS_WORD = tokenizer.convert_tokens_to_ids(tokenizer.bos_token)
-    EOS_WORD = tokenizer.convert_tokens_to_ids(tokenizer.eos_token)
-    BLANK_WORD = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+    bart_large_cnn_experiments_mws = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_1", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"}
+    ]
 
-    train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
-                                                                    tokenizer, BLANK_WORD)
+    experiments = [
+        {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
+        {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
+        {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
+        {"bart_model": "facebook/bart-large-cnn", "dataset": "newsela",
+         "experiments": bart_large_cnn_experiments_newsela}
+    ]
 
-    BATCH_SIZE = hyper_params["batch_size"]
-    # Create iterators to process text in batches of approx. the same length
-    test_iter = get_iterator(test_data, BATCH_SIZE)
+    for set in experiments:
 
-    ### Load Generator
-    source_vocab_length = tokenizer.vocab_size
-    target_vocab_length = tokenizer.vocab_size
+        if set["dataset"] == "newsela":
+            hyper_params = hyper_params_newsela
+        else:
+            hyper_params = hyper_params_mws
 
-    model_path = os.path.join(checkpoint_base, "best_model.pt")
-    model.load_state_dict(torch.load(model_path))
+        print("Run experiments for bart model: ", set["bart_model"])
+        print(hyper_params)
 
-    run(test_iter, model, save_run_files_base, tokenizer, use_cuda, device)
+        test_iter, base_model, tokenizer = init_data(hyper_params, set)
+
+        for experiment in set["experiments"]:
+
+            model = base_model
+            model_path = os.path.join(experiment["base_path"], experiment["model"])
+            model.load_state_dict(torch.load(model_path))
+
+            save_run_files_base = os.path.join(experiment["base_path"], experiment["eval"])
+            max_len_tgt = hyper_params["sequence_length_tgt"]
+
+            print("Run experiment: ", model_path)
+            print("Save in: ", save_run_files_base)
+
+            run(test_iter, model, save_run_files_base, tokenizer, max_len_tgt, use_cuda, device)
+
+            del model
 
     sys.exit()

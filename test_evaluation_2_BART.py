@@ -30,25 +30,43 @@ def read_from_file(filename):
 def get_parallel_sentences(base_file_path):
     print("Read files -")
 
-    origin_groups = []
-    reference_groups = []
-    prediction_groups = []
+    origin_groups_1 = []
+    origin_groups_2 = []
 
-    for i in range(1, 5):
-        filename = os.path.join(base_file_path, str(i) + "_origin_sentences.txt")
+    reference_groups_1 = []
+    reference_groups_2 = []
+
+    prediction_groups_1 = []
+    prediction_groups_2 = []
+
+    for i in [1, 2, 4, 6, 12]:
+        filename = os.path.join(base_file_path, str(i) + "_origin_sentences_1.txt")
         origins = read_from_file(filename)
-        origin_groups.append(origins)
+        origin_groups_1.append(origins)
 
-        filename = os.path.join(base_file_path, str(i) + "_reference_sentences.txt")
+        filename = os.path.join(base_file_path, str(i) + "_origin_sentences_2.txt")
+        origins = read_from_file(filename)
+        origin_groups_2.append(origins)
+
+        filename = os.path.join(base_file_path, str(i) + "_reference_sentences_1.txt")
         references = read_from_file(filename)
-        reference_groups.append(references)
+        reference_groups_1.append(references)
 
-        filename = os.path.join(base_file_path, str(i) + "_predicted_sentences.txt")
+        filename = os.path.join(base_file_path, str(i) + "_reference_sentences_2.txt")
+        references = read_from_file(filename)
+        reference_groups_2.append(references)
+
+        filename = os.path.join(base_file_path, str(i) + "_predicted_sentences_1.txt")
         predictions = read_from_file(filename)
-        prediction_groups.append(predictions)
+        prediction_groups_1.append(predictions)
+
+        filename = os.path.join(base_file_path, str(i) + "_predicted_sentences_2.txt")
+        predictions = read_from_file(filename)
+        prediction_groups_2.append(predictions)
 
     print("Files read -")
-    return origin_groups, reference_groups, prediction_groups
+    return origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2,\
+           prediction_groups_1, prediction_groups_2
 
 
 def evaluate_sentence_bleu_and_meteor(origins, tokenized_origins, references, tokenized_references, hypotheses,
@@ -177,24 +195,42 @@ if __name__ == "__main__":
 
         experiment.log_other("evaluation_files_path", base_file_path)
 
-    origin_groups, reference_groups, prediction_groups = get_parallel_sentences(base_file_path)
+    origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2, \
+    prediction_groups_1, prediction_groups_2 = get_parallel_sentences(base_file_path)
 
-    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size = validate(origin_groups,
-                                                                                        reference_groups,
-                                                                                        prediction_groups,
-                                                                                        experiment)
+    bleu_score_nltk_1, avg_sentence_bleu_scores_1, avg_meteor_scores_1, sari_score_1, best_beam_size_1 = \
+        validate(origin_groups_1, reference_groups_1, prediction_groups_1, experiment)
+
+    bleu_score_nltk_2, avg_sentence_bleu_scores_2, avg_meteor_scores_2, sari_score_2, best_beam_size_2 = \
+        validate(origin_groups_2, reference_groups_2, prediction_groups_2, experiment)
 
     if experiment is not None:
-        experiment.log_metric("bleu_score_nltk", float(bleu_score_nltk))
-        #experiment.log_metric("bleu_score_local", float(bleu_score_local))
-        experiment.log_metric("avg_sentence_bleu_scores", float(avg_sentence_bleu_scores))
-        experiment.log_metric("avg_meteor_scores", float(avg_meteor_scores))
-        experiment.log_metric("sari_score", float(sari_score))
-        experiment.log_other("best_beam_size", best_beam_size)
+        experiment.log_metric("bleu_score_nltk_1", float(bleu_score_nltk_1))
+        #experiment.log_metric("bleu_score_local_1", float(bleu_score_local_1))
+        experiment.log_metric("avg_sentence_bleu_scores_1", float(avg_sentence_bleu_scores_1))
+        experiment.log_metric("avg_meteor_scores_1", float(avg_meteor_scores_1))
+        experiment.log_metric("sari_score_1", float(sari_score_1))
+        experiment.log_other("best_beam_size_1", best_beam_size_1)
 
-    print("bleu_score_nltk = ", bleu_score_nltk)
-    #print("bleu_score_local = ", bleu_score_local)
-    print("avg_sentence_bleu_scores = ", avg_sentence_bleu_scores)
-    print("avg_meteor_scores = ", avg_meteor_scores)
-    print("sari_score = ", sari_score)
-    print("best_beam_size = ", best_beam_size)
+        experiment.log_metric("bleu_score_nltk_2", float(bleu_score_nltk_2))
+        # experiment.log_metric("bleu_score_local_2", float(bleu_score_local_2))
+        experiment.log_metric("avg_sentence_bleu_scores_2", float(avg_sentence_bleu_scores_2))
+        experiment.log_metric("avg_meteor_scores_2", float(avg_meteor_scores_2))
+        experiment.log_metric("sari_score_2", float(sari_score_2))
+        experiment.log_other("best_beam_size_2", best_beam_size_2)
+
+    print("bleu_score_nltk 1 = ", bleu_score_nltk_1)
+    #print("bleu_score_local 1 = ", bleu_score_local)
+    print("avg_sentence_bleu_scores 1 = ", avg_sentence_bleu_scores_1)
+    print("avg_meteor_scores 1 = ", avg_meteor_scores_1)
+    print("sari_score 1 = ", sari_score_1)
+    print("best_beam_size 1 = ", best_beam_size_1)
+
+    print("\n")
+
+    print("bleu_score_nltk 2 = ", bleu_score_nltk_2)
+    # print("bleu_score_local 2 = ", bleu_score_local_2)
+    print("avg_sentence_bleu_scores 2 = ", avg_sentence_bleu_scores_2)
+    print("avg_meteor_scores 2 = ", avg_meteor_scores_2)
+    print("sari_score 2 = ", sari_score_2)
+    print("best_beam_size 2 = ", best_beam_size_2)
