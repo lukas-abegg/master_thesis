@@ -198,7 +198,7 @@ if __name__ == "__main__":
                         source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
-    model_path = os.path.join(checkpoint_base, "joint_2.458.epoch_1.pt")
+    model_path = os.path.join(checkpoint_base, "best_generator_g_model.pt")
     model.load_state_dict(torch.load(model_path))
 
     run(test_iter, model, save_run_files_base, use_cuda)
