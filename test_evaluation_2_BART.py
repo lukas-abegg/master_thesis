@@ -205,8 +205,14 @@ if __name__ == "__main__":
     origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2, \
     prediction_groups_1, prediction_groups_2, beam_sizes = get_parallel_sentences(base_file_path)
 
+    if experiment is not None:
+        experiment.set_step(1)
+
     best_1_bleu_score_nltk, best_1_avg_sentence_bleu_scores, best_1_avg_meteor_scores, best_1_sari_score, best_1_best_beam_size = \
         validate(origin_groups_1, reference_groups_1, prediction_groups_1, beam_sizes, experiment)
+
+    if experiment is not None:
+        experiment.set_step(2)
 
     best_2_bleu_score_nltk, best_2_avg_sentence_bleu_scores, best_2_avg_meteor_scores, best_2_sari_score, best_2_best_beam_size = \
         validate(origin_groups_2, reference_groups_2, prediction_groups_2, beam_sizes, experiment)
