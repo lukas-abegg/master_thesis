@@ -205,39 +205,39 @@ if __name__ == "__main__":
     origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2, \
     prediction_groups_1, prediction_groups_2, beam_sizes = get_parallel_sentences(base_file_path)
 
-    bleu_score_nltk_1, avg_sentence_bleu_scores_1, avg_meteor_scores_1, sari_score_1, best_beam_size_1 = \
+    best_1_bleu_score_nltk, best_1_avg_sentence_bleu_scores, best_1_avg_meteor_scores, best_1_sari_score, best_1_best_beam_size = \
         validate(origin_groups_1, reference_groups_1, prediction_groups_1, beam_sizes, experiment)
 
-    bleu_score_nltk_2, avg_sentence_bleu_scores_2, avg_meteor_scores_2, sari_score_2, best_beam_size_2 = \
+    best_2_bleu_score_nltk, best_2_avg_sentence_bleu_scores, best_2_avg_meteor_scores, best_2_sari_score, best_2_best_beam_size = \
         validate(origin_groups_2, reference_groups_2, prediction_groups_2, beam_sizes, experiment)
 
     if experiment is not None:
-        experiment.log_metric("bleu_score_nltk_1", float(bleu_score_nltk_1))
+        experiment.log_metric("best_1_bleu_score_nltk", float(best_1_bleu_score_nltk))
         #experiment.log_metric("bleu_score_local_1", float(bleu_score_local_1))
-        experiment.log_metric("avg_sentence_bleu_scores_1", float(avg_sentence_bleu_scores_1))
-        experiment.log_metric("avg_meteor_scores_1", float(avg_meteor_scores_1))
-        experiment.log_metric("sari_score_1", float(sari_score_1))
-        experiment.log_other("best_beam_size_1", best_beam_size_1)
+        experiment.log_metric("best_1_avg_sentence_bleu_scores", float(best_1_avg_sentence_bleu_scores))
+        experiment.log_metric("best_1_avg_meteor_scores", float(best_1_avg_meteor_scores))
+        experiment.log_metric("best_1_sari_score", float(best_1_sari_score))
+        experiment.log_other("best_1_best_beam_size", best_1_best_beam_size)
 
-        experiment.log_metric("bleu_score_nltk_2", float(bleu_score_nltk_2))
+        experiment.log_metric("best_2_bleu_score_nltk", float(best_2_bleu_score_nltk))
         # experiment.log_metric("bleu_score_local_2", float(bleu_score_local_2))
-        experiment.log_metric("avg_sentence_bleu_scores_2", float(avg_sentence_bleu_scores_2))
-        experiment.log_metric("avg_meteor_scores_2", float(avg_meteor_scores_2))
-        experiment.log_metric("sari_score_2", float(sari_score_2))
-        experiment.log_other("best_beam_size_2", best_beam_size_2)
+        experiment.log_metric("best_2_avg_sentence_bleu_scores", float(best_2_avg_sentence_bleu_scores))
+        experiment.log_metric("best_2_avg_meteor_scores", float(best_2_avg_meteor_scores))
+        experiment.log_metric("best_2_sari_score", float(best_2_sari_score))
+        experiment.log_other("best_2_best_beam_size", best_2_best_beam_size)
 
-    print("bleu_score_nltk 1 = ", bleu_score_nltk_1)
+    print("best_1_bleu_score_nltk = ", best_1_bleu_score_nltk)
     #print("bleu_score_local 1 = ", bleu_score_local)
-    print("avg_sentence_bleu_scores 1 = ", avg_sentence_bleu_scores_1)
-    print("avg_meteor_scores 1 = ", avg_meteor_scores_1)
-    print("sari_score 1 = ", sari_score_1)
-    print("best_beam_size 1 = ", best_beam_size_1)
+    print("best_1_avg_sentence_bleu_scores = ", best_1_avg_sentence_bleu_scores)
+    print("best_1_avg_meteor_scores = ", best_1_avg_meteor_scores)
+    print("best_1_sari_score = ", best_1_sari_score)
+    print("best_1_best_beam_size = ", best_1_best_beam_size)
 
     print("\n")
 
-    print("bleu_score_nltk 2 = ", bleu_score_nltk_2)
+    print("best_2_bleu_score_nltk = ", best_2_bleu_score_nltk)
     # print("bleu_score_local 2 = ", bleu_score_local_2)
-    print("avg_sentence_bleu_scores 2 = ", avg_sentence_bleu_scores_2)
-    print("avg_meteor_scores 2 = ", avg_meteor_scores_2)
-    print("sari_score 2 = ", sari_score_2)
-    print("best_beam_size 2 = ", best_beam_size_2)
+    print("best_2_avg_sentence_bleu_scores = ", best_2_avg_sentence_bleu_scores)
+    print("best_2_avg_meteor_scores = ", best_2_avg_meteor_scores)
+    print("best_2_sari_score = ", best_2_sari_score)
+    print("best_2_best_beam_size = ", best_2_best_beam_size)
