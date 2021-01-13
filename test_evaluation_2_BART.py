@@ -160,11 +160,11 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
         bleu_score_nltk_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(origins, references, predictions)
 
         if experiment is not None:
-            experiment.log_metric(str("bleu_score_nltk_"+beam_size), float(bleu_score_nltk_s))
-            #experiment.log_metric("bleu_score_local_"+beam_size, float(bleu_score_local_s))
-            experiment.log_metric(str("avg_sentence_bleu_scores_"+beam_size), float(avg_sentence_bleu_scores_s))
-            experiment.log_metric(str("avg_meteor_scores_"+beam_size), float(avg_meteor_scores_s))
-            experiment.log_metric(str("sari_score_"+beam_size), float(sari_score_s))
+            experiment.log_metric("bleu_score_nltk_"+str(beam_size), float(bleu_score_nltk_s))
+            #experiment.log_metric("bleu_score_local_"+beam_size), float(bleu_score_local_s))
+            experiment.log_metric("avg_sentence_bleu_scores_"+str(beam_size), float(avg_sentence_bleu_scores_s))
+            experiment.log_metric("avg_meteor_scores_"+str(beam_size), float(avg_meteor_scores_s))
+            experiment.log_metric("sari_score_"+str(beam_size), float(sari_score_s))
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
