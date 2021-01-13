@@ -30,6 +30,8 @@ def read_from_file(filename):
 def get_parallel_sentences(base_file_path):
     print("Read files -")
 
+    beam_sizes = []
+
     origin_groups_1 = []
     origin_groups_2 = []
 
@@ -40,6 +42,9 @@ def get_parallel_sentences(base_file_path):
     prediction_groups_2 = []
 
     for i in [1, 2, 4, 6, 12]:
+
+        beam_sizes.append(i)
+
         filename = os.path.join(base_file_path, str(i) + "_origin_sentences_1.txt")
         origins = read_from_file(filename)
         origin_groups_1.append(origins)
@@ -66,7 +71,7 @@ def get_parallel_sentences(base_file_path):
 
     print("Files read -")
     return origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2,\
-           prediction_groups_1, prediction_groups_2
+           prediction_groups_1, prediction_groups_2, beam_sizes
 
 
 def evaluate_sentence_bleu_and_meteor(origins, tokenized_origins, references, tokenized_references, hypotheses,
@@ -131,7 +136,7 @@ def validate_single_round(origins, references, predictions):
     return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
-def validate(origin_groups, reference_groups, prediction_groups, experiment=None):
+def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, experiment=None):
     bleu_score_nltk = 0
     #bleu_score_local = 0
     avg_sentence_bleu_scores = 0
@@ -146,6 +151,8 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
     }
 
     for i in range(len(origin_groups)):
+        beam_size = beam_sizes[i]
+
         origins = origin_groups[i]
         references = reference_groups[i]
         predictions = prediction_groups[i]
@@ -153,30 +160,30 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         bleu_score_nltk_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(origins, references, predictions)
 
         if experiment is not None:
-            experiment.log_metric("bleu_score_nltk_s", float(bleu_score_nltk_s))
-            #experiment.log_metric("bleu_score_local_s", float(bleu_score_local_s))
-            experiment.log_metric("avg_sentence_bleu_scores_s", float(avg_sentence_bleu_scores_s))
-            experiment.log_metric("avg_meteor_scores_s", float(avg_meteor_scores_s))
-            experiment.log_metric("sari_score_s", float(sari_score_s))
+            experiment.log_metric(str("bleu_score_nltk_"+beam_size), float(bleu_score_nltk_s))
+            #experiment.log_metric("bleu_score_local_"+beam_size, float(bleu_score_local_s))
+            experiment.log_metric(str("avg_sentence_bleu_scores_"+beam_size), float(avg_sentence_bleu_scores_s))
+            experiment.log_metric(str("avg_meteor_scores_"+beam_size), float(avg_meteor_scores_s))
+            experiment.log_metric(str("sari_score_"+beam_size), float(sari_score_s))
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
-            best_beam_size["bleu_score_nltk"] = i+1
+            best_beam_size["bleu_score_nltk"] = beam_size
 
         #if bleu_score_local < bleu_score_local_s:
         #    bleu_score_local = bleu_score_local_s
 
         if avg_sentence_bleu_scores < avg_sentence_bleu_scores_s:
             avg_sentence_bleu_scores = avg_sentence_bleu_scores_s
-            best_beam_size["avg_sentence_bleu_scores"] = i+1
+            best_beam_size["avg_sentence_bleu_scores"] = beam_size
 
         if avg_meteor_scores < avg_meteor_scores_s:
             avg_meteor_scores = avg_meteor_scores_s
-            best_beam_size["avg_meteor_scores"] = i+1
+            best_beam_size["avg_meteor_scores"] = beam_size
 
         if sari_score < sari_score_s:
             sari_score = sari_score_s
-            best_beam_size["sari_score"] = i+1
+            best_beam_size["sari_score"] = beam_size
 
     return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size
 
@@ -196,13 +203,13 @@ if __name__ == "__main__":
         experiment.log_other("evaluation_files_path", base_file_path)
 
     origin_groups_1, origin_groups_2, reference_groups_1, reference_groups_2, \
-    prediction_groups_1, prediction_groups_2 = get_parallel_sentences(base_file_path)
+    prediction_groups_1, prediction_groups_2, beam_sizes = get_parallel_sentences(base_file_path)
 
     bleu_score_nltk_1, avg_sentence_bleu_scores_1, avg_meteor_scores_1, sari_score_1, best_beam_size_1 = \
-        validate(origin_groups_1, reference_groups_1, prediction_groups_1, experiment)
+        validate(origin_groups_1, reference_groups_1, prediction_groups_1, beam_sizes, experiment)
 
     bleu_score_nltk_2, avg_sentence_bleu_scores_2, avg_meteor_scores_2, sari_score_2, best_beam_size_2 = \
-        validate(origin_groups_2, reference_groups_2, prediction_groups_2, experiment)
+        validate(origin_groups_2, reference_groups_2, prediction_groups_2, beam_sizes, experiment)
 
     if experiment is not None:
         experiment.log_metric("bleu_score_nltk_1", float(bleu_score_nltk_1))
