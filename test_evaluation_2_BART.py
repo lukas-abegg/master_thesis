@@ -242,7 +242,7 @@ if __name__ == "__main__":
         experiment.log_metric("best_2_sari_score", float(best_2_sari_score))
         experiment.log_other("best_2_best_beam_size", best_2_best_beam_size)
 
-    print("\n Best values: \n")
+    print("\nBest values: \n")
 
     print("best_1_bleu_score_nltk = ", best_1_bleu_score_nltk)
     #print("bleu_score_local 1 = ", bleu_score_local)
@@ -259,3 +259,5 @@ if __name__ == "__main__":
     print("best_2_avg_meteor_scores = ", best_2_avg_meteor_scores)
     print("best_2_sari_score = ", best_2_sari_score)
     print("best_2_best_beam_size = ", best_2_best_beam_size)
+
+    print("\n")
