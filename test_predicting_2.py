@@ -139,10 +139,10 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws
+        "dataset": "newsela",  # mws
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
         "d_model": 512,
         "n_head": 8,
@@ -154,8 +154,8 @@ if __name__ == "__main__":
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3_1/checkpoints/joint/pgloss"
-    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_2_3_1/evaluation/joint/pgloss"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1/checkpoints/joint/pgloss"
+    save_run_files_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1/evaluation/joint/pgloss"
 
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
@@ -198,7 +198,7 @@ if __name__ == "__main__":
                         source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                         load_embedding_weights=hyper_params["load_embedding_weights"])
 
-    model_path = os.path.join(checkpoint_base, "best_generator_g_model.pt")
+    model_path = os.path.join(checkpoint_base, "joint_2.741.epoch_3.pt")
     model.load_state_dict(torch.load(model_path))
 
     run(test_iter, model, save_run_files_base, use_cuda)
