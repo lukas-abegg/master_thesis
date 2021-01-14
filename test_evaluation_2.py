@@ -5,6 +5,7 @@ from comet_ml import Experiment
 import numpy as np
 
 from metrics.bleu import BleuMetric
+from metrics.f1_precision import F1Metrics
 from metrics.meteor import MeteorMetric
 from metrics.sari import SARISentenceMetric
 
@@ -113,12 +114,30 @@ def validate_single_round(origins, references, predictions):
     return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
+def validate_f1_p(origins, references, predictions):
+    f1_metrics = F1Metrics()
+
+    tokenized_origins = tokenize(origins)
+    tokenized_references = tokenize(references)
+    tokenized_predictions = tokenize(predictions)
+
+    list_of_tokenized_references = []
+
+    for ref in tokenized_references:
+        list_of_tokenized_references.append([ref])
+
+    f1_keep, f1_add, p_del = f1_metrics.evaluate_results(tokenized_origins, tokenized_predictions, tokenized_references)
+
+    return f1_keep, f1_add, p_del
+
+
 def validate(origin_groups, reference_groups, prediction_groups, experiment=None):
     bleu_score_nltk = 0
     #bleu_score_local = 0
     avg_sentence_bleu_scores = 0
     avg_meteor_scores = 0
     sari_score = 0
+    f1_keep, f1_add, p_del = 0
 
     for i in range(len(origin_groups)):
         origins = origin_groups[i]
@@ -126,6 +145,16 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         predictions = prediction_groups[i]
 
         bleu_score_nltk_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(origins, references, predictions)
+        f1_keep_s, f1_add_s, p_del_s = validate_f1_p(origins, references, predictions)
+
+        print("bleu_score_nltk_s", float(bleu_score_nltk_s))
+        # experiment.log_metric("bleu_score_local_s", float(bleu_score_local_s))
+        print("avg_sentence_bleu_scores_s", float(avg_sentence_bleu_scores_s))
+        print("avg_meteor_scores_s", float(avg_meteor_scores_s))
+        print("sari_score_s", float(sari_score_s))
+        print("f1_keep_s", float(f1_keep_s))
+        print("f1_add_s", float(f1_add_s))
+        print("p_del_s", float(p_del_s))
 
         if experiment is not None:
             experiment.log_metric("bleu_score_nltk_s", float(bleu_score_nltk_s))
@@ -133,6 +162,9 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
             experiment.log_metric("avg_sentence_bleu_scores_s", float(avg_sentence_bleu_scores_s))
             experiment.log_metric("avg_meteor_scores_s", float(avg_meteor_scores_s))
             experiment.log_metric("sari_score_s", float(sari_score_s))
+            experiment.log_metric("f1_keep_s", float(f1_keep_s))
+            experiment.log_metric("f1_add_s", float(f1_add_s))
+            experiment.log_metric("p_del_s", float(p_del_s))
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
@@ -149,7 +181,16 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
         if sari_score < sari_score_s:
             sari_score = sari_score_s
 
-    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
+        if f1_keep < f1_keep_s:
+            f1_keep = f1_keep_s
+
+        if f1_add < f1_add_s:
+            f1_add = f1_add_s
+
+        if p_del < p_del_s:
+            p_del = p_del_s
+
+    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, f1_keep, f1_add, p_del
 
 
 if __name__ == "__main__":
@@ -168,10 +209,8 @@ if __name__ == "__main__":
 
     origin_groups, reference_groups, prediction_groups = get_parallel_sentences(base_file_path)
 
-    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score = validate(origin_groups,
-                                                                                        reference_groups,
-                                                                                        prediction_groups,
-                                                                                        experiment)
+    bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score,\
+        f1_keep, f1_add, p_del = validate(origin_groups, reference_groups, prediction_groups, experiment)
 
     if experiment is not None:
         experiment.log_metric("bleu_score_nltk", float(bleu_score_nltk))

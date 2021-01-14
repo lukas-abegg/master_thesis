@@ -5,6 +5,7 @@ from comet_ml import Experiment
 import numpy as np
 
 from metrics.bleu import BleuMetric
+from metrics.f1_precision import F1Metrics
 from metrics.meteor import MeteorMetric
 from metrics.sari import SARISentenceMetric
 
@@ -136,18 +137,40 @@ def validate_single_round(origins, references, predictions):
     return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score
 
 
+def validate_f1_p(origins, references, predictions):
+    f1_metrics = F1Metrics()
+
+    tokenized_origins = tokenize(origins)
+    tokenized_references = tokenize(references)
+    tokenized_predictions = tokenize(predictions)
+
+    list_of_tokenized_references = []
+
+    for ref in tokenized_references:
+        list_of_tokenized_references.append([ref])
+
+    f1_keep, f1_add, p_del = f1_metrics.evaluate_results(tokenized_origins, tokenized_predictions, tokenized_references)
+
+    return f1_keep, f1_add, p_del
+
+
 def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, experiment=None):
     bleu_score_nltk = 0
     #bleu_score_local = 0
     avg_sentence_bleu_scores = 0
     avg_meteor_scores = 0
     sari_score = 0
+    f1_keep, f1_add, p_del = 0
+
 
     best_beam_size = {
         "bleu_score_nltk": 0,
         "avg_sentence_bleu_scores": 0,
         "avg_meteor_scores": 0,
-        "sari_score": 0
+        "sari_score": 0,
+        "f1_keep": 0,
+        "f1_add": 0,
+        "p_del": 0
     }
 
     for i in range(len(origin_groups)):
@@ -158,12 +181,16 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
         predictions = prediction_groups[i]
 
         bleu_score_nltk_s, avg_sentence_bleu_scores_s, avg_meteor_scores_s, sari_score_s = validate_single_round(origins, references, predictions)
+        f1_keep_s, f1_add_s, p_del_s = validate_f1_p(origins, references, predictions)
 
         print("bleu_score_nltk_" + str(beam_size), float(bleu_score_nltk_s))
         # print("bleu_score_local_"+beam_size), float(bleu_score_local_s))
         print("avg_sentence_bleu_scores_" + str(beam_size), float(avg_sentence_bleu_scores_s))
         print("avg_meteor_scores_" + str(beam_size), float(avg_meteor_scores_s))
         print("sari_score_" + str(beam_size), float(sari_score_s))
+        print("f1_keep_" + str(beam_size), float(f1_keep_s))
+        print("f1_add_" + str(beam_size), float(f1_add_s))
+        print("p_del_" + str(beam_size), float(p_del_s))
 
         if experiment is not None:
             experiment.log_metric("bleu_score_nltk_"+str(beam_size), float(bleu_score_nltk_s))
@@ -171,6 +198,9 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
             experiment.log_metric("avg_sentence_bleu_scores_"+str(beam_size), float(avg_sentence_bleu_scores_s))
             experiment.log_metric("avg_meteor_scores_"+str(beam_size), float(avg_meteor_scores_s))
             experiment.log_metric("sari_score_"+str(beam_size), float(sari_score_s))
+            experiment.log_metric("f1_keep_" + str(beam_size), float(f1_keep_s))
+            experiment.log_metric("f1_add_" + str(beam_size), float(f1_add_s))
+            experiment.log_metric("p_del_" + str(beam_size), float(p_del_s))
 
         if bleu_score_nltk < bleu_score_nltk_s:
             bleu_score_nltk = bleu_score_nltk_s
@@ -191,7 +221,19 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
             sari_score = sari_score_s
             best_beam_size["sari_score"] = beam_size
 
-    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size
+        if f1_keep < f1_keep_s:
+            f1_keep = f1_keep_s
+            best_beam_size["f1_keep"] = beam_size
+
+        if f1_add < f1_add_s:
+            f1_add = f1_add_s
+            best_beam_size["f1_add"] = beam_size
+
+        if p_del < p_del_s:
+            p_del = p_del_s
+            best_beam_size["p_del"] = beam_size
+
+    return bleu_score_nltk, avg_sentence_bleu_scores, avg_meteor_scores, sari_score, best_beam_size, f1_keep, f1_add, p_del
 
 
 if __name__ == "__main__":
@@ -216,7 +258,8 @@ if __name__ == "__main__":
 
     print("\nHypothesis 1: \n")
 
-    best_1_bleu_score_nltk, best_1_avg_sentence_bleu_scores, best_1_avg_meteor_scores, best_1_sari_score, best_1_best_beam_size = \
+    best_1_bleu_score_nltk, best_1_avg_sentence_bleu_scores, best_1_avg_meteor_scores, best_1_sari_score, \
+    best_1_best_beam_size, best_1_f1_keep, best_1_f1_add, best_1_p_del = \
         validate(origin_groups_1, reference_groups_1, prediction_groups_1, beam_sizes, experiment)
 
     if experiment is not None:
@@ -224,7 +267,8 @@ if __name__ == "__main__":
 
     print("\nHypothesis 2: \n")
 
-    best_2_bleu_score_nltk, best_2_avg_sentence_bleu_scores, best_2_avg_meteor_scores, best_2_sari_score, best_2_best_beam_size = \
+    best_2_bleu_score_nltk, best_2_avg_sentence_bleu_scores, best_2_avg_meteor_scores, best_2_sari_score, \
+    best_2_best_beam_size, best_2_f1_keep, best_2_f1_add, best_2_p_del = \
         validate(origin_groups_2, reference_groups_2, prediction_groups_2, beam_sizes, experiment)
 
     if experiment is not None:
@@ -233,6 +277,9 @@ if __name__ == "__main__":
         experiment.log_metric("best_1_avg_sentence_bleu_scores", float(best_1_avg_sentence_bleu_scores))
         experiment.log_metric("best_1_avg_meteor_scores", float(best_1_avg_meteor_scores))
         experiment.log_metric("best_1_sari_score", float(best_1_sari_score))
+        experiment.log_metric("best_1_f1_keep", float(best_1_f1_keep))
+        experiment.log_metric("best_1_f1_add", float(best_1_f1_add))
+        experiment.log_metric("best_1_p_del", float(best_1_p_del))
         experiment.log_other("best_1_best_beam_size", best_1_best_beam_size)
 
         experiment.log_metric("best_2_bleu_score_nltk", float(best_2_bleu_score_nltk))
@@ -240,6 +287,9 @@ if __name__ == "__main__":
         experiment.log_metric("best_2_avg_sentence_bleu_scores", float(best_2_avg_sentence_bleu_scores))
         experiment.log_metric("best_2_avg_meteor_scores", float(best_2_avg_meteor_scores))
         experiment.log_metric("best_2_sari_score", float(best_2_sari_score))
+        experiment.log_metric("best_2_f1_keep", float(best_2_f1_keep))
+        experiment.log_metric("best_2_f1_add", float(best_2_f1_add))
+        experiment.log_metric("best_2_p_del", float(best_2_p_del))
         experiment.log_other("best_2_best_beam_size", best_2_best_beam_size)
 
     print("\nBest values: \n")
@@ -249,6 +299,9 @@ if __name__ == "__main__":
     print("best_1_avg_sentence_bleu_scores = ", best_1_avg_sentence_bleu_scores)
     print("best_1_avg_meteor_scores = ", best_1_avg_meteor_scores)
     print("best_1_sari_score = ", best_1_sari_score)
+    print("best_1_f1_keep", best_1_f1_keep)
+    print("best_1_f1_add", best_1_f1_add)
+    print("best_1_p_del", best_1_p_del)
     print("best_1_best_beam_size = ", best_1_best_beam_size)
 
     print("\n")
@@ -258,6 +311,9 @@ if __name__ == "__main__":
     print("best_2_avg_sentence_bleu_scores = ", best_2_avg_sentence_bleu_scores)
     print("best_2_avg_meteor_scores = ", best_2_avg_meteor_scores)
     print("best_2_sari_score = ", best_2_sari_score)
+    print("best_2_f1_keep", best_2_f1_keep)
+    print("best_2_f1_add", best_2_f1_add)
+    print("best_2_p_del", best_2_p_del)
     print("best_2_best_beam_size = ", best_2_best_beam_size)
 
     print("\n")
