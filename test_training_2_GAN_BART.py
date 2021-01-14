@@ -669,7 +669,7 @@ if __name__ == "__main__":
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pg_loss_sari/')
+    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pg_loss/')
     if not os.path.exists(checkpoints_path):
         os.makedirs(checkpoints_path)
     print("GAN will be saved at:", str(checkpoints_path))
