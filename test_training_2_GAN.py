@@ -505,7 +505,7 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
     project_name = "gan-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_8"
@@ -587,7 +587,7 @@ if __name__ == "__main__":
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pgloss/')
+    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pgloss_sari/')
     if not os.path.exists(checkpoints_path):
         os.makedirs(checkpoints_path)
     print("GAN will be saved at:", str(checkpoints_path))

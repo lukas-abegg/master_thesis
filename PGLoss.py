@@ -15,7 +15,7 @@ class PGLoss(torch.nn.Module):
         self.reduce = reduce
 
         self.lambda_r = 0.5
-        self.lambda_q = 0.5
+        self.lambda_q = 0.0
 
         self.bleu_smoothing_function = SmoothingFunction()
         self.sari = SARISentenceMetric()
