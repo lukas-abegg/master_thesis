@@ -160,7 +160,9 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
     avg_sentence_bleu_scores = 0
     avg_meteor_scores = 0
     sari_score = 0
-    f1_keep, f1_add, p_del = 0
+    f1_keep = 0
+    f1_add = 0
+    p_del = 0
 
 
     best_beam_size = {
