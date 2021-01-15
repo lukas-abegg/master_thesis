@@ -196,7 +196,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
 
 if __name__ == "__main__":
-    project_name = "transformer-newsela-eval"  # newsela-transformer-bert-weights
+    project_name = "gan-newsela-eval"  # newsela-transformer-bert-weights
     tracking_active = True
     base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/evaluation/joint/pgloss_sari/_5/"
 
