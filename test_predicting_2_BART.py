@@ -274,8 +274,12 @@ if __name__ == "__main__":
         #  "model": "checkpoints/mle/best_model.pt"},
         # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4", "eval": "evaluation/mle",
         #  "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss",
-         "model": "checkpoints/joint/pg_loss/joint_4.893.epoch_5.pt"}
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss_sari/_2",
+         "model": "checkpoints/joint/pg_loss_sari/joint_4.053.epoch_2.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss_sari/_5",
+         "model": "checkpoints/joint/pg_loss_sari/joint_4.834.epoch_5.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss_sari/_best",
+         "model": "checkpoints/joint/pg_loss_sari/best_generator_g_model.pt"}
     ]
 
     bart_large_cnn_experiments_newsela = [
