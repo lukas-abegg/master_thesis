@@ -424,7 +424,7 @@ if __name__ == "__main__":
                                 num_encoder_layers=experiment["n_layers"], num_decoder_layers=experiment["n_layers"],
                                 dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                                 source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
-                                load_embedding_weights=hyper_params["load_embedding_weights"])
+                                load_embedding_weights=False)
 
             model_path = os.path.join(experiment["base_path"], experiment["model"])
             model.load_state_dict(torch.load(model_path))
