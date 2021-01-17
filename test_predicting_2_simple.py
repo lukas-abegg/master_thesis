@@ -23,7 +23,7 @@ def predict_sentence(model, origin_sentence, beam_size, tokenizer, tgt_vocab, us
     return translated_sentence_1, translated_sentence_2
 
 
-def predict(test_iter, model, beam_size, tokenizer, tgt_vocab, use_gpu):
+def predict(test_iter, model, beam_size, tokenizer, src_vocab, tgt_vocab, use_gpu):
     if use_gpu:
         model.cuda()
     else:
@@ -55,11 +55,11 @@ def predict(test_iter, model, beam_size, tokenizer, tgt_vocab, use_gpu):
             trg = trg.transpose(0, 1)
 
             for origin_sentence, reference_sentence in zip(src, trg):
-                predicted_sentence_1, predicted_sentence_2 = predict_sentence(model, origin_sentence, beam_size, 
+                predicted_sentence_1, predicted_sentence_2 = predict_sentence(model, origin_sentence, beam_size,
                                                                               tokenizer, tgt_vocab, use_gpu)
 
-                origin_sentences_1.append(convert_ids_to_tokens(origin_sentence, tgt_vocab))
-                origin_sentences_2.append(convert_ids_to_tokens(origin_sentence, tgt_vocab))
+                origin_sentences_1.append(convert_ids_to_tokens(origin_sentence, src_vocab))
+                origin_sentences_2.append(convert_ids_to_tokens(origin_sentence, src_vocab))
 
                 reference_sentence = reference_sentence[1:]
                 reference_sentences_1.append(convert_ids_to_tokens(reference_sentence, tgt_vocab))
@@ -88,7 +88,6 @@ def convert_ids_to_tokens(tensor, vocab):
 
 
 def beam_decode_sentence(model, origin_sentence, beam_size, num_candidates, tgt_vocab, use_gpu=False):
-
     len_map = torch.arange(1, max_len_tgt + 1, dtype=torch.long).unsqueeze(0)
 
     sentence_tensor = torch.unsqueeze(origin_sentence, 0)
@@ -121,6 +120,7 @@ def beam_decode_sentence(model, origin_sentence, beam_size, num_candidates, tgt_
     gen_seq[:, 1] = best_k_idx[0]
     input_tensors = sentence_tensor.repeat(beam_size, 1)
 
+    ans_idx_seq = [0]
     for step in range(2, max_len_tgt):  # decode up to max length
         size = gen_seq[0, :step].size(0)
 
@@ -243,7 +243,7 @@ def write_to_file(sentences, filename):
     print("Sentences saved to file", filename)
 
 
-def run(test_iter, model, base_path, tokenizer, tgt_vocab, use_cuda):
+def run(test_iter, model, base_path, tokenizer, src_vocab, tgt_vocab, use_cuda):
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
@@ -251,7 +251,8 @@ def run(test_iter, model, base_path, tokenizer, tgt_vocab, use_cuda):
         beam_size = i
 
         origin_sentences_1, origin_sentences_2, reference_sentences_1, reference_sentences_2, \
-        predicted_sentences_1, predicted_sentences_2 = predict(test_iter, model, beam_size, tokenizer, tgt_vocab, use_cuda)
+        predicted_sentences_1, predicted_sentences_2 = predict(test_iter, model, beam_size, tokenizer, src_vocab,
+                                                               tgt_vocab, use_cuda)
 
         filename = os.path.join(base_path, str(i) + "_origin_sentences_1.txt")
         write_to_file(origin_sentences_1, filename)
@@ -300,7 +301,7 @@ def init_data(hyper_params, set):
     # Create iterators to process text in batches of approx. the same length
     test_iter = get_iterator(test_data, BATCH_SIZE)
 
-    return test_iter, TGT.vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, target_vocab_length
+    return test_iter, SRC.vocab, TGT.vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, target_vocab_length
 
 
 if __name__ == "__main__":
@@ -413,10 +414,10 @@ if __name__ == "__main__":
         print("Run experiments for transformer model: ", set["transformer_model"])
         print(hyper_params)
 
-        test_iter, tgt_vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, target_vocab_length = init_data(hyper_params, set)
+        test_iter, src_vocab, tgt_vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, \
+        target_vocab_length = init_data(hyper_params, set)
 
         for experiment in set["experiments"]:
-
             model = Transformer(None, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
                                 num_encoder_layers=experiment["n_layers"], num_decoder_layers=experiment["n_layers"],
                                 dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
@@ -432,7 +433,7 @@ if __name__ == "__main__":
             print("Run experiment: ", model_path)
             print("Save in: ", save_run_files_base)
 
-            run(test_iter, model, save_run_files_base, set["tokenizer"], tgt_vocab, use_cuda)
+            run(test_iter, model, save_run_files_base, set["tokenizer"], src_vocab, tgt_vocab, use_cuda)
 
             del model
 
