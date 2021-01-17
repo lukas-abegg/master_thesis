@@ -300,7 +300,7 @@ def init_data(hyper_params, set):
     target_vocab_length = len(TGT.vocab)
 
     base_model = Transformer(None, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
-                             num_encoder_layers=set["n_layers"], num_decoder_layers=hyper_params["n_layers"],
+                             num_encoder_layers=set["n_layers"], num_decoder_layers=set["n_layers"],
                              dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                              source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                              load_embedding_weights=hyper_params["load_embedding_weights"])
