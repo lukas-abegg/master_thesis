@@ -89,6 +89,7 @@ def convert_ids_to_tokens(tensor, vocab):
 
 def beam_decode_sentence(model, origin_sentence, beam_size, num_candidates, tgt_vocab, use_gpu=False):
     len_map = torch.arange(1, max_len_tgt + 1, dtype=torch.long).unsqueeze(0)
+    len_map = len_map.cuda() if use_gpu else len_map
 
     sentence_tensor = torch.unsqueeze(origin_sentence, 0)
 
@@ -120,7 +121,7 @@ def beam_decode_sentence(model, origin_sentence, beam_size, num_candidates, tgt_
     gen_seq[:, 1] = best_k_idx[0]
     input_tensors = sentence_tensor.repeat(beam_size, 1)
 
-    ans_idx_seq = [0]
+    ans_idx_seq = [0, 1]
     for step in range(2, max_len_tgt):  # decode up to max length
         size = gen_seq[0, :step].size(0)
 
@@ -247,7 +248,7 @@ def run(test_iter, model, base_path, tokenizer, src_vocab, tgt_vocab, use_cuda):
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
-    for i in [1, 2, 4, 6, 12]:
+    for i in [2, 1, 4, 6, 12]:
         beam_size = i
 
         origin_sentences_1, origin_sentences_2, reference_sentences_1, reference_sentences_2, \
