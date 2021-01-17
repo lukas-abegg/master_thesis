@@ -42,7 +42,7 @@ def get_parallel_sentences(base_file_path):
     prediction_groups_1 = []
     prediction_groups_2 = []
 
-    for i in [1, 2, 4, 6, 12]:
+    for i in [2, 1, 4, 6, 12]:
 
         beam_sizes.append(i)
 
