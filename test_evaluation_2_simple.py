@@ -240,7 +240,7 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
 if __name__ == "__main__":
     project_name = "transformer-newsela-eval-beam"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/evaluation/joint/reward/beam_2"
+    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1/evaluation/joint/reward/beam_2"
 
     experiment = None
     if tracking_active:
