@@ -11,9 +11,6 @@ from test_transformer import Transformer
 
 
 def predict_sentence(model, origin_sentence, beam_size, tokenizer, tgt_vocab, use_gpu=False):
-    origin_sentence = torch.unsqueeze(origin_sentence, 0)
-    origin_sentence = origin_sentence.to(device)
-
     num_candidates = 2
 
     if beam_size > 1:
