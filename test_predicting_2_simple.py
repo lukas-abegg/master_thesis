@@ -358,17 +358,17 @@ if __name__ == "__main__":
     ]
 
     experiments_newsela_wordpiece = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/mle/beam",
-         "model": "checkpoints/mle/best_model.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/joint/reward/beam_1",
-         "model": "checkpoints/joint/reward/best_generator_g_model.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/reward/beam_2",
-         "model": "checkpoints/joint/reward/joint_2.769.epoch_4.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/pgloss/beam",
-         "model": "checkpoints/joint/pgloss/best_generator_g_model.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/pgloss_sari/beam_2",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt", "n_layers": 4},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/joint/reward/beam_1",
+        #  "model": "checkpoints/joint/reward/best_generator_g_model.pt", "n_layers": 4},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/reward/beam_2",
+        #  "model": "checkpoints/joint/reward/joint_2.769.epoch_4.pt", "n_layers": 4},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/pgloss/beam",
+        #  "model": "checkpoints/joint/pgloss/best_generator_g_model.pt", "n_layers": 4},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/joint/pgloss_sari/beam_2",
          "model": "checkpoints/joint/pgloss_sari/joint_2.803.epoch_5.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6_1", "eval": "evaluation/joint/pgloss_sari/beam_1",
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/joint/pgloss_sari/beam_1",
          "model": "checkpoints/joint/pgloss_sari/best_generator_g_model.pt", "n_layers": 4}
     ]
 
@@ -393,7 +393,7 @@ if __name__ == "__main__":
     ]
 
     experiments = [
-        {"transformer_model": "newsela_word", "dataset": "newsela", "tokenizer": "word", "experiments": experiments_newsela_word},
+        #{"transformer_model": "newsela_word", "dataset": "newsela", "tokenizer": "word", "experiments": experiments_newsela_word},
         {"transformer_model": "newsela_wordpiece", "dataset": "newsela", "tokenizer": "wordpiece", "experiments": experiments_newsela_wordpiece},
         {"transformer_model": "mws_word", "dataset": "mws", "tokenizer": "word", "experiments": experiments_mws_word},
         {"transformer_model": "mws_wordpiece", "dataset": "mws", "tokenizer": "wordpiece", "experiments": experiments_mws_wordpiece}
