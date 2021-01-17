@@ -299,17 +299,11 @@ def init_data(hyper_params, set):
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
 
-    base_model = Transformer(None, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
-                             num_encoder_layers=set["n_layers"], num_decoder_layers=set["n_layers"],
-                             dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
-                             source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
-                             load_embedding_weights=hyper_params["load_embedding_weights"])
-
     BATCH_SIZE = hyper_params["batch_size"]
     # Create iterators to process text in batches of approx. the same length
     test_iter = get_iterator(test_data, BATCH_SIZE)
 
-    return test_iter, base_model, TGT.vocab, BOS_WORD, EOS_WORD, BLANK_WORD
+    return test_iter, TGT.vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, target_vocab_length
 
 
 if __name__ == "__main__":
@@ -422,10 +416,16 @@ if __name__ == "__main__":
         print("Run experiments for transformer model: ", set["transformer_model"])
         print(hyper_params)
 
-        test_iter, base_model, tgt_vocab, BOS_WORD, EOS_WORD, BLANK_WORD = init_data(hyper_params, set)
+        test_iter, tgt_vocab, BOS_WORD, EOS_WORD, BLANK_WORD, source_vocab_length, target_vocab_length = init_data(hyper_params, set)
 
         for experiment in set["experiments"]:
-            model = base_model
+
+            model = Transformer(None, d_model=hyper_params["d_model"], nhead=hyper_params["n_head"],
+                                num_encoder_layers=experiment["n_layers"], num_decoder_layers=experiment["n_layers"],
+                                dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
+                                source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
+                                load_embedding_weights=hyper_params["load_embedding_weights"])
+
             model_path = os.path.join(experiment["base_path"], experiment["model"])
             model.load_state_dict(torch.load(model_path))
 
