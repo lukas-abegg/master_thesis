@@ -400,10 +400,10 @@ if __name__ == "__main__":
     ]
 
     experiments = [
-        {"transformer_model": "newsela_word", "dataset": "newsela", "experiments": experiments_newsela_word},
-        {"transformer_model": "newsela_wordpiece", "dataset": "newsela", "experiments": experiments_newsela_wordpiece},
-        {"transformer_model": "mws_word", "dataset": "mws", "experiments": experiments_mws_word},
-        {"transformer_model": "mws_wordpiece", "dataset": "mws", "experiments": experiments_mws_wordpiece}
+        {"transformer_model": "newsela_word", "dataset": "newsela", "tokenizer": "word", "experiments": experiments_newsela_word},
+        {"transformer_model": "newsela_wordpiece", "dataset": "newsela", "tokenizer": "wordpiece", "experiments": experiments_newsela_wordpiece},
+        {"transformer_model": "mws_word", "dataset": "mws", "tokenizer": "word", "experiments": experiments_mws_word},
+        {"transformer_model": "mws_wordpiece", "dataset": "mws", "tokenizer": "wordpiece", "experiments": experiments_mws_wordpiece}
     ]
 
     for set in experiments:
