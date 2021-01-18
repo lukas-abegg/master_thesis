@@ -221,8 +221,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
                                                        fields=(SRC, TGT),
                                                        train='train',
-                                                       validation='valid',
-                                                       test='test',
+                                                       validation='test',
+                                                       test='valid',
                                                        path=path,
                                                        filter_pred=lambda x: len(
                                                            vars(x)['src']) <= max_len_src and len(

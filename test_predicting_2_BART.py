@@ -80,8 +80,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
                                                        fields=(SRC, TGT),
                                                        train='train',
-                                                       validation='valid',
-                                                       test='test',
+                                                       validation='test',
+                                                       test='valid',
                                                        path=path,
                                                        filter_pred=lambda x: len(
                                                            vars(x)['src']) <= max_len_src and len(
@@ -268,12 +268,12 @@ if __name__ == "__main__":
     }
 
     bart_large_experiments_newsela = [
-        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/mle",
-        #  "model": "checkpoints/mle/best_model.pt"},
-        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2", "eval": "evaluation/mle",
-        #  "model": "checkpoints/mle/best_model.pt"},
-        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4", "eval": "evaluation/mle",
-        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_2", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_4", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"},
         {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss_sari/_2",
          "model": "checkpoints/joint/pg_loss_sari/joint_4.053.epoch_2.pt"},
         {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/joint/pg_loss_sari/_5",
@@ -304,10 +304,10 @@ if __name__ == "__main__":
     ]
 
     experiments = [
-        #{"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
-        #{"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
-        {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
-        #{"bart_model": "facebook/bart-large-cnn", "dataset": "newsela", "experiments": bart_large_cnn_experiments_newsela}
+        {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
+        {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
+        # {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
+        # {"bart_model": "facebook/bart-large-cnn", "dataset": "newsela", "experiments": bart_large_cnn_experiments_newsela}
     ]
 
     for set in experiments:
