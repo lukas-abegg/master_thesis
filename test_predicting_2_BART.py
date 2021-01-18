@@ -226,7 +226,7 @@ def init_data(hyper_params, set):
     tokenizer = BartTokenizer.from_pretrained(set["bart_model"])
     base_model = BartForConditionalGeneration.from_pretrained(set["bart_model"])
 
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
     dataset = set["dataset"]
 
     max_len_src = hyper_params["sequence_length_src"]
