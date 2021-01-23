@@ -289,7 +289,6 @@ def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_b
                         logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                         optimizer.param_groups[0]['lr']))
 
-
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
             experiment.log_metric("epoch_train_acc", logging_meters['train_acc'].avg)

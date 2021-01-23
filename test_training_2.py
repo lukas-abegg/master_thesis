@@ -11,15 +11,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from transformers import BertConfig, BertModel
+from transformers import BertConfig, BertModel, get_linear_schedule_with_warmup
 
 from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
 from meters import AverageMeter
 from test_transformer import Transformer
-from training.optimizer import NoamOptimizer
 
 
-def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True, experiment=None):
+def train(train_iter, val_iter, model, num_epochs, num_steps_epoch, checkpoint_base, use_gpu=True, experiment=None):
     if use_gpu:
         model.cuda()
     else:
@@ -46,7 +45,10 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                                  lr=hyper_params["learning_rate"], betas=(0.9, 0.98),
                                  eps=1e-9)
 
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
+    num_train_steps = num_steps_epoch * num_epochs
+    warmup_steps = 4000
+    print(num_train_steps)
+    lr_scheduler = get_linear_schedule_with_warmup(optimizer, warmup_steps, num_train_steps)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -120,6 +122,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
+            lr_scheduler.step()
 
             # del src, trg, preds, loss, acc
             del src, trg, trg_input, targets, preds, loss, logging_loss, acc
@@ -189,7 +192,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                     logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                     optimizer.param_groups[0]['lr']))
 
-        lr_scheduler.step(logging_meters['valid_loss'].avg)
+        #lr_scheduler.step(logging_meters['valid_loss'].avg)
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -321,26 +324,26 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt #pwkp #wikilarge
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 55,
-        "sequence_length_tgt": 35,
+        "dataset": "pwkp",  # mws # iwslt #pwkp #wikilarge
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
         "batch_size": 50,
         "num_epochs": 100,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 4,
+        "n_layers": 6,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4"
-    project_name = "transformer-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_3"
+    project_name = "transformer-pwkp"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_7"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -379,10 +382,16 @@ if __name__ == "__main__":
     source_vocab_length = len(SRC.vocab)
     target_vocab_length = len(TGT.vocab)
 
+    if len(train_data) % BATCH_SIZE > 0:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE) + 1
+    else:
+        num_steps = math.floor(len(train_data) / BATCH_SIZE)
+
     if experiment is not None:
         experiment.log_other("source_vocab_length", source_vocab_length)
         experiment.log_other("target_vocab_length", target_vocab_length)
         experiment.log_other("len_train_data", str(len(train_data)))
+        experiment.log_other("num_steps", str(num_steps))
 
     bert_model = None
     if hyper_params["load_embedding_weights"]:
@@ -400,9 +409,9 @@ if __name__ == "__main__":
 
     if experiment is not None:
         with experiment.train():
-            train(train_iter, val_iter, model, NUM_EPOCHS, checkpoint_base, use_cuda, experiment)
+            train(train_iter, val_iter, model, NUM_EPOCHS, num_steps, checkpoint_base, use_cuda, experiment)
     else:
-        train(train_iter, val_iter, model, NUM_EPOCHS, checkpoint_base, use_cuda, experiment)
+        train(train_iter, val_iter, model, NUM_EPOCHS, num_steps, checkpoint_base, use_cuda, experiment)
 
     print("Training finished")
     sys.exit()
