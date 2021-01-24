@@ -231,22 +231,22 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "pwkp",  # mws # iwslt
-        "tokenizer": "word",  # wordpiece
-        "sequence_length_src": 51,
-        "sequence_length_tgt": 44,
+        "tokenizer": "wordpiece",  # wordpiece
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
         "batch_size": 50,
         "num_epochs": 25,
         "learning_rate": 1e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
-        "n_layers": 6,
+        "n_layers": 4,
         "dropout": 0.1,
         "load_embedding_weights": False
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_0_1"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_4"
     project_name = "discriminator-pwkp"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
