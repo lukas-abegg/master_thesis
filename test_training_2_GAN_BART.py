@@ -152,7 +152,7 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                        betas=(0.9, 0.98), eps=1e-9)
 
     num_train_steps = num_steps * max_epochs
-    warmup_steps = 300
+    warmup_steps = 4000
     print(num_train_steps)
     lr_scheduler_g = get_linear_schedule_with_warmup(g_optimizer, warmup_steps, num_train_steps)
     lr_scheduler_d = get_linear_schedule_with_warmup(d_optimizer, warmup_steps, num_train_steps)
@@ -588,11 +588,11 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
-        "batch_size": 10,
-        "num_epochs": 5,
+        "dataset": "mws",  # mws # iwslt
+        "sequence_length_src": 76,
+        "sequence_length_tgt": 65,
+        "batch_size": 3,
+        "num_epochs": 1,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
         "bart_model": "facebook/bart-large",  # facebook/bart-large-cnn,
@@ -602,10 +602,10 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     generator = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0"
-    project_name = "gan-bart-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2"
+    project_name = "gan-bart-mws"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
