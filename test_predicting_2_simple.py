@@ -352,6 +352,16 @@ if __name__ == "__main__":
         "dropout": 0.1
     }
 
+    hyper_params_pwkp_wordpiece = {
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
+        "batch_size": 50,
+        "d_model": 512,
+        "n_head": 8,
+        "dim_feedforward": 2048,
+        "dropout": 0.1
+    }
+
     experiments_newsela_word = [
         {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_4", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt", "n_layers": 4}
@@ -392,11 +402,19 @@ if __name__ == "__main__":
          "model": "checkpoints/joint/reward/best_generator_g_model.pt", "n_layers": 4}
     ]
 
+    experiments_pwkp_wordpiece = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_3", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt", "n_layers": 6},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_4", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt", "n_layers": 4}
+    ]
+
     experiments = [
         # {"transformer_model": "newsela_word", "dataset": "newsela", "tokenizer": "word", "experiments": experiments_newsela_word},
         # {"transformer_model": "newsela_wordpiece", "dataset": "newsela", "tokenizer": "wordpiece", "experiments": experiments_newsela_wordpiece},
-        {"transformer_model": "mws_word", "dataset": "mws", "tokenizer": "word", "experiments": experiments_mws_word},
-        {"transformer_model": "mws_wordpiece", "dataset": "mws", "tokenizer": "wordpiece", "experiments": experiments_mws_wordpiece}
+        # {"transformer_model": "mws_word", "dataset": "mws", "tokenizer": "word", "experiments": experiments_mws_word},
+        # {"transformer_model": "mws_wordpiece", "dataset": "mws", "tokenizer": "wordpiece", "experiments": experiments_mws_wordpiece}
+        {"transformer_model": "pwkp_wordpiece", "dataset": "pwkp", "tokenizer": "wordpiece", "experiments": experiments_pwkp_wordpiece}
     ]
 
     for set in experiments:
@@ -406,6 +424,8 @@ if __name__ == "__main__":
                 hyper_params = hyper_params_newsela_word
             else:
                 hyper_params = hyper_params_newsela_wordpiece
+        elif set["dataset"] == "pwkp":
+                hyper_params = hyper_params_pwkp_wordpiece
         else:
             if set["tokenizer"] == "word":
                 hyper_params = hyper_params_mws_word
