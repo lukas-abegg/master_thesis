@@ -422,7 +422,7 @@ if __name__ == "__main__":
         "dataset": "pwkp",  # mws # pwkp # newsela
         "sequence_length_src": 80,
         "sequence_length_tgt": 70,
-        "batch_size": 15,
+        "batch_size": 10,
         "num_epochs": 20,
         "learning_rate": 1e-5,
         "bart_model": "facebook/bart-large"  # facebook/bart-large-cnn
