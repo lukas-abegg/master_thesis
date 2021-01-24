@@ -488,12 +488,12 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "newsela",  # mws # iwslt
+        "dataset": "pwkp",  # mws # iwslt
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 70,
-        "sequence_length_tgt": 45,
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
         "batch_size": 50,
-        "num_epochs": 5,
+        "num_epochs": 3,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
         "d_model": 512,
@@ -505,10 +505,10 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
-    project_name = "gan-newsela"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_4"
+    project_name = "gan-pwkp"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_8"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
@@ -570,7 +570,7 @@ if __name__ == "__main__":
                             source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                             load_embedding_weights=hyper_params["load_embedding_weights"])
     generator_path = "best_model.pt"
-    generator_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/mle', generator_path)
+    generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
     generator.load_state_dict(torch.load(generator_path))
     print("Generator is successfully loaded from:", str(generator_path))
 
@@ -579,7 +579,7 @@ if __name__ == "__main__":
                                   trg_vocab_size=target_vocab_length, pad_id_trg=TGT.vocab.stoi[BLANK_WORD],
                                   max_len_src=max_len_src, max_len_tgt=max_len_tgt, use_gpu=False)
     discriminator_path = "best_dmodel.pt"
-    discriminator_path = os.path.join("/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", 'checkpoints/discriminator', discriminator_path)
+    discriminator_path = os.path.join(checkpoint_base, 'checkpoints/discriminator', discriminator_path)
     discriminator.load_state_dict(torch.load(discriminator_path))
     print("Discriminator is successfully loaded:", str(discriminator_path))
 
