@@ -267,6 +267,12 @@ if __name__ == "__main__":
         "batch_size": 15
     }
 
+    hyper_params_pwkp = {
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
+        "batch_size": 15
+    }
+
     bart_large_experiments_newsela = [
         {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0", "eval": "evaluation/mle",
          "model": "checkpoints/mle/best_model.pt"},
@@ -303,17 +309,25 @@ if __name__ == "__main__":
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
+    bart_large_experiments_pwkp = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1", "eval": "evaluation/mle",
+         "model": "checkpoints/mle/best_model.pt"}
+    ]
+
     experiments = [
-        {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
-        {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
+        # {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
+        # {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
         # {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
         # {"bart_model": "facebook/bart-large-cnn", "dataset": "newsela", "experiments": bart_large_cnn_experiments_newsela}
+        {"bart_model": "facebook/bart-large", "dataset": "pwkp", "experiments": bart_large_experiments_pwkp},
     ]
 
     for set in experiments:
 
         if set["dataset"] == "newsela":
             hyper_params = hyper_params_newsela
+        elif set["dataset"] == "pwkp":
+            hyper_params = hyper_params_pwkp
         else:
             hyper_params = hyper_params_mws
 
