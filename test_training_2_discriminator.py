@@ -246,7 +246,7 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_3"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_4"
     project_name = "discriminator-pwkp"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
