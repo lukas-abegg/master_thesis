@@ -238,9 +238,9 @@ def validate(origin_groups, reference_groups, prediction_groups, beam_sizes, exp
 
 
 if __name__ == "__main__":
-    project_name = "bart-newsela-eval"  # newsela-transformer-bert-weights
+    project_name = "bart-pwkp-eval"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_bart/_0/evaluation/joint/pg_loss_sari/_5"
+    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1/evaluation/mle"
 
     experiment = None
     if tracking_active:
