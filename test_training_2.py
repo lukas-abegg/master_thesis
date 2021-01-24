@@ -341,7 +341,7 @@ if __name__ == "__main__":
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_transformer/_7"
-    project_name = "transformer-newsela"
+    project_name = "transformer-mws"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
 
