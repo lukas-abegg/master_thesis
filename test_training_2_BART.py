@@ -432,7 +432,7 @@ if __name__ == "__main__":
     model = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
     checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1"
-    project_name = "bart-newsela"
+    project_name = "bart-pwkp"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
