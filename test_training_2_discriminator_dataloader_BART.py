@@ -114,7 +114,7 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tokenizer, beam_size, max_len_trg, use_gpu, device, max_bath=200):
+def prepare_training_data(data_iter, generator, tokenizer, beam_size, max_len_trg, use_gpu, device, max_batch=800):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
@@ -123,7 +123,6 @@ def prepare_training_data(data_iter, generator, tokenizer, beam_size, max_len_tr
     with torch.no_grad():
         i = 0
         desc = '  - (Generate Samples)   '
-        max_batch = max_bath
         for batch in tqdm(data_iter, desc=desc, leave=False):
             i = i + 1
 
