@@ -3,28 +3,22 @@ import os
 import sys
 from collections import OrderedDict
 from random import random
+
 import numpy as np
-
-from tqdm import tqdm
-
-from comet_ml import Experiment
-
+import spacy
 import torch
+from comet_ml import Experiment
 from torch.autograd import Variable
 from torch.optim import Adam
-import torch.nn.functional as F
-
 from torchtext.data import BucketIterator, Field
 from torchtext.datasets import TranslationDataset
-
+from tqdm import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration, get_linear_schedule_with_warmup
 
 from PGLoss import PGLoss
 from meters import AverageMeter
 from test_discriminator import Discriminator
 from test_training_2_discriminator_dataloader_BART import greedy_decode_sentence
-
-import spacy
 
 spacy_en = spacy.load('en')
 
@@ -62,6 +56,37 @@ class Newsela(TranslationDataset):
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
+class PWKP(TranslationDataset):
+    name = 'pwkp'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        """Create dataset objects for splits of the PWKP dataset.
+
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(PWKP, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
 class MWS(TranslationDataset):
     name = 'mws'
     dirname = ''
@@ -96,6 +121,20 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
                                                            filter_pred=lambda x: len(
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
+
+    elif dataset == "pwkp":
+        path = os.path.join(base_path, "pwkp")
+
+        train_data, valid_data, test_data = PWKP.splits(exts=('.src', '.dst'),
+                                                        fields=(SRC, TGT),
+                                                        train='train',
+                                                        validation='valid',
+                                                        test='test',
+                                                        path=path,
+                                                        filter_pred=lambda x: len(
+                                                            vars(x)['src']) <= max_len_src and len(
+                                                            vars(x)['trg']) <= max_len_tgt)
+
     else:
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
@@ -222,7 +261,6 @@ def train(train_iter, val_iter, generator, discriminator, max_epochs, num_steps,
                                   decoder_input_ids=inputs["decoder_input_ids"])
                 # model outputs are always tuple in pytorch-transformers (see doc)
                 preds = preds.logits
-                #preds = F.log_softmax(preds, dim=-1)
                 out_batch = preds.contiguous().view(-1, preds.size(-1))
 
                 _, predictions = out_batch.topk(1)
@@ -588,11 +626,11 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  # mws # iwslt
-        "sequence_length_src": 76,
-        "sequence_length_tgt": 65,
+        "dataset": "pwkp",  # mws # iwslt
+        "sequence_length_src": 80,
+        "sequence_length_tgt": 70,
         "batch_size": 3,
-        "num_epochs": 1,
+        "num_epochs": 3,
         "learning_rate_g": 1e-5,
         "learning_rate_d": 1e-5,
         "bart_model": "facebook/bart-large",  # facebook/bart-large-cnn,
@@ -602,10 +640,10 @@ if __name__ == "__main__":
     tokenizer = BartTokenizer.from_pretrained(hyper_params["bart_model"])
     generator = BartForConditionalGeneration.from_pretrained(hyper_params["bart_model"])
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2"
-    project_name = "gan-bart-mws"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1"
+    project_name = "gan-bart-pwkp"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_7"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]

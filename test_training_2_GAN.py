@@ -3,15 +3,14 @@ import os
 import sys
 from collections import OrderedDict
 from random import random
+
 import numpy as np
-from tqdm import tqdm
-
-from comet_ml import Experiment
-
+import spacy
 import torch
+from comet_ml import Experiment
 from torch.autograd import Variable
 from torch.optim import Adam
-import torch.nn.functional as F
+from tqdm import tqdm
 from transformers import BertModel, BertConfig, get_linear_schedule_with_warmup
 
 from PGLoss import PGLoss
@@ -20,8 +19,6 @@ from meters import AverageMeter
 from test_discriminator import Discriminator
 from test_training_2_discriminator_dataloader import greedy_decode_sentence
 from test_transformer import Transformer
-
-import spacy
 
 spacy_en = spacy.load('en')
 
