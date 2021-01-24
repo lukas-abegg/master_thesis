@@ -114,7 +114,7 @@ def shuffled_batches_by_size(data_size, batch_size=32, sample=0, sort_by_source_
     return batches
 
 
-def prepare_training_data(data_iter, generator, tokenizer, beam_size, max_len_trg, use_gpu, device, max_batch=800):
+def prepare_training_data(data_iter, generator, tokenizer, beam_size, max_len_trg, use_gpu, device, max_batch=400):
     src_data_temp = []
     trg_data_temp = []
     labels_temp = []
