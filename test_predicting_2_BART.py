@@ -296,11 +296,13 @@ if __name__ == "__main__":
     ]
 
     bart_large_experiments_mws = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/mle",
-         "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", "eval": "evaluation/mle",
-         "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/joint/pg_loss/_5",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/mle",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", "eval": "evaluation/mle",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_0", "eval": "evaluation/joint/pg_loss/_5",
+        #  "model": "checkpoints/joint/pg_loss/best_generator_g_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_bart/_2", "eval": "evaluation/joint/pg_loss",
          "model": "checkpoints/joint/pg_loss/best_generator_g_model.pt"}
     ]
 
@@ -315,11 +317,11 @@ if __name__ == "__main__":
     ]
 
     experiments = [
-        # {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
+        {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
         # {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
         # {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
         # {"bart_model": "facebook/bart-large-cnn", "dataset": "newsela", "experiments": bart_large_cnn_experiments_newsela}
-        {"bart_model": "facebook/bart-large", "dataset": "pwkp", "experiments": bart_large_experiments_pwkp},
+        # {"bart_model": "facebook/bart-large", "dataset": "pwkp", "experiments": bart_large_experiments_pwkp},
     ]
 
     for set in experiments:
