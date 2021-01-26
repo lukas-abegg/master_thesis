@@ -485,14 +485,14 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "pwkp",  # mws # iwslt
+        "dataset": "newsela",  # mws # iwslt
         "tokenizer": "wordpiece",  # wordpiece
-        "sequence_length_src": 80,
-        "sequence_length_tgt": 70,
+        "sequence_length_src": 70,
+        "sequence_length_tgt": 45,
         "batch_size": 50,
-        "num_epochs": 3,
-        "learning_rate_g": 1e-5,
-        "learning_rate_d": 1e-5,
+        "num_epochs": 5,
+        "learning_rate_g": 1e-4,
+        "learning_rate_d": 1e-4,
         "d_model": 512,
         "n_head": 8,
         "dim_feedforward": 2048,
@@ -502,8 +502,8 @@ if __name__ == "__main__":
     }
 
     bert_path = "/glusterfs/dfs-gfs-dist/abeggluk/zzz_bert_models_1/bert_base_cased_12"
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_transformer/_4"
-    project_name = "gan-pwkp"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6"
+    project_name = "gan-newsela"
     tracking_active = True
     base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_6"
 
@@ -566,7 +566,7 @@ if __name__ == "__main__":
                             dim_feedforward=hyper_params["dim_feedforward"], dropout=hyper_params["dropout"],
                             source_vocab_length=source_vocab_length, target_vocab_length=target_vocab_length,
                             load_embedding_weights=hyper_params["load_embedding_weights"])
-    generator_path = "best_model.pt"
+    generator_path = "ce_2.569_acc_0.264.epoch_5.pt"
     generator_path = os.path.join(checkpoint_base, 'checkpoints/mle', generator_path)
     generator.load_state_dict(torch.load(generator_path))
     print("Generator is successfully loaded from:", str(generator_path))
@@ -584,7 +584,7 @@ if __name__ == "__main__":
     NUM_EPOCHS = hyper_params["num_epochs"]
 
     # adversarial training checkpoints saving path
-    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pgloss/')
+    checkpoints_path = os.path.join(checkpoint_base, 'checkpoints/joint/pgloss/_1')
     if not os.path.exists(checkpoints_path):
         os.makedirs(checkpoints_path)
     print("GAN will be saved at:", str(checkpoints_path))
