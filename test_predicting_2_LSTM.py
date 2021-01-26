@@ -355,7 +355,7 @@ if __name__ == "__main__":
     hyper_params_newsela_word = {
         "sequence_length_src": 55,
         "sequence_length_tgt": 35,
-        "batch_size": 50,
+        "batch_size": 64,
         "num_layer": 2,
         "d_layer": 256,
         "d_embedding": 300,
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     hyper_params_mws_word = {
         "sequence_length_src": 56,
         "sequence_length_tgt": 49,
-        "batch_size": 50,
+        "batch_size": 64,
         "num_layer": 2,
         "d_layer": 256,
         "d_embedding": 300,
@@ -374,10 +374,21 @@ if __name__ == "__main__":
         "pretrained_embeddings": True
     }
 
+    hyper_params_mws_word_sgd = {
+        "sequence_length_src": 56,
+        "sequence_length_tgt": 49,
+        "batch_size": 64,
+        "num_layer": 2,
+        "d_layer": 500,
+        "d_embedding": 300,
+        "dropout": 0.3,
+        "pretrained_embeddings": True
+    }
+
     hyper_params_pwkp_word = {
         "sequence_length_src": 80,
         "sequence_length_tgt": 70,
-        "batch_size": 50,
+        "batch_size": 64,
         "num_layer": 2,
         "d_layer": 256,
         "d_embedding": 300,
@@ -386,23 +397,35 @@ if __name__ == "__main__":
     }
 
     experiments_newsela_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm/_0", "eval": "evaluation/mle/beam",
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm/_1", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments_mws_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_0", "eval": "evaluation/mle/beam",
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_1", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt"}
+    ]
+
+    experiments_mws_word_sgd = [
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_2", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments_pwkp_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_0", "eval": "evaluation/mle/beam",
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/", "eval": "evaluation/mle/beam",
+         "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_1", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments = [
         {"lstm_model": "newsela_word", "dataset": "newsela", "experiments": experiments_newsela_word},
         {"lstm_model": "mws_word", "dataset": "mws", "experiments": experiments_mws_word},
+        {"lstm_model": "mws_word_sgd", "dataset": "mws", "experiments": experiments_mws_word_sgd},
         {"lstmr_model": "pwkp_word", "dataset": "pwkp", "experiments": experiments_pwkp_word}
     ]
 
@@ -413,7 +436,10 @@ if __name__ == "__main__":
         elif set["dataset"] == "pwkp":
             hyper_params = hyper_params_pwkp_word
         else:
-            hyper_params = hyper_params_mws_word
+            if set["lstm_model"] == "mws_word_sgd":
+                hyper_params = hyper_params_mws_word_sgd
+            else:
+                hyper_params = hyper_params_mws_word
 
         print("Run experiments for lstm model: ", set["lstm_model"])
         print(hyper_params)
