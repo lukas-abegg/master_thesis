@@ -444,9 +444,9 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "pwkp",  # mws #pwkp #newsela
-        "sequence_length_src": 80,
-        "sequence_length_tgt": 70,
+        "dataset": "mws",  # mws #pwkp #newsela
+        "sequence_length_src": 56,
+        "sequence_length_tgt": 49,
         "batch_size": 64,
         "num_epochs": 100,
         "learning_rate": 1e-4,
@@ -457,10 +457,10 @@ if __name__ == "__main__":
         "pretrained_embeddings": True
     }
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_1"
-    project_name = "lstm-pwkp"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_1"
+    project_name = "lstm-mws"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_5"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
