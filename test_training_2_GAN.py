@@ -4,10 +4,11 @@ import sys
 from collections import OrderedDict
 from random import random
 
+from comet_ml import Experiment
+
 import numpy as np
 import spacy
 import torch
-from comet_ml import Experiment
 from torch.autograd import Variable
 from torch.optim import Adam
 from tqdm import tqdm
