@@ -312,16 +312,20 @@ if __name__ == "__main__":
     ]
 
     bart_large_experiments_pwkp = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1", "eval": "evaluation/mle",
-         "model": "checkpoints/mle/best_model.pt"}
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1", "eval": "evaluation/mle",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1", "eval": "evaluation/joint/pgloss/beam/_1",
+         "model": "checkpoints/joint/pg_loss/best_generator_g_model.pt", "n_layers": 4},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_bart/_1", "eval": "evaluation/joint/pgloss/beam/_3",
+         "model": "checkpoints/joint/pg_loss/joint_5.195.epoch_3.pt", "n_layers": 4}
     ]
 
     experiments = [
-        {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
+        # {"bart_model": "facebook/bart-large", "dataset": "mws", "experiments": bart_large_experiments_mws},
         # {"bart_model": "facebook/bart-large-cnn", "dataset": "mws", "experiments": bart_large_cnn_experiments_mws},
         # {"bart_model": "facebook/bart-large", "dataset": "newsela", "experiments": bart_large_experiments_newsela},
         # {"bart_model": "facebook/bart-large-cnn", "dataset": "newsela", "experiments": bart_large_cnn_experiments_newsela}
-        # {"bart_model": "facebook/bart-large", "dataset": "pwkp", "experiments": bart_large_experiments_pwkp},
+        {"bart_model": "facebook/bart-large", "dataset": "pwkp", "experiments": bart_large_experiments_pwkp}
     ]
 
     for set in experiments:
