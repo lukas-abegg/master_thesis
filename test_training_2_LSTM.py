@@ -457,10 +457,10 @@ if __name__ == "__main__":
         "pretrained_embeddings": True
     }
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_1"
     project_name = "lstm-pwkp"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_1"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_4"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
