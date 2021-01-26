@@ -8,7 +8,7 @@ from torch.autograd import Variable
 
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, output_dim, emb_dim, hid_dim, num_layers, dropout, src_pad_idx, tgt_pad_idx,
-                 use_cuda=False):
+                 embeddings_in=None, embeddings_out=None, use_cuda=False):
         super(LSTMModel, self).__init__()
 
         self.use_cuda = use_cuda
@@ -20,7 +20,8 @@ class LSTMModel(nn.Module):
             hid_dim=hid_dim,
             num_layers=num_layers,
             dropout=dropout,
-            pad_idx=src_pad_idx
+            pad_idx=src_pad_idx,
+            embedding=embeddings_in
         )
         self.decoder = LSTMDecoder(
             output_dim=output_dim,
@@ -29,7 +30,8 @@ class LSTMModel(nn.Module):
             num_layers=num_layers,
             dropout=dropout,
             use_cuda=use_cuda,
-            pad_idx=tgt_pad_idx
+            pad_idx=tgt_pad_idx,
+            embedding=embeddings_out
         )
 
     def forward(self, src, trg):
@@ -56,12 +58,12 @@ class LSTMModel(nn.Module):
 class LSTMEncoder(nn.Module):
     """LSTM encoder."""
 
-    def __init__(self, input_dim, embed_dim, hid_dim, num_layers=1, dropout=0.1, pad_idx=0):
+    def __init__(self, input_dim, embed_dim, hid_dim, num_layers=1, dropout=0.1, pad_idx=0, embedding=None):
         super(LSTMEncoder, self).__init__()
         self.num_layers = num_layers
 
         self.padding_idx = pad_idx
-        self.embed_tokens = Embedding(input_dim, embed_dim, self.padding_idx)
+        self.embed_tokens = embedding if embedding is not None else Embedding(input_dim, embed_dim, self.padding_idx)
 
         self.dropout = dropout
 
@@ -122,7 +124,7 @@ class AttentionLayer(nn.Module):
 
 
 class LSTMDecoder(nn.Module):
-    def __init__(self, output_dim, embed_dim, hid_dim, num_layers, dropout, use_cuda=False, pad_idx=0):
+    def __init__(self, output_dim, embed_dim, hid_dim, num_layers, dropout, use_cuda=False, pad_idx=0, embedding=None):
         super(LSTMDecoder, self).__init__()
         self.use_cuda = use_cuda
 
@@ -133,7 +135,7 @@ class LSTMDecoder(nn.Module):
         self.hid_dim = hid_dim
 
         self.padding_idx = pad_idx
-        self.embed_tokens = Embedding(embed_dim, embed_dim, self.padding_idx)
+        self.embed_tokens = embedding if embedding is not None else Embedding(output_dim, embed_dim, self.padding_idx)
 
         self.layers = nn.ModuleList([
             LSTMCell(embed_dim + hid_dim if layer == 0 else hid_dim, hid_dim)
@@ -293,3 +295,12 @@ def set_incremental_state(module, incremental_state, key, value):
     if incremental_state is not None:
         full_key = _get_full_incremental_state_key(module, key)
         incremental_state[full_key] = value
+
+
+def load_embeddings(vocab, embed_dim, pad_idx):
+    # Embedding layer created by pytorch
+    embedding = nn.Embedding(len(vocab), embed_dim, padding_idx=pad_idx)
+    # Specify the initial weight of the embedded matrix
+    weight_matrix = vocab.vectors
+    embedding.weight.data.copy_(weight_matrix)
+    return embedding

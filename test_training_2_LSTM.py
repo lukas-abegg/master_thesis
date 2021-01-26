@@ -1,18 +1,189 @@
 import math
 import os
-import re
 import sys
 from collections import OrderedDict
+from comet_ml import Experiment
 
 import torch
 import torch.nn as nn
-from comet_ml import Experiment
-from tqdm import tqdm
 
-from comparing_models.seq2seq import test_model
-from comparing_models.seq2seq.lstm_bi_model import LSTMModel
-from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
+from torchtext.data import Field, BucketIterator
+from torchtext.datasets import TranslationDataset
+from torchtext.vocab import GloVe
+from tqdm import tqdm
+from transformers import BertTokenizer
+
+from comparing_models.seq2seq.lstm_bi_model import LSTMModel, load_embeddings
+from comparing_models.seq2seq.sequence_generator import SequenceGenerator
 from meters import AverageMeter
+
+bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+
+
+def tokenize_bert(text):
+    return [tok for tok in bert_tokenizer.tokenize(text)]
+
+
+def get_fields(max_len_src, max_len_tgt, bos_word, eos_word, blank_word):
+    src = Field(sequential=True, lower=True,
+                tokenize="spacy",
+                fix_length=max_len_src,
+                # init_token=bos_word,
+                # eos_token=eos_word,
+                pad_token=blank_word)
+
+    trg = Field(sequential=True, lower=True,
+                tokenize="spacy",
+                fix_length=max_len_tgt,
+                init_token=bos_word,
+                eos_token=eos_word,
+                pad_token=blank_word)
+
+    return src, trg
+
+
+class Newsela(TranslationDataset):
+    name = 'newsela'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        """Create dataset objects for splits of the Newsela dataset.
+
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(Newsela, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
+class MWS(TranslationDataset):
+    name = 'mws'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        """Create dataset objects for splits of the Newsela dataset.
+
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(MWS, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
+class PWKP(TranslationDataset):
+    name = 'pwkp'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        """Create dataset objects for splits of the PWKP dataset.
+
+        Arguments:
+            exts: A tuple containing the extension to path for each language.
+            fields: A tuple containing the fields that will be used for data
+                in each language.
+            root: Root dataset storage directory. Default is '.data'.
+            train: The prefix of the train data. Default: 'train'.
+            validation: The prefix of the validation data. Default: 'val'.
+            test: The prefix of the test data. Default: 'test'.
+            Remaining keyword arguments: Passed to the splits method of
+                Dataset.
+        """
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(PWKP, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
+def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eos_word, blank_word):
+    SRC, TGT = get_fields(max_len_src, max_len_tgt, bos_word, eos_word, blank_word)
+
+    if dataset == "newsela":
+        path = os.path.join(base_path, "newsela/splits/bert_base")
+        #   path = os.path.join(base_path, "data/test/newsela")
+
+        train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
+                                                           fields=(SRC, TGT),
+                                                           train='train',
+                                                           validation='valid',
+                                                           test='test',
+                                                           path=path,
+                                                           filter_pred=lambda x: len(
+                                                               vars(x)['src']) <= max_len_src and len(
+                                                               vars(x)['trg']) <= max_len_tgt)
+    elif dataset == "mws":
+        path = os.path.join(base_path, "wiki_simple/splits/bert_base")
+
+        train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
+                                                       fields=(SRC, TGT),
+                                                       train='train',
+                                                       validation='test',
+                                                       test='valid',
+                                                       path=path,
+                                                       filter_pred=lambda x: len(
+                                                           vars(x)['src']) <= max_len_src and len(
+                                                           vars(x)['trg']) <= max_len_tgt)
+    else:
+        path = os.path.join(base_path, "pwkp")
+
+        train_data, valid_data, test_data = PWKP.splits(exts=('.src', '.dst'),
+                                                        fields=(SRC, TGT),
+                                                        train='train',
+                                                        validation='valid',
+                                                        test='test',
+                                                        path=path,
+                                                        filter_pred=lambda x: len(
+                                                            vars(x)['src']) <= max_len_src and len(
+                                                            vars(x)['trg']) <= max_len_tgt)
+
+    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=2, vectors=GloVe(name='6B', dim=300))
+    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=2, vectors=GloVe(name='6B', dim=300))
+
+    return train_data, valid_data, test_data, SRC, TGT
+
+
+def get_iterator(data, batch_size):
+    return BucketIterator(data, batch_size=batch_size, repeat=False, sort_key=lambda x: len(x.src))
 
 
 def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True, experiment=None):
@@ -39,8 +210,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                                  lr=hyper_params["learning_rate"], betas=(0.9, 0.999),
                                  eps=1e-9)
-
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=0, factor=0.5)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -71,20 +240,18 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             # change to shape (bs , max_seq_len)
             trg = trg.transpose(0, 1)
 
-            targets = trg[1:].contiguous().view(-1)
+            trg_input = trg[:, :-1]
+            targets = trg[:, 1:].contiguous().view(-1)
 
             # Forward, backprop, optimizer
-            preds = model(src, trg)
-            preds = preds[1:].contiguous().view(-1, preds.size(-1))
+            preds = model(src, trg_input)
+            preds = preds.contiguous().view(-1, preds.size(-1))
             loss = criterion(preds, targets)
 
-            sample_size = targets.size(1)
+            sample_size = targets.size(0)
             logging_loss = loss / sample_size
 
             # Accuracy
-            preds = preds.transpose(0, 1)
-            targets = targets.transpose(0, 1)
-
             predicts = preds.argmax(dim=1)
             corrects = predicts == targets
             all = targets == targets
@@ -126,7 +293,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 if experiment is not None:
                     experiment.set_step(step_valid_i)
 
-                src, src_len = batch.src.cuda() if use_gpu else batch.src
+                src = batch.src.cuda() if use_gpu else batch.src
                 trg = batch.trg.cuda() if use_gpu else batch.trg
 
                 # change to shape (bs , max_seq_len)
@@ -134,20 +301,18 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 # change to shape (bs , max_seq_len)
                 trg = trg.transpose(0, 1)
 
+                trg_input = trg[:, :-1]
                 targets = trg[:, 1:].contiguous().view(-1)
 
                 # Forward, backprop, optimizer
-                preds = model(src, src_len, trg)
-                preds = preds[:, 1:].contiguous().view(-1, preds.size(-1))
+                preds = model(src, trg_input)
+                preds = preds.contiguous().view(-1, preds.size(-1))
                 loss = criterion(preds, targets)
 
-                sample_size = targets.size(1)
+                sample_size = targets.size(0)
                 logging_loss = loss / sample_size
 
                 # Accuracy
-                preds = preds.transpose(0, 1)
-                targets = targets.transpose(0, 1)
-
                 predicts = preds.argmax(dim=1)
                 corrects = predicts == targets
                 all = targets == targets
@@ -174,8 +339,6 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                 .format(epoch, num_epochs, logging_meters['train_loss'].avg, logging_meters['train_acc'].avg,
                         logging_meters['valid_loss'].avg, logging_meters['valid_acc'].avg,
                         optimizer.param_groups[0]['lr']))
-
-        lr_scheduler.step(logging_meters['valid_loss'].avg)
 
         if experiment is not None:
             experiment.log_metric("epoch_train_loss", logging_meters['train_loss'].avg)
@@ -232,9 +395,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
             else:
                 print("Validation Sample:")
             print("Original Sentence: {}".format(sentences[step_i]))
-            greedy_sent = greedy_decode_sentence(model, sentences[step_i], use_gpu)
-            sent = re.split(r'\s+', greedy_sent)
-            sent = bert_tokenizer.convert_tokens_to_string(sent)
+            sent = greedy_decode_sentence(model, sentences[step_i], use_gpu)
             print("Translated Sentence: {}".format(sent))
             print("Expected Sentence: {}".format(exp_sentences[step_i]))
             print("---------------------------------------")
@@ -247,7 +408,8 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
 def greedy_decode_sentence(model, sentence, use_gpu=False):
     model.eval()
-    sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+    # sentence = SRC.preprocess(BOS_WORD + " " + sentence + " " + EOS_WORD)
+    sentence = SRC.preprocess(sentence)
 
     indexed = []
     for tok in sentence:
@@ -256,33 +418,22 @@ def greedy_decode_sentence(model, sentence, use_gpu=False):
         else:
             indexed.append(SRC.vocab.stoi[BLANK_WORD])
 
-    src_tensor = torch.LongTensor(indexed).unsqueeze(1)
+    src_tensor = torch.LongTensor(indexed).unsqueeze(0)
 
     src_tensor = src_tensor.cuda() if use_gpu else src_tensor
 
-    with torch.no_grad():
-        encoder_outputs, hidden = model.encoder(src_tensor)
+    generator = SequenceGenerator(model, beam_size=1, minlen=1, maxlen=max_len_tgt,
+                                  stop_early=True, normalize_scores=True, len_penalty=1,
+                                  unk_penalty=0, pad_idx=TGT.vocab.stoi[BLANK_WORD],
+                                  unk_idx=TGT.vocab.unk_index, eos=TGT.vocab.stoi[EOS_WORD],
+                                  len_tgt_vocab=target_vocab_length)
 
-    trg_indexes = [TGT.vocab.stoi[BOS_WORD]]
+    trg_tokens = generator.generate(src_tensor, beam_size=1, maxlen=max_len_tgt)
 
-    for i in range(max_len_tgt):
+    translated_sentence = [TGT.vocab.itos[i] for i in trg_tokens[0][0]["tokens"]]
+    translated_sentence = bert_tokenizer.convert_tokens_to_string(translated_sentence)
 
-        trg_tensor = torch.LongTensor([trg_indexes[-1]])
-        trg_tensor = trg_tensor.cuda() if use_gpu else trg_tensor
-
-        with torch.no_grad():
-            output, hidden, attention = model.decoder(trg_tensor, hidden, encoder_outputs)
-
-        pred_token = output.argmax(1).item()
-
-        trg_indexes.append(pred_token)
-
-        if pred_token == TGT.vocab.stoi[TGT.eos_token]:
-            break
-
-    trg_tokens = [TGT.vocab.itos[i] for i in trg_indexes]
-
-    return trg_tokens[1:]
+    return translated_sentence
 
 
 if __name__ == "__main__":
@@ -294,7 +445,6 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws # iwslt #pwkp #wikilarge
-        "tokenizer": "wordpiece",  # wordpiece
         "sequence_length_src": 72,
         "sequence_length_tgt": 43,
         "batch_size": 64,
@@ -304,18 +454,18 @@ if __name__ == "__main__":
         "d_layer": 256,
         "d_embedding": 300,
         "dropout": 0.2,
+        "pretrained_embeddings": True
     }
 
-    checkpoint_base = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer_bert_encoder"
-    project_name = "transforner-newsela"
-    tracking_active = False
-    base_path = "./"  # "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm"
+    project_name = "lstm-newsela"
+    tracking_active = True
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
 
     dataset = hyper_params["dataset"]
-    tokenizer = hyper_params["tokenizer"]
 
     experiment = None
     if tracking_active:
@@ -327,17 +477,11 @@ if __name__ == "__main__":
 
     ### Load Data
     # Special Tokens
-    if tokenizer == "wordpiece":
-        BOS_WORD = '[CLS]'
-        EOS_WORD = '[SEP]'
-        BLANK_WORD = '[PAD]'
-    else:
-        BOS_WORD = '<s>'
-        EOS_WORD = '</s>'
-        BLANK_WORD = "<blank>"
+    BOS_WORD = '<s>'
+    EOS_WORD = '</s>'
+    BLANK_WORD = "<blank>"
 
     train_data, valid_data, test_data, SRC, TGT = load_dataset_data(base_path, max_len_src, max_len_tgt, dataset,
-                                                                    tokenizer,
                                                                     BOS_WORD, EOS_WORD, BLANK_WORD)
 
     BATCH_SIZE = hyper_params["batch_size"]
@@ -356,23 +500,17 @@ if __name__ == "__main__":
     src_pad_idx = SRC.vocab.stoi[BLANK_WORD]
     tgt_pad_idx = TGT.vocab.stoi[BLANK_WORD]
 
+    pretrained_embeddings = hyper_params["pretrained_embeddings"]
+
+    if pretrained_embeddings:
+        embeddings_in = load_embeddings(SRC.vocab, EMB_DIM, src_pad_idx)
+        embeddings_out = load_embeddings(TGT.vocab, EMB_DIM, tgt_pad_idx)
+    else:
+        embeddings_in = None
+        embeddings_out = None
+
     model = LSTMModel(source_vocab_length, target_vocab_length, EMB_DIM, HID_DIM, NUM_LAYERS, DROPOUT, src_pad_idx,
-                      tgt_pad_idx, use_cuda=use_cuda)
-
-    # Set model parameters
-    args = {
-        "encoder_embed_dim": 1000,
-        "encoder_layers": 2,  # 4,
-        "encoder_dropout_in": 0,
-        "encoder_dropout_out": 0,
-        "decoder_embed_dim": 1000,
-        "decoder_layers": 2,  # 4
-        "decoder_out_embed_dim": 1000,
-        "decoder_dropout_in": 0,
-        "decoder_dropout_out": 0,
-    }
-
-    #model = test_model.LSTMModel(args, source_vocab_length, target_vocab_length, use_cuda=use_cuda)
+                      tgt_pad_idx, embeddings_in=embeddings_in, embeddings_out=embeddings_out, use_cuda=use_cuda)
 
     ### Start Training
     NUM_EPOCHS = hyper_params["num_epochs"]
