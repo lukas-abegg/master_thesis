@@ -445,8 +445,8 @@ if __name__ == "__main__":
 
     hyper_params = {
         "dataset": "newsela",  # mws # iwslt #pwkp #wikilarge
-        "sequence_length_src": 72,
-        "sequence_length_tgt": 43,
+        "sequence_length_src": 55,
+        "sequence_length_tgt": 35,
         "batch_size": 64,
         "num_epochs": 30,
         "learning_rate": 1e-3,
