@@ -261,12 +261,12 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
             logging_meters['train_acc'].update(acc.item())
             logging_meters['train_loss'].update(logging_loss.item())
-            print("\nTraining loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                logging_meters['train_loss'].avg,
-                acc,
-                logging_meters['train_acc'].avg,
-                optimizer.param_groups[0]['lr'], step_train_i
-            ))
+            # print("\nTraining loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+            #     logging_meters['train_loss'].avg,
+            #     acc,
+            #     logging_meters['train_acc'].avg,
+            #     optimizer.param_groups[0]['lr'], step_train_i
+            # ))
 
             if experiment is not None:
                 experiment.log_metric("batch_train_loss", logging_meters['train_loss'].avg)
@@ -322,12 +322,12 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
 
                 logging_meters['valid_acc'].update(acc.item())
                 logging_meters['valid_loss'].update(logging_loss.item())
-                print("\nValidation loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
-                    logging_meters['valid_loss'].avg,
-                    acc,
-                    logging_meters['valid_acc'].avg,
-                    optimizer.param_groups[0]['lr'], step_valid_i
-                ))
+                # print("\nValidation loss {0:.3f}, acc {1:.3f}, avgAcc {2:.3f}, lr={3} at batch {4}: ".format(
+                #     logging_meters['valid_loss'].avg,
+                #     acc,
+                #     logging_meters['valid_acc'].avg,
+                #     optimizer.param_groups[0]['lr'], step_valid_i
+                # ))
 
                 if experiment is not None:
                     experiment.log_metric("batch_valid_loss", logging_meters['valid_loss'].avg)
@@ -444,11 +444,11 @@ if __name__ == "__main__":
     print("Use device ", device, " for task")
 
     hyper_params = {
-        "dataset": "mws",  #mws #pwkp #newsela
-        "sequence_length_src": 56,
-        "sequence_length_tgt": 49,
+        "dataset": "newsela",  # mws # iwslt #pwkp #wikilarge
+        "sequence_length_src": 55,
+        "sequence_length_tgt": 35,
         "batch_size": 64,
-        "num_epochs": 30,
+        "num_epochs": 100,
         "learning_rate": 1e-3,
         "num_layer": 2,
         "d_layer": 256,
@@ -457,10 +457,10 @@ if __name__ == "__main__":
         "pretrained_embeddings": True
     }
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm"
-    project_name = "lstm-mws"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm"
+    project_name = "lstm-newsela"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
