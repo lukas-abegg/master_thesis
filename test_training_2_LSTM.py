@@ -449,7 +449,7 @@ if __name__ == "__main__":
         "sequence_length_tgt": 70,
         "batch_size": 64,
         "num_epochs": 100,
-        "learning_rate": 1e-3,
+        "learning_rate": 1e-4,
         "num_layer": 2,
         "d_layer": 256,
         "d_embedding": 300,
