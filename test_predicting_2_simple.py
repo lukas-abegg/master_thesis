@@ -382,8 +382,8 @@ if __name__ == "__main__":
         #  "model": "checkpoints/joint/pgloss_sari/best_generator_g_model.pt", "n_layers": 4},
         # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_7", "eval": "evaluation/mle/beam",
         #  "model": "checkpoints/mle/best_model.pt", "n_layers": 4},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/pgloss/beam_1",
-         "model": "checkpoints/pgloss/_1best_generator_g_model.pt", "n_layers": 4}
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6", "eval": "evaluation/joint/pgloss/beam_1",
+         "model": "checkpoints/joint/pgloss/_1best_generator_g_model.pt", "n_layers": 4}
     ]
 
     experiments_mws_word = [
