@@ -203,12 +203,12 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
     criterion = nn.CrossEntropyLoss(ignore_index=TGT.vocab.stoi[BLANK_WORD], reduction='sum')
 
     # define optimizer
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                                 lr=hyper_params["learning_rate"], betas=(0.9, 0.999),
-                                 eps=1e-9)
+    # optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
+    #                              lr=hyper_params["learning_rate"], betas=(0.9, 0.999),
+    #                              eps=1e-9)
 
-    # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=hyper_params["learning_rate"])
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=9, gamma=0.7)
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=hyper_params["learning_rate"])
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=9, gamma=0.7)
 
     # Train until the accuracy achieve the define value
     best_avg_valid_loss = math.inf
@@ -333,7 +333,7 @@ def train(train_iter, val_iter, model, num_epochs, checkpoint_base, use_gpu=True
                     experiment.log_metric("batch_valid_acc", logging_meters['valid_acc'].avg)
 
         print('Epoch-{0} lr: {1}'.format(epoch, optimizer.param_groups[0]['lr']))
-        #scheduler.step()
+        scheduler.step()
 
         # Log after each epoch
         print(
@@ -450,19 +450,19 @@ if __name__ == "__main__":
         "sequence_length_src": 56,
         "sequence_length_tgt": 49,
         "batch_size": 64,
-        "num_epochs": 30,
-        "learning_rate": 1e-3,
+        "num_epochs": 15,
+        "learning_rate": 1.0,
         "num_layer": 2,
-        "d_layer": 256,
+        "d_layer": 500,
         "d_embedding": 300,
-        "dropout": 0.2,
+        "dropout": 0.3,
         "pretrained_embeddings": True
     }
 
-    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_3"
+    checkpoint_base = "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_4"
     project_name = "lstm-mws"
     tracking_active = True
-    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_2"
+    base_path = "/glusterfs/dfs-gfs-dist/abeggluk/data_3"
 
     max_len_src = hyper_params["sequence_length_src"]
     max_len_tgt = hyper_params["sequence_length_tgt"]
