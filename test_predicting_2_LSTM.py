@@ -393,28 +393,36 @@ if __name__ == "__main__":
     }
 
     experiments_newsela_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm", "eval": "evaluation/mle/beam",
-         "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm/_1", "eval": "evaluation/mle/beam",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm/_1", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/newsela_lstm/_2", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments_mws_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/", "eval": "evaluation/mle/beam",
-         "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_1", "eval": "evaluation/mle/beam",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_1", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_3", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments_mws_word_sgd = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_2", "eval": "evaluation/mle/beam",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_2", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/mws_lstm/_4", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
     experiments_pwkp_word = [
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/", "eval": "evaluation/mle/beam",
-         "model": "checkpoints/mle/best_model.pt"},
-        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_1", "eval": "evaluation/mle/beam",
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        # {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_1", "eval": "evaluation/mle/beam",
+        #  "model": "checkpoints/mle/best_model.pt"},
+        {"base_path": "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_lstm/_2", "eval": "evaluation/mle/beam",
          "model": "checkpoints/mle/best_model.pt"}
     ]
 
