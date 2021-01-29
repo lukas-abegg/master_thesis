@@ -160,8 +160,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, blank_word):
                                                             vars(x)['src']) <= max_len_src and len(
                                                             vars(x)['trg']) <= max_len_tgt)
 
-    SRC.build_vocab([train_data.src, valid_data.src, test_data.src])
-    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg])
+    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=2)
+    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=2)
 
     return train_data, valid_data, test_data, SRC, TGT
 
@@ -241,7 +241,7 @@ def process_dataset(dataset, hyper_params):
     max_seq_len_dst = hyper_params["sequence_length_tgt"]
     batch_size = hyper_params["batch_size"]
     target_base_path = hyper_params["target_base_path"]
-    base_path = "./"
+    base_path = "./data"
 
     preprocess_dataset(max_seq_len_src, max_seq_len_dst, batch_size, target_base_path, base_path, dataset)
 
