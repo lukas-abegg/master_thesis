@@ -12,10 +12,6 @@ from comparing_models.seq2seq.sequence_generator import SequenceGenerator
 from load_datasets import load_dataset_data, get_iterator, bert_tokenizer
 
 
-def tokenize_bert(text):
-    return [tok for tok in bert_tokenizer.tokenize(text)]
-
-
 def get_fields(max_len_src, max_len_tgt, bos_word, eos_word, blank_word):
     src = Field(sequential=True, lower=True,
                 tokenize="spacy",
@@ -131,8 +127,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
     SRC, TGT = get_fields(max_len_src, max_len_tgt, bos_word, eos_word, blank_word)
 
     if dataset == "newsela":
-        path = os.path.join(base_path, "newsela/splits/bert_base")
-        #   path = os.path.join(base_path, "data/test/newsela")
+        path = os.path.join(base_path, "newsela_w")
+        #   path = os.path.join(base_path, "data/test/newsela_w")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
@@ -144,7 +140,7 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
     elif dataset == "mws":
-        path = os.path.join(base_path, "wiki_simple/splits/bert_base")
+        path = os.path.join(base_path, "wiki_simple_w")
 
         train_data, valid_data, test_data = MWS.splits(exts=('.src', '.dst'),
                                                        fields=(SRC, TGT),
@@ -156,7 +152,7 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                            vars(x)['src']) <= max_len_src and len(
                                                            vars(x)['trg']) <= max_len_tgt)
     else:
-        path = os.path.join(base_path, "pwkp")
+        path = os.path.join(base_path, "pwkp_w")
 
         train_data, valid_data, test_data = PWKP.splits(exts=('.src', '.dst'),
                                                         fields=(SRC, TGT),
@@ -168,8 +164,8 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, bos_word, eo
                                                             vars(x)['src']) <= max_len_src and len(
                                                             vars(x)['trg']) <= max_len_tgt)
 
-    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], min_freq=2, vectors=GloVe(name='6B', dim=300))
-    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], min_freq=2, vectors=GloVe(name='6B', dim=300))
+    SRC.build_vocab([train_data.src, valid_data.src, test_data.src], vectors=GloVe(name='6B', dim=300))
+    TGT.build_vocab([train_data.trg, valid_data.trg, test_data.trg], vectors=GloVe(name='6B', dim=300))
 
     return train_data, valid_data, test_data, SRC, TGT
 

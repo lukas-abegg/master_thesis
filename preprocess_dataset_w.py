@@ -257,7 +257,7 @@ hyper_params_mws_wordpiece = {
     "sequence_length_src": 76,
     "sequence_length_tgt": 65,
     "batch_size": 64,
-    "target_base_path": "./data/mws_w"
+    "target_base_path": "./data/wiki_simple_w"
 }
 
 hyper_params_pwkp_wordpiece = {
