@@ -124,7 +124,7 @@ def load_dataset_data(max_seq_len_src, max_seq_len_dst, base_path, dataset, blan
 
     if dataset == "newsela":
         path = os.path.join(base_path, "newsela_w")
-        # path = os.path.join(base_path, "data/test/newsela_w")
+        # path = os.path.join(base_path, "test/newsela_w")
 
         train_data, valid_data, test_data = Newsela.splits(exts=('.src', '.dst'),
                                                            fields=(SRC, TGT),
@@ -188,6 +188,7 @@ hyper_params_newsela_word = {
     "sequence_length_src": 55,
     "sequence_length_tgt": 35,
     "vocab_base_path": "./data/newsela_w"
+    #"vocab_base_path": "./data/test/newsela_w"
 }
 
 hyper_params_mws_word = {
