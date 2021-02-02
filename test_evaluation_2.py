@@ -36,7 +36,7 @@ def get_parallel_sentences(base_file_path):
     prediction_groups = []
 
     #for i in range(5):
-    i = 1
+    i = 0
     filename = os.path.join(base_file_path, str(i + 1) + "_origin_sentences.txt")
     origins = read_from_file(filename)
     origin_groups.append(origins)
@@ -197,7 +197,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
 
 if __name__ == "__main__":
-    project_name = "gan-pwkp-eval"  # newsela-transformer-bert-weights
+    project_name = "simp-datasets-copy"  # newsela-transformer-bert-weights
     tracking_active = True
     base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_copy"
 
