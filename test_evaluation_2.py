@@ -197,7 +197,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
 
 if __name__ == "__main__":
-    project_name = "gan-pwkp-eval-beam"  # newsela-transformer-bert-weights
+    project_name = "gan-pwkp-eval"  # newsela-transformer-bert-weights
     tracking_active = True
     base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_copy"
 
