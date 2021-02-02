@@ -35,18 +35,19 @@ def get_parallel_sentences(base_file_path):
     reference_groups = []
     prediction_groups = []
 
-    for i in range(5):
-        filename = os.path.join(base_file_path, str(i + 1) + "_origin_sentences.txt")
-        origins = read_from_file(filename)
-        origin_groups.append(origins)
+    #for i in range(5):
+    i = 1
+    filename = os.path.join(base_file_path, str(i + 1) + "_origin_sentences.txt")
+    origins = read_from_file(filename)
+    origin_groups.append(origins)
 
-        filename = os.path.join(base_file_path, str(i + 1) + "_reference_sentences.txt")
-        references = read_from_file(filename)
-        reference_groups.append(references)
+    filename = os.path.join(base_file_path, str(i + 1) + "_reference_sentences.txt")
+    references = read_from_file(filename)
+    reference_groups.append(references)
 
-        filename = os.path.join(base_file_path, str(i + 1) + "_predicted_sentences.txt")
-        predictions = read_from_file(filename)
-        prediction_groups.append(predictions)
+    filename = os.path.join(base_file_path, str(i + 1) + "_predicted_sentences.txt")
+    predictions = read_from_file(filename)
+    prediction_groups.append(predictions)
 
     print("Files read -")
     return origin_groups, reference_groups, prediction_groups
@@ -196,9 +197,9 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 
 
 if __name__ == "__main__":
-    project_name = "gan-newsela-eval"  # newsela-transformer-bert-weights
+    project_name = "gan-pwkp-eval-beam"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_transformer/_6/evaluation/joint/pgloss_sari/_best/"
+    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_copy"
 
     experiment = None
     if tracking_active:
