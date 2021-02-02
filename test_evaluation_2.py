@@ -199,7 +199,7 @@ def validate(origin_groups, reference_groups, prediction_groups, experiment=None
 if __name__ == "__main__":
     project_name = "simp-datasets-copy"  # newsela-transformer-bert-weights
     tracking_active = True
-    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/pwkp_copy"
+    base_file_path = "/glusterfs/dfs-gfs-dist/abeggluk/newsela_copy"
 
     experiment = None
     if tracking_active:
