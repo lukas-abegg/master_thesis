@@ -427,10 +427,10 @@ if __name__ == "__main__":
     ]
 
     experiments = [
-        {"lstm_model": "newsela_word", "dataset": "newsela", "experiments": experiments_newsela_word},
+        #{"lstm_model": "newsela_word", "dataset": "newsela", "experiments": experiments_newsela_word},
         {"lstm_model": "mws_word", "dataset": "mws", "experiments": experiments_mws_word},
         {"lstm_model": "mws_word_sgd", "dataset": "mws", "experiments": experiments_mws_word_sgd},
-        {"lstm_model": "pwkp_word", "dataset": "pwkp", "experiments": experiments_pwkp_word}
+        #{"lstm_model": "pwkp_word", "dataset": "pwkp", "experiments": experiments_pwkp_word}
     ]
 
     for set in experiments:
