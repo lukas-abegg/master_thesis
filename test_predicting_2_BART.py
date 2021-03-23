@@ -40,6 +40,24 @@ class Newsela(TranslationDataset):
             exts, fields, path, root, train, validation, test, **kwargs)
 
 
+class PWKP(TranslationDataset):
+    name = 'pwkp'
+    dirname = ''
+
+    @classmethod
+    def splits(cls, exts, fields, root='data/test',
+               train='train', validation='valid', test='test', **kwargs):
+        if 'path' not in kwargs:
+            expected_folder = os.path.join(root, cls.name)
+            path = expected_folder if os.path.exists(expected_folder) else None
+        else:
+            path = kwargs['path']
+            del kwargs['path']
+
+        return super(PWKP, cls).splits(
+            exts, fields, path, root, train, validation, test, **kwargs)
+
+
 class MWS(TranslationDataset):
     name = 'mws'
     dirname = ''
@@ -74,6 +92,20 @@ def load_dataset_data(base_path, max_len_src, max_len_tgt, dataset, tokenizer, b
                                                            filter_pred=lambda x: len(
                                                                vars(x)['src']) <= max_len_src and len(
                                                                vars(x)['trg']) <= max_len_tgt)
+
+    elif dataset == "pwkp":
+        path = os.path.join(base_path, "pwkp")
+
+        train_data, valid_data, test_data = PWKP.splits(exts=('.src', '.dst'),
+                                                        fields=(SRC, TGT),
+                                                        train='train',
+                                                        validation='valid',
+                                                        test='test',
+                                                        path=path,
+                                                        filter_pred=lambda x: len(
+                                                            vars(x)['src']) <= max_len_src and len(
+                                                            vars(x)['trg']) <= max_len_tgt)
+
     else:
         path = os.path.join(base_path, "wiki_simple/splits/bert_base")
 
